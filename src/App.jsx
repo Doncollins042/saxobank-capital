@@ -7,8 +7,18 @@ import {
   FileText, Search, Download, MessageCircle, Send, Headphones, ChevronDown,
   Star, Gift, History, Calculator, Globe, Briefcase, ArrowLeft, ShieldCheck,
   MapPin, DollarSign, Target, Award, RefreshCw, Camera, Upload, Key, Smartphone,
-  Ticket, Share2, Link2, UserPlus, Percent, BadgeDollarSign, ChevronUp
+  Ticket, Share2, Link2, UserPlus, Percent, BadgeDollarSign, ChevronUp, AlertCircle
 } from 'lucide-react';
+import { 
+  registerUser, 
+  loginUser, 
+  logoutUser, 
+  resetPassword,
+  resendVerificationEmail,
+  onAuthChange,
+  auth,
+  getCurrentUserData
+} from './firebase';
 
 // ============ THEME COLORS ============
 const theme = {
@@ -100,22 +110,25 @@ const countries = [
   "Vanuatu", "Vatican City", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe"
 ];
 
-// ============ AUTH PAGE WITH EMAIL VERIFICATION ============
+// ============ AUTH PAGE WITH REAL FIREBASE AUTHENTICATION ============
 function AuthPage({ onLogin }) {
   const [mode, setMode] = useState('login');
   const [showPass, setShowPass] = useState(false);
   const [step, setStep] = useState(1);
-  const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', confirmPassword: '', referralCode: '', country: '' });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [message, setMessage] = useState({ type: '', text: '' });
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
 
   const validateForm = () => {
     const newErrors = {};
     if (mode === 'register') {
       if (!form.name.trim()) newErrors.name = 'Name is required';
+      if (!form.country) newErrors.country = 'Country is required';
       if (form.password !== form.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
-      if (form.password.length < 8) newErrors.password = 'Password must be at least 8 characters';
+      if (form.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
     }
     if (!form.email.includes('@')) newErrors.email = 'Valid email is required';
     if (!form.password) newErrors.password = 'Password is required';
@@ -123,34 +136,74 @@ function AuthPage({ onLogin }) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
+    
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      if (mode === 'register') setStep(2);
-      else onLogin();
-    }, 1500);
-  };
+    setMessage({ type: '', text: '' });
 
-  const handleOtpChange = (i, v) => {
-    if (v.length <= 1) {
-      const newOtp = [...otp];
-      newOtp[i] = v;
-      setOtp(newOtp);
-      if (v && i < 5) document.getElementById(`otp-${i + 1}`)?.focus();
+    if (mode === 'register') {
+      // Register new user
+      const result = await registerUser(form.email, form.password, {
+        name: form.name,
+        phone: form.phone,
+        country: form.country,
+        referralCode: form.referralCode
+      });
+
+      if (result.success) {
+        setStep(2); // Show verification message
+        setMessage({ type: 'success', text: result.message });
+      } else {
+        setMessage({ type: 'error', text: result.error });
+      }
+    } else {
+      // Login existing user
+      const result = await loginUser(form.email, form.password);
+
+      if (result.success) {
+        // Pass user data to parent
+        onLogin(result.userData);
+      } else if (result.needsVerification) {
+        setStep(2); // Show verification reminder
+        setMessage({ type: 'warning', text: result.error });
+      } else {
+        setMessage({ type: 'error', text: result.error });
+      }
     }
+    
+    setLoading(false);
   };
 
-  const handleVerify = () => {
-    if (otp.join('').length !== 6) return;
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    if (!resetEmail.includes('@')) {
+      setMessage({ type: 'error', text: 'Please enter a valid email address' });
+      return;
+    }
+
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setStep(3);
-      setTimeout(() => onLogin(), 2000);
-    }, 1500);
+    const result = await resetPassword(resetEmail);
+    
+    if (result.success) {
+      setMessage({ type: 'success', text: result.message });
+      setShowForgotPassword(false);
+      setResetEmail('');
+    } else {
+      setMessage({ type: 'error', text: result.error });
+    }
+    setLoading(false);
+  };
+
+  const handleResendVerification = async () => {
+    setLoading(true);
+    // Re-login to get current user, then resend
+    const result = await loginUser(form.email, form.password);
+    if (result.needsVerification) {
+      setMessage({ type: 'success', text: 'Verification email sent! Please check your inbox.' });
+    }
+    setLoading(false);
   };
 
   // Email Verification Step
@@ -167,7 +220,7 @@ function AuthPage({ onLogin }) {
               style={{ background: `linear-gradient(135deg, ${theme.gold} 0%, ${theme.goldDark} 100%)` }}>
               <Crown className="w-10 h-10 lg:w-14 lg:h-14 text-white" />
             </motion.div>
-            <h1 className="font-serif text-4xl lg:text-5xl text-white mb-4">SaxoBank</h1>
+            <h1 className="font-serif text-4xl lg:text-5xl text-white mb-4">SaxoVault</h1>
             <p className="text-xl lg:text-2xl mb-2" style={{ color: theme.gold }}>Capital</p>
           </div>
         </div>
@@ -178,7 +231,7 @@ function AuthPage({ onLogin }) {
               <div className="w-14 h-14 mx-auto rounded-xl flex items-center justify-center mb-3" style={{ background: `linear-gradient(135deg, ${theme.gold} 0%, ${theme.goldDark} 100%)` }}>
                 <Crown className="w-7 h-7 text-white" />
               </div>
-              <h1 className="font-serif text-xl" style={{ color: theme.navy }}>SaxoBank Capital</h1>
+              <h1 className="font-serif text-xl" style={{ color: theme.navy }}>SaxoVault Capital</h1>
             </div>
 
             <div className="text-center mb-8">
@@ -186,49 +239,98 @@ function AuthPage({ onLogin }) {
                 className="w-16 h-16 lg:w-20 lg:h-20 mx-auto rounded-full flex items-center justify-center mb-4" style={{ background: `${theme.green}15` }}>
                 <Mail className="w-8 h-8 lg:w-10 lg:h-10" style={{ color: theme.green }} />
               </motion.div>
-              <h2 className="font-serif text-2xl lg:text-3xl mb-2" style={{ color: theme.navy }}>Verify Your Email</h2>
-              <p className="text-gray-500 text-sm lg:text-base">We've sent a 6-digit code to</p>
+              <h2 className="font-serif text-2xl lg:text-3xl mb-2" style={{ color: theme.navy }}>Check Your Email!</h2>
+              <p className="text-gray-500 text-sm lg:text-base mb-2">We've sent a verification link to:</p>
               <p className="font-semibold" style={{ color: theme.navy }}>{form.email}</p>
             </div>
 
-            <div className="flex justify-center gap-2 lg:gap-3 mb-6">
-              {otp.map((digit, i) => (
-                <motion.input key={i} id={`otp-${i}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + i * 0.05 }}
-                  type="text" maxLength="1" value={digit} onChange={(e) => handleOtpChange(i, e.target.value)}
-                  className="w-11 h-14 lg:w-14 lg:h-16 text-center text-xl lg:text-2xl font-bold border-2 rounded-xl transition-all focus:outline-none"
-                  style={{ borderColor: digit ? theme.gold : '#e5e7eb', color: theme.navy }} />
-              ))}
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+              <div className="flex gap-3">
+                <Mail className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-blue-800 text-sm font-medium">Verification Required</p>
+                  <p className="text-blue-600 text-xs mt-1">
+                    Click the link in your email to verify your account. Check your spam folder if you don't see it.
+                  </p>
+                </div>
+              </div>
             </div>
 
-            <motion.button onClick={handleVerify} disabled={otp.join('').length !== 6 || loading}
+            {message.text && (
+              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+                className={`mb-4 p-3 rounded-xl text-sm flex items-center gap-2 ${
+                  message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' :
+                  message.type === 'warning' ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' :
+                  'bg-red-50 text-red-700 border border-red-200'
+                }`}>
+                {message.type === 'success' ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+                {message.text}
+              </motion.div>
+            )}
+
+            <motion.button onClick={handleResendVerification} disabled={loading}
               whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-              className="w-full py-3.5 lg:py-4 rounded-xl text-white font-semibold text-base lg:text-lg flex items-center justify-center gap-3 disabled:opacity-50"
-              style={{ background: `linear-gradient(135deg, ${theme.green} 0%, ${theme.greenDark} 100%)` }}>
-              {loading ? <RefreshCw className="w-5 h-5 animate-spin" /> : <><ShieldCheck className="w-5 h-5" /> Verify Email</>}
+              className="w-full py-3.5 lg:py-4 rounded-xl font-semibold text-base lg:text-lg flex items-center justify-center gap-3 border-2 mb-4"
+              style={{ borderColor: theme.navy, color: theme.navy }}>
+              {loading ? <RefreshCw className="w-5 h-5 animate-spin" /> : <><Mail className="w-5 h-5" /> Resend Verification Email</>}
             </motion.button>
 
-            <div className="text-center mt-6">
-              <p className="text-gray-500 text-sm mb-2">Didn't receive the code?</p>
-              <button className="font-semibold hover:underline" style={{ color: theme.navy }}>Resend Code</button>
-            </div>
+            <motion.button onClick={() => { setStep(1); setMode('login'); }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+              className="w-full py-3.5 lg:py-4 rounded-xl text-white font-semibold text-base lg:text-lg flex items-center justify-center gap-3"
+              style={{ background: `linear-gradient(135deg, ${theme.navy} 0%, ${theme.navyLight} 100%)` }}>
+              Back to Login
+            </motion.button>
+
+            <p className="text-center text-gray-500 text-xs mt-6">
+              Already verified? Go back to login and sign in.
+            </p>
           </motion.div>
         </div>
       </div>
     );
   }
 
-  // Success Step
-  if (step === 3) {
+  // Forgot Password Modal
+  if (showForgotPassword) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6" style={{ background: theme.cream }}>
-        <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center">
-          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', delay: 0.2 }}
-            className="w-20 h-20 lg:w-24 lg:h-24 mx-auto rounded-full flex items-center justify-center mb-6" style={{ background: `${theme.green}20` }}>
-            <CheckCircle className="w-12 h-12 lg:w-14 lg:h-14" style={{ color: theme.green }} />
-          </motion.div>
-          <h2 className="font-serif text-2xl lg:text-3xl mb-2" style={{ color: theme.navy }}>Email Verified!</h2>
-          <p className="text-gray-500 mb-4">Your account has been created successfully.</p>
-          <p className="text-sm text-gray-400">Redirecting to dashboard...</p>
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 lg:p-8">
+          <button onClick={() => setShowForgotPassword(false)} className="mb-4 flex items-center gap-2 text-gray-500 hover:text-gray-700">
+            <ArrowLeft className="w-4 h-4" /> Back to Login
+          </button>
+
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4" style={{ background: `${theme.gold}15` }}>
+              <Key className="w-8 h-8" style={{ color: theme.gold }} />
+            </div>
+            <h2 className="font-serif text-2xl mb-2" style={{ color: theme.navy }}>Reset Password</h2>
+            <p className="text-gray-500 text-sm">Enter your email to receive a reset link</p>
+          </div>
+
+          {message.text && (
+            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+              className={`mb-4 p-3 rounded-xl text-sm flex items-center gap-2 ${
+                message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+              }`}>
+              {message.type === 'success' ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+              {message.text}
+            </motion.div>
+          )}
+
+          <form onSubmit={handleForgotPassword}>
+            <div className="relative mb-4">
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input type="email" value={resetEmail} onChange={(e) => setResetEmail(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter your email" />
+            </div>
+
+            <motion.button type="submit" disabled={loading} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+              className="w-full py-3.5 rounded-xl text-white font-semibold flex items-center justify-center gap-3"
+              style={{ background: `linear-gradient(135deg, ${theme.navy} 0%, ${theme.navyLight} 100%)` }}>
+              {loading ? <RefreshCw className="w-5 h-5 animate-spin" /> : <><Send className="w-5 h-5" /> Send Reset Link</>}
+            </motion.button>
+          </form>
         </motion.div>
       </div>
     );
@@ -247,7 +349,7 @@ function AuthPage({ onLogin }) {
             style={{ background: `linear-gradient(135deg, ${theme.gold} 0%, ${theme.goldDark} 100%)` }}>
             <Crown className="w-14 h-14 text-white" />
           </motion.div>
-          <h1 className="font-serif text-5xl text-white mb-4">SaxoBank</h1>
+          <h1 className="font-serif text-5xl text-white mb-4">SaxoVault</h1>
           <p className="text-2xl mb-2" style={{ color: theme.gold }}>Capital</p>
           <p className="text-white/60 text-lg max-w-md mt-4">
             Access curated Real Estate, Cryptocurrency, Stocks, and Precious Metals investments.
@@ -273,7 +375,7 @@ function AuthPage({ onLogin }) {
             <div className="w-14 h-14 mx-auto rounded-xl flex items-center justify-center mb-3" style={{ background: `linear-gradient(135deg, ${theme.gold} 0%, ${theme.goldDark} 100%)` }}>
               <Crown className="w-7 h-7 text-white" />
             </div>
-            <h1 className="font-serif text-xl" style={{ color: theme.navy }}>SaxoBank Capital</h1>
+            <h1 className="font-serif text-xl" style={{ color: theme.navy }}>SaxoVault Capital</h1>
           </div>
 
           <div className="mb-6">
@@ -285,9 +387,21 @@ function AuthPage({ onLogin }) {
             </p>
           </div>
 
+          {message.text && (
+            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+              className={`mb-4 p-3 rounded-xl text-sm flex items-center gap-2 ${
+                message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' :
+                message.type === 'warning' ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' :
+                'bg-red-50 text-red-700 border border-red-200'
+              }`}>
+              {message.type === 'success' ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+              {message.text}
+            </motion.div>
+          )}
+
           <div className="flex mb-6 bg-gray-100 rounded-xl p-1.5">
             {['login', 'register'].map((m) => (
-              <button key={m} onClick={() => { setMode(m); setErrors({}); }}
+              <button key={m} onClick={() => { setMode(m); setErrors({}); setMessage({ type: '', text: '' }); }}
                 className={`flex-1 py-2.5 lg:py-3 rounded-lg font-medium text-sm lg:text-base transition-all ${mode === m ? 'bg-white shadow-md' : 'text-gray-500'}`}
                 style={mode === m ? { color: theme.navy } : {}}>
                 {m === 'login' ? 'Sign In' : 'Register'}
@@ -340,13 +454,13 @@ function AuthPage({ onLogin }) {
                     <div className="relative">
                       <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                       <select value={form.country} onChange={(e) => setForm({...form, country: e.target.value})}
-                        className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none appearance-none bg-white"
-                        required>
+                        className={`w-full pl-12 pr-4 py-3 border rounded-xl focus:outline-none appearance-none bg-white ${errors.country ? 'border-red-500' : 'border-gray-200'}`}>
                         <option value="">Select your country</option>
                         {countries.map((c) => <option key={c} value={c}>{c}</option>)}
                       </select>
                       <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
                     </div>
+                    {errors.country && <p className="text-red-500 text-xs mt-1">{errors.country}</p>}
                   </motion.div>
                 </>
               )}
@@ -395,12 +509,12 @@ function AuthPage({ onLogin }) {
 
             {mode === 'login' && (
               <div className="flex justify-end">
-                <button type="button" className="text-sm font-medium hover:underline" style={{ color: theme.navy }}>Forgot Password?</button>
+                <button type="button" onClick={() => setShowForgotPassword(true)} className="text-sm font-medium hover:underline" style={{ color: theme.navy }}>Forgot Password?</button>
               </div>
             )}
 
             <motion.button type="submit" disabled={loading} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-              className="w-full py-3.5 rounded-xl text-white font-semibold flex items-center justify-center gap-3 shadow-lg"
+              className="w-full py-3.5 rounded-xl text-white font-semibold flex items-center justify-center gap-3 shadow-lg disabled:opacity-70"
               style={{ background: `linear-gradient(135deg, ${theme.navy} 0%, ${theme.navyLight} 100%)` }}>
               {loading ? <RefreshCw className="w-5 h-5 animate-spin" /> : <>{mode === 'login' ? 'Sign In' : 'Create Account'} <ArrowRight className="w-5 h-5" /></>}
             </motion.button>
