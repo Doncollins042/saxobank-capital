@@ -697,12 +697,40 @@ function FloatingContact() {
   const [ticketForm, setTicketForm] = useState({ name: '', email: '', category: '', priority: 'medium', subject: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
   const [ticketId, setTicketId] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmitTicket = (e) => {
+  const handleSubmitTicket = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
+    
     const id = 'TKT-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+    
+    // Store ticket locally for admin dashboard
+    const tickets = JSON.parse(localStorage.getItem('saxovault_tickets') || '[]');
+    const newTicket = {
+      id: id,
+      name: ticketForm.name,
+      email: ticketForm.email,
+      category: ticketForm.category,
+      priority: ticketForm.priority,
+      subject: ticketForm.subject,
+      message: ticketForm.message,
+      status: 'open',
+      createdAt: new Date().toISOString()
+    };
+    tickets.unshift(newTicket);
+    localStorage.setItem('saxovault_tickets', JSON.stringify(tickets));
+    
+    // Add notification for admin
+    Storage.addNotification({ type: 'ticket', message: `New ticket from ${ticketForm.name}: ${ticketForm.subject}`, ticketId: id });
+    
+    // Open email client to send to support (as backup)
+    const mailBody = `Ticket ID: ${id}%0D%0AFrom: ${ticketForm.name} (${ticketForm.email})%0D%0ACategory: ${ticketForm.category}%0D%0APriority: ${ticketForm.priority}%0D%0A%0D%0A${ticketForm.message}`;
+    
     setTicketId(id);
     setSubmitted(true);
+    
+    setSubmitting(false);
     setTimeout(() => {
       setSubmitted(false);
       setTicketForm({ name: '', email: '', category: '', priority: 'medium', subject: '', message: '' });
@@ -758,9 +786,17 @@ function FloatingContact() {
                     <ChevronRight className="w-5 h-5 text-green-500" />
                   </motion.a>
 
-                  {/* Live Support */}
+                  {/* Live Support - Opens Zoho SalesIQ */}
                   <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                    onClick={() => alert('Connecting to live agent...')}
+                    onClick={() => {
+                      // Trigger Zoho SalesIQ chat
+                      if (window.$zoho && window.$zoho.salesiq) {
+                        window.$zoho.salesiq.floatwindow.visible('show');
+                      } else {
+                        // Fallback to WhatsApp if Zoho not loaded
+                        window.open('https://wa.me/14642395280?text=Hello! I need live support assistance.', '_blank');
+                      }
+                    }}
                     className="w-full flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl hover:shadow-md transition-all border border-blue-200">
                     <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-blue-500 shadow-lg">
                       <Headphones className="w-6 h-6 text-white" />
@@ -875,10 +911,11 @@ function FloatingContact() {
                             placeholder="Please describe your issue in detail..." />
                         </div>
 
-                        <motion.button type="submit" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                          className="w-full py-3 rounded-lg text-white font-medium flex items-center justify-center gap-2"
+                        <motion.button type="submit" disabled={submitting} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                          className="w-full py-3 rounded-lg text-white font-medium flex items-center justify-center gap-2 disabled:opacity-70"
                           style={{ background: `linear-gradient(135deg, ${theme.green} 0%, ${theme.greenDark} 100%)` }}>
-                          <Send className="w-4 h-4" /> Submit Ticket
+                          {submitting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                          {submitting ? 'Submitting...' : 'Submit Ticket'}
                         </motion.button>
                       </form>
                     </>
@@ -2175,7 +2212,7 @@ Withdrawal Fee: Network fees only for cryptocurrency`
         { title: 'Deposits', content: 'Q: Which cryptos? A: BTC, ETH, USDT, USDC, BNB, LTC.\nQ: Minimum? A: No account minimum. Each investment has its own.\nQ: How long? A: 10-30 minutes after confirmation.' },
         { title: 'Investments', content: 'Q: Minimum investment? A: $2,500 - $50,000 depending on opportunity.\nQ: Early withdrawal? A: May incur penalties per terms.\nQ: When payouts? A: Monthly, quarterly, or at maturity.' },
         { title: 'Withdrawals', content: 'Q: Processing time? A: 24-48 hours standard.\nQ: Limits? A: $100K daily ($500K for Elite).\nQ: Delayed? A: Contact support if >72 hours.' },
-        { title: 'Contact Support', content: 'WhatsApp: 24/7 available\nLive Chat: 9AM-9PM EST\nEmail: support@saxobankcapital.com\nResponse: Under 4 hours' }
+        { title: 'Contact Support', content: 'WhatsApp: +1 (464) 239-5280 (24/7)\nLive Chat: Available on website\nEmail: support@saxovault.com\nResponse: Under 24 hours' }
       ]
     }
   };
@@ -3029,10 +3066,15 @@ function AdminDashboard({ onLogout }) {
     alert('Settings saved successfully!');
   };
 
+  // Get tickets
+  const tickets = JSON.parse(localStorage.getItem('saxovault_tickets') || '[]');
+  const openTickets = tickets.filter(t => t.status === 'open').length;
+
   const tabs = [
     { id: 'overview', name: 'Overview', icon: PieChart },
     { id: 'users', name: 'Users', icon: Users },
     { id: 'transactions', name: 'Transactions', icon: CreditCard },
+    { id: 'tickets', name: 'Tickets', icon: Ticket, badge: openTickets },
     { id: 'notifications', name: 'Activity Log', icon: Bell },
     { id: 'settings', name: 'Settings', icon: Settings }
   ];
@@ -3070,6 +3112,11 @@ function AdminDashboard({ onLogout }) {
                 {tab.id === 'transactions' && (pendingDeposits + pendingWithdrawals) > 0 && (
                   <span className="ml-auto px-2 py-0.5 rounded-full text-xs bg-red-500 text-white">
                     {pendingDeposits + pendingWithdrawals}
+                  </span>
+                )}
+                {tab.id === 'tickets' && openTickets > 0 && (
+                  <span className="ml-auto px-2 py-0.5 rounded-full text-xs bg-purple-500 text-white">
+                    {openTickets}
                   </span>
                 )}
               </motion.button>
@@ -3321,6 +3368,91 @@ function AdminDashboard({ onLogout }) {
                   ))}
                   {notifications.length === 0 && (
                     <p className="text-center text-gray-500 py-12">No activity yet</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Tickets Tab */}
+          {activeTab === 'tickets' && (
+            <div>
+              <h2 className="font-serif text-xl lg:text-2xl mb-6" style={{ color: theme.navy }}>Support Tickets</h2>
+              
+              <div className="bg-white rounded-xl lg:rounded-2xl shadow-lg overflow-hidden">
+                <div className="p-4 border-b border-gray-100">
+                  <div className="flex flex-wrap gap-2">
+                    <span className="px-3 py-1 rounded-full text-xs bg-purple-100 text-purple-700">
+                      {openTickets} open tickets
+                    </span>
+                    <span className="px-3 py-1 rounded-full text-xs bg-green-100 text-green-700">
+                      {tickets.filter(t => t.status === 'closed').length} closed
+                    </span>
+                  </div>
+                </div>
+                <div className="divide-y divide-gray-100">
+                  {tickets.map((ticket, i) => (
+                    <div key={i} className="p-4 hover:bg-gray-50 transition-colors">
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-mono text-xs px-2 py-0.5 rounded bg-gray-100" style={{ color: theme.navy }}>{ticket.id}</span>
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${
+                              ticket.priority === 'urgent' ? 'bg-red-100 text-red-700' :
+                              ticket.priority === 'high' ? 'bg-orange-100 text-orange-700' :
+                              ticket.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                              'bg-gray-100 text-gray-700'
+                            }`}>{ticket.priority}</span>
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${
+                              ticket.status === 'open' ? 'bg-purple-100 text-purple-700' :
+                              ticket.status === 'in-progress' ? 'bg-blue-100 text-blue-700' :
+                              'bg-green-100 text-green-700'
+                            }`}>{ticket.status}</span>
+                          </div>
+                          <p className="font-medium text-sm" style={{ color: theme.navy }}>{ticket.subject}</p>
+                          <p className="text-xs text-gray-500 mt-1">From: {ticket.name} ({ticket.email})</p>
+                          <p className="text-xs text-gray-400">{new Date(ticket.createdAt).toLocaleString()}</p>
+                          <p className="text-sm text-gray-600 mt-2 line-clamp-2">{ticket.message}</p>
+                        </div>
+                        <div className="flex gap-2 flex-shrink-0">
+                          {ticket.status === 'open' && (
+                            <>
+                              <motion.button 
+                                onClick={() => {
+                                  const updatedTickets = tickets.map(t => t.id === ticket.id ? {...t, status: 'in-progress'} : t);
+                                  localStorage.setItem('saxovault_tickets', JSON.stringify(updatedTickets));
+                                  window.location.reload();
+                                }}
+                                whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                                className="px-3 py-1.5 rounded-lg bg-blue-100 text-blue-700 text-xs font-medium">
+                                In Progress
+                              </motion.button>
+                              <motion.a 
+                                href={`mailto:${ticket.email}?subject=Re: ${ticket.subject} [${ticket.id}]&body=Hi ${ticket.name},%0D%0A%0D%0AThank you for contacting SaxoVault Capital support.%0D%0A%0D%0A[Your response here]%0D%0A%0D%0ABest regards,%0D%0ASaxoVault Capital Support Team`}
+                                whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                                className="px-3 py-1.5 rounded-lg bg-green-100 text-green-700 text-xs font-medium flex items-center gap-1">
+                                <Mail className="w-3 h-3" /> Reply
+                              </motion.a>
+                            </>
+                          )}
+                          {ticket.status !== 'closed' && (
+                            <motion.button 
+                              onClick={() => {
+                                const updatedTickets = tickets.map(t => t.id === ticket.id ? {...t, status: 'closed'} : t);
+                                localStorage.setItem('saxovault_tickets', JSON.stringify(updatedTickets));
+                                window.location.reload();
+                              }}
+                              whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                              className="px-3 py-1.5 rounded-lg bg-gray-100 text-gray-700 text-xs font-medium">
+                              Close
+                            </motion.button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {tickets.length === 0 && (
+                    <p className="text-center text-gray-500 py-12">No tickets yet</p>
                   )}
                 </div>
               </div>
