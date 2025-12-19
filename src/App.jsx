@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Crown, TrendingUp, Shield, Users, ArrowRight, Eye, EyeOff, Mail, Lock, User, Phone,
@@ -8,21 +8,14 @@ import {
   Star, Gift, History, Calculator, Globe, Briefcase, ArrowLeft, ShieldCheck,
   MapPin, DollarSign, Target, Award, RefreshCw, Camera, Upload, Key, Smartphone,
   Ticket, Share2, Link2, UserPlus, Percent, BadgeDollarSign, ChevronUp, AlertCircle,
-  Plus, Edit, Trash2, Image, Calendar
+  Plus, Edit, Trash2, Image, Calendar, Moon, Sun, ExternalLink, Timer, Activity,
+  Languages, HelpCircle, Zap, Filter, DownloadCloud, QrCode
 } from 'lucide-react';
-import { 
-  registerUser, 
-  loginUser, 
-  logoutUser, 
-  resetPassword,
-  resendVerificationEmail,
-  onAuthChange,
-  auth,
-  getCurrentUserData
-} from './firebase';
 
-// ============ THEME COLORS ============
-const theme = {
+// Theme Context for Dark Mode
+const ThemeContext = createContext();
+
+const lightTheme = {
   navy: '#0a1628',
   navyLight: '#1a2d4a',
   navyMedium: '#0f2039',
@@ -34,8 +27,169 @@ const theme = {
   cream: '#faf8f5',
   charcoal: '#374151',
   white: '#ffffff',
-  red: '#ef4444'
+  red: '#ef4444',
+  bg: '#faf8f5',
+  cardBg: '#ffffff',
+  textPrimary: '#0a1628',
+  textSecondary: '#6b7280',
+  border: '#e5e7eb'
 };
+
+const darkTheme = {
+  navy: '#f8fafc',
+  navyLight: '#e2e8f0',
+  navyMedium: '#cbd5e1',
+  gold: '#fbbf24',
+  goldLight: '#fcd34d',
+  goldDark: '#f59e0b',
+  green: '#34d399',
+  greenDark: '#10b981',
+  cream: '#0f172a',
+  charcoal: '#94a3b8',
+  white: '#1e293b',
+  red: '#f87171',
+  bg: '#0f172a',
+  cardBg: '#1e293b',
+  textPrimary: '#f8fafc',
+  textSecondary: '#94a3b8',
+  border: '#334155'
+};
+
+// Global theme (will be set dynamically)
+let theme = lightTheme;
+
+// ============ FIREBASE IMPORTS ============
+import { 
+  registerUser, 
+  loginUser, 
+  logoutUser, 
+  resetPassword,
+  resendVerificationEmail,
+  onAuthChange,
+  auth,
+  getCurrentUserData
+} from './firebase';
+
+// Multi-language support
+const translations = {
+  en: { welcome: 'Welcome', dashboard: 'Dashboard', investments: 'Investments', deposit: 'Deposit', withdraw: 'Withdraw', balance: 'Balance', pending: 'Pending', approved: 'Approved' },
+  es: { welcome: 'Bienvenido', dashboard: 'Panel', investments: 'Inversiones', deposit: 'Depositar', withdraw: 'Retirar', balance: 'Saldo', pending: 'Pendiente', approved: 'Aprobado' },
+  fr: { welcome: 'Bienvenue', dashboard: 'Tableau de bord', investments: 'Investissements', deposit: 'Dépôt', withdraw: 'Retirer', balance: 'Solde', pending: 'En attente', approved: 'Approuvé' }
+};
+
+// Loading Skeleton Component
+const Skeleton = ({ className }) => (
+  <div className={`animate-pulse bg-gray-200 rounded ${className}`} />
+);
+
+// SSL Badge Component
+const SSLBadge = () => (
+  <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 border border-green-200 rounded-full">
+    <ShieldCheck className="w-4 h-4 text-green-600" />
+    <span className="text-xs font-medium text-green-700">SSL Secured</span>
+  </div>
+);
+
+// Trust Badges Component
+const TrustBadges = () => (
+  <div className="flex flex-wrap items-center justify-center gap-3 py-4">
+    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 rounded-lg">
+      <ShieldCheck className="w-4 h-4 text-green-600" />
+      <span className="text-xs text-gray-600">256-bit SSL</span>
+    </div>
+    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 rounded-lg">
+      <Lock className="w-4 h-4 text-blue-600" />
+      <span className="text-xs text-gray-600">Bank-Level Security</span>
+    </div>
+    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 rounded-lg">
+      <Award className="w-4 h-4 text-yellow-600" />
+      <span className="text-xs text-gray-600">Licensed</span>
+    </div>
+  </div>
+);
+
+// ============ ONBOARDING TOUR ============
+function OnboardingTour({ onComplete }) {
+  const [step, setStep] = useState(0);
+
+  const steps = [
+    {
+      title: 'Welcome to SaxoVault! 🎉',
+      description: 'Your journey to smart investing starts here. Let us show you around.',
+      icon: '👋'
+    },
+    {
+      title: 'Explore Investments',
+      description: 'Browse our curated investment opportunities across real estate, crypto, stocks, and more.',
+      icon: '📊'
+    },
+    {
+      title: 'Easy Deposits',
+      description: 'Fund your account instantly using Bitcoin, Ethereum, or USDT cryptocurrency.',
+      icon: '💰'
+    },
+    {
+      title: 'Track Your Portfolio',
+      description: 'Monitor your investments, returns, and transaction history from your dashboard.',
+      icon: '📈'
+    },
+    {
+      title: 'Secure & Trusted',
+      description: 'Your investments are protected with bank-level security and 24/7 support.',
+      icon: '🔒'
+    }
+  ];
+
+  const handleNext = () => {
+    if (step < steps.length - 1) {
+      setStep(step + 1);
+    } else {
+      localStorage.setItem('saxovault_onboarding_complete', 'true');
+      onComplete();
+    }
+  };
+
+  const handleSkip = () => {
+    localStorage.setItem('saxovault_onboarding_complete', 'true');
+    onComplete();
+  };
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+        className="bg-white rounded-2xl p-6 max-w-md w-full text-center shadow-2xl">
+        
+        {/* Progress */}
+        <div className="flex gap-1 mb-6 justify-center">
+          {steps.map((_, i) => (
+            <div key={i} className={`h-1 rounded-full transition-all ${i <= step ? 'w-8' : 'w-4'}`}
+              style={{ background: i <= step ? theme.gold : '#e5e7eb' }} />
+          ))}
+        </div>
+
+        {/* Icon */}
+        <div className="text-5xl mb-4">{steps[step].icon}</div>
+
+        {/* Content */}
+        <h2 className="font-serif text-xl mb-2" style={{ color: theme.navy }}>{steps[step].title}</h2>
+        <p className="text-gray-500 text-sm mb-6">{steps[step].description}</p>
+
+        {/* Buttons */}
+        <div className="flex gap-3">
+          <button onClick={handleSkip} className="flex-1 py-3 rounded-xl text-gray-500 text-sm hover:bg-gray-100">
+            Skip
+          </button>
+          <motion.button onClick={handleNext} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+            className="flex-1 py-3 rounded-xl text-white text-sm font-medium"
+            style={{ background: `linear-gradient(135deg, ${theme.navy} 0%, ${theme.navyLight} 100%)` }}>
+            {step === steps.length - 1 ? "Let's Go!" : 'Next'}
+          </motion.button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
 
 // ============ RELIABLE IMAGE URLS ============
 const images = {
@@ -1372,6 +1526,7 @@ function HomePage({ onNavigate, onSelectInvestment }) {
 function InvestmentsPage({ onSelectInvestment }) {
   const [category, setCategory] = useState('all');
   const [search, setSearch] = useState('');
+  const [viewMode, setViewMode] = useState('grid'); // grid or list
 
   // Get investments from localStorage (admin controlled) or fallback to defaults
   const adminInvestments = JSON.parse(localStorage.getItem('saxovault_investments') || 'null') || investments;
@@ -1384,93 +1539,109 @@ function InvestmentsPage({ onSelectInvestment }) {
   return (
     <div className="min-h-screen pt-20 lg:pt-24 pb-24 lg:pb-12" style={{ background: theme.cream }}>
       <div className="max-w-7xl mx-auto px-4 lg:px-6">
-        <div className="mb-8 lg:mb-12">
-          <h1 className="font-serif text-2xl lg:text-4xl mb-1 lg:mb-2" style={{ color: theme.navy }}>Investment Opportunities</h1>
-          <p className="text-gray-600 text-sm lg:text-base">Explore our curated selection across multiple asset classes.</p>
+        {/* Header */}
+        <div className="mb-6 lg:mb-8">
+          <h1 className="font-serif text-2xl lg:text-3xl mb-1" style={{ color: theme.navy }}>Investment Opportunities</h1>
+          <p className="text-gray-500 text-sm">Explore our curated selection across multiple asset classes.</p>
         </div>
 
-        <div className="flex flex-col gap-4 mb-6 lg:mb-8">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none"
-              placeholder="Search investments..." />
-          </div>
-
-          <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 lg:mx-0 lg:px-0">
-            {categories.map((cat) => (
-              <button key={cat.id} onClick={() => setCategory(cat.id)}
-                className={`flex items-center gap-1.5 px-3 lg:px-4 py-2 rounded-xl whitespace-nowrap font-medium text-sm transition-all ${
-                  category === cat.id ? 'text-white shadow-lg' : 'bg-white text-gray-600 border border-gray-200'
-                }`}
-                style={category === cat.id ? { background: `linear-gradient(135deg, ${theme.navy} 0%, ${theme.navyLight} 100%)` } : {}}>
-                <cat.icon className="w-4 h-4" />
-                <span className="hidden sm:inline">{cat.name}</span>
-                <span className={`px-1.5 py-0.5 rounded-full text-xs ${category === cat.id ? 'bg-white/20' : 'bg-gray-100'}`}>{cat.count}</span>
-              </button>
-            ))}
+        {/* Filters */}
+        <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Search investments..." />
+            </div>
+            <div className="flex gap-2 overflow-x-auto">
+              {categories.map((cat) => (
+                <button key={cat.id} onClick={() => setCategory(cat.id)}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg whitespace-nowrap text-sm transition-all ${
+                    category === cat.id ? 'text-white shadow' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                  }`}
+                  style={category === cat.id ? { background: theme.navy } : {}}>
+                  <cat.icon className="w-4 h-4" />
+                  {cat.name}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
         <p className="text-sm text-gray-500 mb-4">{filtered.length} investments found</p>
 
+        {/* Investment Grid - Cleaner Cards */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
           {filtered.map((inv, i) => (
-            <motion.div key={inv.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+            <motion.div key={inv.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
               onClick={() => onSelectInvestment(inv)}
-              className="bg-white rounded-xl lg:rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all cursor-pointer group">
-              <div className="relative h-40 lg:h-52">
-                <img src={inv.img} alt={inv.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                <div className="absolute top-3 right-3">
-                  <span className="px-2.5 py-1 rounded-full text-xs font-medium text-white"
+              className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all cursor-pointer border border-gray-100">
+              {/* Image */}
+              <div className="relative h-36 lg:h-40">
+                <img src={inv.img || inv.customImg} alt={inv.name} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                <div className="absolute top-2 right-2">
+                  <span className="px-2 py-1 rounded text-xs font-medium text-white"
                     style={{ background: inv.status === 'Active' ? theme.green : inv.status === 'Open' ? theme.navy : theme.gold }}>
                     {inv.status}
                   </span>
                 </div>
-                <div className="absolute bottom-3 left-3 right-3">
-                  <p className="text-white/70 text-xs">{inv.category}</p>
-                  <h3 className="font-serif text-lg lg:text-2xl text-white">{inv.name}</h3>
+                <div className="absolute bottom-2 left-3 right-3">
+                  <p className="text-white/80 text-xs">{inv.category}</p>
+                  <h3 className="font-semibold text-white text-lg leading-tight">{inv.name}</h3>
                 </div>
               </div>
 
-              <div className="p-4 lg:p-6">
-                <div className="flex items-center justify-between mb-3 lg:mb-4">
-                  <div>
-                    <p className="text-xl lg:text-2xl font-bold" style={{ color: theme.green }}>{inv.returns}</p>
-                    <p className="text-xs text-gray-500">Target Return</p>
+              {/* Content - Cleaner Layout */}
+              <div className="p-4">
+                {/* Key Stats Row */}
+                <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-100">
+                  <div className="text-center flex-1">
+                    <p className="text-lg font-bold" style={{ color: theme.green }}>{inv.returns}</p>
+                    <p className="text-xs text-gray-400">Returns</p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-lg lg:text-xl font-bold" style={{ color: theme.navy }}>${inv.min.toLocaleString()}</p>
-                    <p className="text-xs text-gray-500">Min Investment</p>
+                  <div className="w-px h-8 bg-gray-200" />
+                  <div className="text-center flex-1">
+                    <p className="text-lg font-bold" style={{ color: theme.navy }}>${(inv.min / 1000)}K</p>
+                    <p className="text-xs text-gray-400">Min</p>
+                  </div>
+                  <div className="w-px h-8 bg-gray-200" />
+                  <div className="text-center flex-1">
+                    <p className="text-lg font-bold" style={{ color: theme.gold }}>{inv.term?.split(' ')[0] || '12'}</p>
+                    <p className="text-xs text-gray-400">Months</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 lg:gap-4 text-xs lg:text-sm text-gray-500 mb-3 lg:mb-4">
-                  <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 lg:w-4 lg:h-4" />{inv.term}</span>
-                  <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5 lg:w-4 lg:h-4" />{inv.investors}</span>
-                </div>
-
-                {inv.progress && (
-                  <div>
-                    <div className="flex justify-between text-xs mb-1.5">
+                {/* Progress Bar */}
+                {inv.progress !== undefined && (
+                  <div className="mb-3">
+                    <div className="flex justify-between text-xs mb-1">
                       <span className="text-gray-500">{inv.progress}% funded</span>
+                      <span className="text-gray-400">${((inv.progress / 100) * (inv.goal || 1000000) / 1000).toFixed(0)}K raised</span>
                     </div>
-                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div className="h-full rounded-full" style={{ width: `${inv.progress}%`, background: `linear-gradient(90deg, ${theme.green} 0%, ${theme.gold} 100%)` }} />
+                    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="h-full rounded-full" style={{ width: `${inv.progress}%`, background: theme.green }} />
                     </div>
                   </div>
                 )}
 
-                <div className="mt-3 lg:mt-4 pt-3 lg:pt-4 border-t border-gray-100 flex flex-wrap gap-1.5 lg:gap-2">
-                  {inv.features.slice(0, 2).map((f, j) => (
-                    <span key={j} className="px-2 py-1 bg-gray-100 rounded text-xs text-gray-600">{f}</span>
-                  ))}
-                </div>
+                {/* Invest Button */}
+                <button className="w-full py-2.5 rounded-lg text-sm font-medium text-white transition-all hover:opacity-90"
+                  style={{ background: `linear-gradient(135deg, ${theme.navy} 0%, ${theme.navyLight} 100%)` }}>
+                  View Details
+                </button>
               </div>
             </motion.div>
           ))}
         </div>
+
+        {filtered.length === 0 && (
+          <div className="text-center py-16">
+            <Search className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500">No investments found matching your criteria.</p>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1482,135 +1653,259 @@ function InvestmentModal({ investment, onClose, onInvest }) {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end lg:items-center justify-center" onClick={onClose}>
-      <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'tween' }}
-        className="bg-white rounded-t-3xl lg:rounded-3xl w-full lg:max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        
-        <div className="relative h-48 lg:h-72">
-          <img src={investment.img} alt={investment.name} className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-          <button onClick={onClose} className="absolute top-4 right-4 p-2.5 lg:p-3 bg-white/20 backdrop-blur rounded-full hover:bg-white/30">
-            <X className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
+      className="fixed inset-0 bg-white z-50 overflow-y-auto">
+      
+      {/* Header with back button */}
+      <div className="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-100 z-10">
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+          <button onClick={onClose} className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
+            <ArrowLeft className="w-5 h-5" /> Back
           </button>
-          <div className="absolute bottom-4 lg:bottom-6 left-4 lg:left-6 right-4 lg:right-6">
-            <div className="flex gap-2 mb-2 lg:mb-3">
-              <span className="px-2.5 py-1 rounded-full text-xs font-medium text-white bg-white/20 backdrop-blur">{investment.category}</span>
-              <span className="px-2.5 py-1 rounded-full text-xs font-medium text-white" style={{ background: investment.status === 'Active' ? theme.green : theme.gold }}>{investment.status}</span>
-            </div>
-            <h2 className="font-serif text-2xl lg:text-4xl text-white">{investment.name}</h2>
+          <span className="px-3 py-1 rounded-full text-xs font-medium text-white"
+            style={{ background: investment.status === 'Active' ? theme.green : theme.gold }}>
+            {investment.status}
+          </span>
+        </div>
+      </div>
+
+      <div className="max-w-4xl mx-auto px-4 py-6">
+        {/* Hero Section */}
+        <div className="relative h-48 lg:h-64 rounded-2xl overflow-hidden mb-6">
+          <img src={investment.img || investment.customImg} alt={investment.name} className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+          <div className="absolute bottom-4 left-4">
+            <span className="px-2 py-1 rounded bg-white/20 backdrop-blur text-white text-xs mb-2 inline-block">
+              {investment.category}
+            </span>
+            <h1 className="font-serif text-2xl lg:text-3xl text-white">{investment.name}</h1>
           </div>
         </div>
 
-        <div className="p-4 lg:p-8 overflow-y-auto max-h-[50vh]">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-6 lg:mb-8">
-            {[
-              { label: 'Target Return', value: investment.returns, color: theme.green },
-              { label: 'Min Investment', value: `$${investment.min.toLocaleString()}`, color: theme.navy },
-              { label: 'Duration', value: investment.term, color: theme.gold },
-              { label: 'Investors', value: investment.investors, color: theme.charcoal }
-            ].map((stat, i) => (
-              <div key={i} className="text-center p-3 lg:p-4 rounded-xl bg-gray-50">
-                <p className="text-lg lg:text-2xl font-bold" style={{ color: stat.color }}>{stat.value}</p>
-                <p className="text-xs text-gray-500">{stat.label}</p>
-              </div>
-            ))}
+        {/* Key Stats - Horizontal Row */}
+        <div className="grid grid-cols-4 gap-3 mb-6">
+          <div className="bg-gray-50 rounded-xl p-3 text-center">
+            <p className="text-xl lg:text-2xl font-bold" style={{ color: theme.green }}>{investment.returns}</p>
+            <p className="text-xs text-gray-500">Returns</p>
           </div>
-
-          <div className="mb-6 lg:mb-8">
-            <h3 className="font-serif text-lg lg:text-xl mb-2 lg:mb-3" style={{ color: theme.navy }}>About This Investment</h3>
-            <p className="text-gray-600 text-sm lg:text-base leading-relaxed">{investment.desc}</p>
+          <div className="bg-gray-50 rounded-xl p-3 text-center">
+            <p className="text-xl lg:text-2xl font-bold" style={{ color: theme.navy }}>${(investment.min / 1000)}K</p>
+            <p className="text-xs text-gray-500">Min</p>
           </div>
+          <div className="bg-gray-50 rounded-xl p-3 text-center">
+            <p className="text-xl lg:text-2xl font-bold" style={{ color: theme.gold }}>{investment.term?.split(' ')[0] || '12'}</p>
+            <p className="text-xs text-gray-500">Months</p>
+          </div>
+          <div className="bg-gray-50 rounded-xl p-3 text-center">
+            <p className="text-xl lg:text-2xl font-bold text-gray-700">{investment.investors || '50+'}</p>
+            <p className="text-xs text-gray-500">Investors</p>
+          </div>
+        </div>
 
-          <div className="mb-6 lg:mb-8">
-            <h3 className="font-serif text-lg lg:text-xl mb-2 lg:mb-3" style={{ color: theme.navy }}>Key Features</h3>
-            <div className="grid grid-cols-2 gap-2 lg:gap-3">
+        {/* Progress Bar (if funding) */}
+        {investment.progress !== undefined && (
+          <div className="bg-gray-50 rounded-xl p-4 mb-6">
+            <div className="flex justify-between text-sm mb-2">
+              <span className="font-medium" style={{ color: theme.navy }}>Funding Progress</span>
+              <span className="font-bold">{investment.progress}%</span>
+            </div>
+            <div className="h-3 bg-gray-200 rounded-full overflow-hidden mb-2">
+              <div className="h-full rounded-full transition-all" 
+                style={{ width: `${investment.progress}%`, background: `linear-gradient(90deg, ${theme.green}, ${theme.gold})` }} />
+            </div>
+            <div className="flex justify-between text-xs text-gray-500">
+              <span>${((investment.progress / 100) * (investment.goal || 1000000)).toLocaleString()} raised</span>
+              <span>Goal: ${(investment.goal || 1000000).toLocaleString()}</span>
+            </div>
+          </div>
+        )}
+
+        {/* About Section */}
+        <div className="mb-6">
+          <h2 className="font-semibold text-lg mb-2" style={{ color: theme.navy }}>About This Investment</h2>
+          <p className="text-gray-600 text-sm leading-relaxed">
+            {investment.desc || 'A premium investment opportunity with strong projected returns and professional management. This carefully vetted opportunity offers investors exposure to a high-growth sector with risk-managed strategies.'}
+          </p>
+        </div>
+
+        {/* Features */}
+        {investment.features && investment.features.length > 0 && (
+          <div className="mb-6">
+            <h2 className="font-semibold text-lg mb-3" style={{ color: theme.navy }}>Key Features</h2>
+            <div className="grid grid-cols-2 gap-2">
               {investment.features.map((f, i) => (
-                <div key={i} className="flex items-center gap-2 lg:gap-3 p-2.5 lg:p-3 bg-gray-50 rounded-xl">
-                  <div className="w-6 h-6 lg:w-8 lg:h-8 rounded-full flex items-center justify-center" style={{ background: `${theme.green}20` }}>
-                    <Check className="w-3 h-3 lg:w-4 lg:h-4" style={{ color: theme.green }} />
-                  </div>
-                  <span className="text-gray-700 text-xs lg:text-sm">{f}</span>
+                <div key={i} className="flex items-center gap-2 p-2.5 bg-gray-50 rounded-lg">
+                  <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                  <span className="text-sm text-gray-700">{f}</span>
                 </div>
               ))}
             </div>
           </div>
+        )}
 
-          {investment.progress && (
-            <div className="mb-6 lg:mb-8 p-4 lg:p-6 rounded-2xl bg-gray-50">
-              <div className="flex justify-between mb-2 lg:mb-3">
-                <span className="font-medium text-sm" style={{ color: theme.navy }}>Funding Progress</span>
-                <span className="font-bold">{investment.progress}%</span>
-              </div>
-              <div className="h-3 lg:h-4 bg-gray-200 rounded-full overflow-hidden mb-2 lg:mb-3">
-                <div className="h-full rounded-full" style={{ width: `${investment.progress}%`, background: `linear-gradient(90deg, ${theme.green} 0%, ${theme.gold} 100%)` }} />
-              </div>
-              <div className="flex justify-between text-xs lg:text-sm text-gray-500">
-                <span>${((investment.progress / 100) * investment.goal).toLocaleString()} raised</span>
-                <span>Goal: ${investment.goal.toLocaleString()}</span>
-              </div>
-            </div>
-          )}
-
-          <motion.button onClick={onInvest} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-            className="w-full py-3.5 lg:py-4 rounded-xl text-white font-semibold text-base lg:text-lg shadow-xl"
-            style={{ background: `linear-gradient(135deg, ${theme.navy} 0%, ${theme.navyLight} 100%)` }}>
-            Invest Now
-          </motion.button>
+        {/* Trust Badges */}
+        <div className="mb-6">
+          <TrustBadges />
         </div>
-      </motion.div>
+
+        {/* CTA Button - Fixed at bottom on mobile */}
+        <div className="sticky bottom-0 bg-white pt-4 pb-6 -mx-4 px-4 border-t border-gray-100 lg:relative lg:border-0 lg:pt-0 lg:pb-0 lg:mx-0 lg:px-0">
+          <motion.button onClick={onInvest} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+            className="w-full py-4 rounded-xl text-white font-semibold text-lg shadow-xl"
+            style={{ background: `linear-gradient(135deg, ${theme.navy} 0%, ${theme.navyLight} 100%)` }}>
+            Invest Now - Min ${investment.min?.toLocaleString()}
+          </motion.button>
+          <p className="text-center text-xs text-gray-400 mt-2">Secure • Instant Confirmation • 24/7 Support</p>
+        </div>
+      </div>
     </motion.div>
   );
 }
 
-// ============ INVEST FLOW MODAL ============
+// ============ INVEST FLOW MODAL WITH CRYPTO PAYMENT ============
 function InvestFlowModal({ investment, onClose, balance }) {
   const [step, setStep] = useState(1);
   const [amount, setAmount] = useState(investment.min);
-  const [method, setMethod] = useState('balance');
+  const [selectedCrypto, setSelectedCrypto] = useState('BTC');
+  const [countdown, setCountdown] = useState(1800); // 30 minutes
+  const [copied, setCopied] = useState(false);
+
+  const settings = JSON.parse(localStorage.getItem('saxovault_settings') || '{}');
+  const walletAddresses = settings.wallets || {
+    BTC: 'bc1qzmgg6hw0fttfpczh2whp8f44k497d6pucghk58',
+    ETH: '0x83057882eC7B7EE0cBe63C2fE2b8957e7ab69655',
+    USDT: 'TLGH9FucAuPNUoQw2XUFEDtCg4FFdJ2jKG'
+  };
+
+  const cryptoOptions = [
+    { id: 'BTC', name: 'Bitcoin', icon: '₿', color: '#f7931a' },
+    { id: 'ETH', name: 'Ethereum', icon: 'Ξ', color: '#627eea' },
+    { id: 'USDT', name: 'USDT (TRC-20)', icon: '₮', color: '#26a17b' }
+  ];
 
   const expectedReturn = amount * (parseFloat(investment.returns) / 100 || 0.12);
 
-  const handleNext = () => {
-    if (step < 3) setStep(step + 1);
-    else onClose();
+  // Countdown timer
+  useEffect(() => {
+    if (step === 2 && countdown > 0) {
+      const timer = setInterval(() => setCountdown(c => c - 1), 1000);
+      return () => clearInterval(timer);
+    }
+  }, [step, countdown]);
+
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  const handleCopy = (text) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleOpenWallet = () => {
+    const walletUrl = selectedCrypto === 'BTC' 
+      ? `bitcoin:${walletAddresses.BTC}?amount=${(amount / 40000).toFixed(8)}`
+      : selectedCrypto === 'ETH'
+        ? `ethereum:${walletAddresses.ETH}?value=${(amount / 2000).toFixed(8)}`
+        : null;
+    if (walletUrl) window.location.href = walletUrl;
+  };
+
+  const handleConfirmPayment = () => {
+    // Create pending investment
+    const pendingInvestment = {
+      id: Date.now(),
+      investmentId: investment.id,
+      investmentName: investment.name,
+      amount,
+      crypto: selectedCrypto,
+      walletAddress: walletAddresses[selectedCrypto],
+      status: 'pending',
+      expectedReturn,
+      term: investment.term,
+      createdAt: new Date().toISOString(),
+      userEmail: JSON.parse(localStorage.getItem('saxovault_current_user') || '{}').email
+    };
+
+    // Save to pending investments
+    const pending = JSON.parse(localStorage.getItem('saxovault_pending_investments') || '[]');
+    pending.push(pendingInvestment);
+    localStorage.setItem('saxovault_pending_investments', JSON.stringify(pending));
+
+    // Notify admin
+    Storage.addNotification({
+      type: 'investment_request',
+      message: `New investment request: $${amount.toLocaleString()} in ${investment.name}`,
+      investmentId: pendingInvestment.id,
+      urgent: true
+    });
+
+    setStep(3);
   };
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end lg:items-center justify-center p-0 lg:p-4" onClick={onClose}>
       <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'tween' }}
-        className="bg-white rounded-t-3xl lg:rounded-3xl w-full lg:max-w-lg shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        className="bg-white rounded-t-3xl lg:rounded-3xl w-full lg:max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         
         <div className="p-5 lg:p-8">
-          <div className="flex items-center justify-between mb-6 lg:mb-8">
-            <h2 className="font-serif text-xl lg:text-2xl" style={{ color: theme.navy }}>
-              {step === 3 ? '🎉 Confirmed!' : `Invest in ${investment.name}`}
-            </h2>
-            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full"><X className="w-5 h-5 lg:w-6 lg:h-6" /></button>
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="font-serif text-xl lg:text-2xl" style={{ color: theme.navy }}>
+                {step === 1 ? 'Investment Amount' : step === 2 ? 'Make Payment' : '⏳ Pending Approval'}
+              </h2>
+              <p className="text-sm text-gray-500">{investment.name}</p>
+            </div>
+            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
+          {/* Step 1: Amount & Crypto Selection */}
           {step === 1 && (
             <div>
-              <label className="block font-medium text-gray-700 mb-2 lg:mb-3 text-sm lg:text-base">Investment Amount</label>
-              <div className="relative mb-3 lg:mb-4">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl lg:text-3xl font-bold text-gray-400">$</span>
+              <label className="block font-medium text-gray-700 mb-2 text-sm">Investment Amount (USD)</label>
+              <div className="relative mb-4">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-gray-400">$</span>
                 <input type="number" value={amount} onChange={(e) => setAmount(Math.max(investment.min, +e.target.value))}
-                  className="w-full pl-12 pr-4 py-3 lg:py-4 text-2xl lg:text-3xl font-bold border-2 rounded-xl text-center focus:outline-none"
+                  className="w-full pl-12 pr-4 py-4 text-2xl font-bold border-2 rounded-xl text-center focus:outline-none"
                   style={{ borderColor: theme.gold }} />
               </div>
-              <p className="text-xs lg:text-sm text-gray-500 mb-3 lg:mb-4">Minimum: ${investment.min.toLocaleString()}</p>
+              <p className="text-xs text-gray-500 mb-4">Minimum: ${investment.min.toLocaleString()}</p>
               
-              <div className="flex gap-2 mb-4 lg:mb-6">
+              <div className="flex gap-2 mb-6">
                 {[1, 2, 5, 10].map((m) => (
                   <button key={m} onClick={() => setAmount(investment.min * m)}
-                    className={`flex-1 py-2.5 lg:py-3 rounded-xl text-sm font-medium border-2 transition-all ${amount === investment.min * m ? 'text-white' : 'border-gray-200'}`}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-medium border-2 transition-all ${amount === investment.min * m ? 'text-white' : 'border-gray-200'}`}
                     style={amount === investment.min * m ? { background: theme.navy, borderColor: theme.navy } : {}}>
                     ${(investment.min * m / 1000)}K
                   </button>
                 ))}
               </div>
 
-              <div className="p-4 lg:p-5 rounded-2xl" style={{ background: `${theme.green}10` }}>
+              <label className="block font-medium text-gray-700 mb-2 text-sm">Select Cryptocurrency</label>
+              <div className="space-y-2 mb-6">
+                {cryptoOptions.map((crypto) => (
+                  <button key={crypto.id} onClick={() => setSelectedCrypto(crypto.id)}
+                    className={`w-full flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${selectedCrypto === crypto.id ? 'shadow-lg' : 'border-gray-200'}`}
+                    style={selectedCrypto === crypto.id ? { borderColor: crypto.color, background: `${crypto.color}10` } : {}}>
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-xl font-bold"
+                      style={{ background: crypto.color }}>
+                      {crypto.icon}
+                    </div>
+                    <div className="text-left flex-1">
+                      <p className="font-semibold" style={{ color: theme.navy }}>{crypto.name}</p>
+                    </div>
+                    {selectedCrypto === crypto.id && <CheckCircle className="w-5 h-5" style={{ color: crypto.color }} />}
+                  </button>
+                ))}
+              </div>
+
+              <div className="p-4 rounded-2xl mb-4" style={{ background: `${theme.green}10` }}>
                 <div className="flex justify-between mb-2">
                   <span className="text-gray-600 text-sm">Projected Return</span>
                   <span className="font-bold" style={{ color: theme.green }}>+${expectedReturn.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
@@ -1620,55 +1915,124 @@ function InvestFlowModal({ investment, onClose, balance }) {
                   <span className="font-bold" style={{ color: theme.navy }}>${(amount + expectedReturn).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                 </div>
               </div>
+
+              <TrustBadges />
+
+              <motion.button onClick={() => setStep(2)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                className="w-full py-4 rounded-xl text-white font-semibold mt-4"
+                style={{ background: `linear-gradient(135deg, ${theme.navy} 0%, ${theme.navyLight} 100%)` }}>
+                Continue to Payment
+              </motion.button>
             </div>
           )}
 
+          {/* Step 2: Crypto Payment with Countdown */}
           {step === 2 && (
-            <div className="space-y-3 lg:space-y-4">
-              <p className="text-gray-500 mb-3 lg:mb-4 text-sm">Select Payment Method</p>
-              {[
-                { id: 'balance', label: 'Account Balance', desc: `$${balance.toLocaleString()} available`, icon: Wallet },
-                { id: 'card', label: 'Credit/Debit Card', desc: '•••• 4242', icon: CreditCard },
-                { id: 'bank', label: 'Bank Transfer', desc: 'ACH Transfer', icon: Building }
-              ].map((m) => (
-                <button key={m.id} onClick={() => setMethod(m.id)}
-                  className={`w-full flex items-center gap-3 lg:gap-4 p-4 lg:p-5 rounded-2xl border-2 transition-all ${method === m.id ? 'shadow-lg' : 'border-gray-200'}`}
-                  style={method === m.id ? { borderColor: theme.gold, background: `${theme.gold}05` } : {}}>
-                  <div className={`w-11 h-11 lg:w-14 lg:h-14 rounded-xl flex items-center justify-center ${method === m.id ? 'text-white' : 'bg-gray-100'}`}
-                    style={method === m.id ? { background: theme.navy } : {}}>
-                    <m.icon className="w-5 h-5 lg:w-7 lg:h-7" />
-                  </div>
-                  <div className="text-left flex-1">
-                    <p className="font-semibold text-sm lg:text-base" style={{ color: theme.navy }}>{m.label}</p>
-                    <p className="text-xs lg:text-sm text-gray-500">{m.desc}</p>
-                  </div>
-                  {method === m.id && <CheckCircle className="w-5 h-5 lg:w-7 lg:h-7" style={{ color: theme.gold }} />}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {step === 3 && (
-            <div className="text-center py-4 lg:py-8">
-              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring' }}
-                className="w-20 h-20 lg:w-24 lg:h-24 mx-auto rounded-full flex items-center justify-center mb-4 lg:mb-6" style={{ background: `${theme.green}20` }}>
-                <CheckCircle className="w-12 h-12 lg:w-14 lg:h-14" style={{ color: theme.green }} />
-              </motion.div>
-              <h3 className="font-serif text-xl lg:text-2xl mb-2" style={{ color: theme.navy }}>Investment Successful!</h3>
-              <p className="text-gray-500 text-sm mb-4 lg:mb-6">Your ${amount.toLocaleString()} investment is now active.</p>
-              <div className="p-4 lg:p-5 bg-gray-50 rounded-2xl text-left space-y-2 lg:space-y-3 text-sm">
-                <div className="flex justify-between"><span className="text-gray-500">Amount</span><span className="font-bold">${amount.toLocaleString()}</span></div>
-                <div className="flex justify-between"><span className="text-gray-500">Expected Return</span><span className="font-bold" style={{ color: theme.green }}>+${expectedReturn.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span></div>
-                <div className="flex justify-between"><span className="text-gray-500">Duration</span><span className="font-bold">{investment.term}</span></div>
+            <div>
+              {/* Countdown Timer */}
+              <div className="text-center mb-6 p-4 rounded-2xl" style={{ background: countdown < 300 ? '#fef2f2' : `${theme.gold}10` }}>
+                <p className="text-sm text-gray-500 mb-1">Payment expires in</p>
+                <p className={`text-3xl font-mono font-bold ${countdown < 300 ? 'text-red-500' : ''}`} style={{ color: countdown >= 300 ? theme.navy : undefined }}>
+                  <Timer className="w-6 h-6 inline mr-2" />
+                  {formatTime(countdown)}
+                </p>
               </div>
+
+              {/* Amount to Send */}
+              <div className="bg-gray-50 rounded-2xl p-4 mb-4">
+                <p className="text-sm text-gray-500 mb-1">Amount to invest</p>
+                <p className="text-2xl font-bold" style={{ color: theme.navy }}>${amount.toLocaleString()} USD</p>
+                <p className="text-sm text-gray-500">Pay equivalent in {selectedCrypto}</p>
+              </div>
+
+              {/* Wallet Address */}
+              <div className="mb-4">
+                <p className="text-sm font-medium text-gray-700 mb-2">Send {selectedCrypto} to this address:</p>
+                <div className="bg-gray-900 rounded-xl p-4">
+                  <p className="text-xs text-gray-400 mb-2 text-center">
+                    {selectedCrypto} Wallet Address
+                  </p>
+                  <p className="font-mono text-sm text-white break-all text-center mb-3">
+                    {walletAddresses[selectedCrypto]}
+                  </p>
+                  <div className="flex gap-2">
+                    <motion.button onClick={() => handleCopy(walletAddresses[selectedCrypto])} 
+                      whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                      className="flex-1 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2"
+                      style={{ background: copied ? theme.green : theme.gold, color: 'white' }}>
+                      {copied ? <><CheckCircle className="w-4 h-4" /> Copied!</> : <><Copy className="w-4 h-4" /> Copy Address</>}
+                    </motion.button>
+                    <motion.button onClick={handleOpenWallet} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                      className="flex-1 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2 bg-blue-500 text-white">
+                      <ExternalLink className="w-4 h-4" /> Open Wallet
+                    </motion.button>
+                  </div>
+                </div>
+              </div>
+
+              {/* QR Code Placeholder */}
+              <div className="flex justify-center mb-4">
+                <div className="w-32 h-32 bg-gray-100 rounded-xl flex items-center justify-center">
+                  <QrCode className="w-16 h-16 text-gray-400" />
+                </div>
+              </div>
+
+              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 mb-4">
+                <p className="text-xs text-yellow-800">
+                  ⚠️ Only send {selectedCrypto} to this address. Sending any other cryptocurrency may result in permanent loss.
+                </p>
+              </div>
+
+              <motion.button onClick={handleConfirmPayment} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                className="w-full py-4 rounded-xl text-white font-semibold"
+                style={{ background: `linear-gradient(135deg, ${theme.green} 0%, ${theme.greenDark} 100%)` }}>
+                I've Made the Payment
+              </motion.button>
             </div>
           )}
 
-          <motion.button onClick={handleNext} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-            className="w-full py-3.5 lg:py-4 mt-6 lg:mt-8 rounded-xl text-white font-semibold"
-            style={{ background: `linear-gradient(135deg, ${theme.navy} 0%, ${theme.navyLight} 100%)` }}>
-            {step === 1 ? 'Continue' : step === 2 ? 'Confirm Investment' : 'Done'}
-          </motion.button>
+          {/* Step 3: Pending Confirmation */}
+          {step === 3 && (
+            <div className="text-center py-6">
+              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring' }}
+                className="w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4" style={{ background: `${theme.gold}20` }}>
+                <Clock className="w-10 h-10" style={{ color: theme.gold }} />
+              </motion.div>
+              <h3 className="font-serif text-xl mb-2" style={{ color: theme.navy }}>Investment Pending</h3>
+              <p className="text-gray-500 text-sm mb-6">
+                Your investment of <strong>${amount.toLocaleString()}</strong> in <strong>{investment.name}</strong> is being reviewed.
+              </p>
+              
+              <div className="bg-gray-50 rounded-2xl p-4 text-left space-y-3 mb-6">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Status</span>
+                  <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">⏳ Pending Approval</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Amount</span>
+                  <span className="font-bold">${amount.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Payment Method</span>
+                  <span className="font-bold">{selectedCrypto}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Expected Return</span>
+                  <span className="font-bold" style={{ color: theme.green }}>+${expectedReturn.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                </div>
+              </div>
+
+              <p className="text-xs text-gray-400 mb-4">
+                You will be notified once your investment is approved. This usually takes 1-24 hours.
+              </p>
+
+              <motion.button onClick={onClose} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                className="w-full py-4 rounded-xl text-white font-semibold"
+                style={{ background: `linear-gradient(135deg, ${theme.navy} 0%, ${theme.navyLight} 100%)` }}>
+                Done
+              </motion.button>
+            </div>
+          )}
         </div>
       </motion.div>
     </motion.div>
@@ -1776,8 +2140,8 @@ function DashboardPage({ user, onNavigate }) {
         <div className="grid grid-cols-4 gap-3">
           {[
             { icon: TrendingUp, label: 'Invest', color: theme.navy, action: () => onNavigate('investments') },
-            { icon: Users, label: 'Refer', color: '#8b5cf6', action: () => onNavigate('referral') },
-            { icon: Calculator, label: 'Calc', color: theme.gold, action: () => onNavigate('calculator') },
+            { icon: History, label: 'History', color: '#8b5cf6', action: () => onNavigate('history') },
+            { icon: Bell, label: 'Alerts', color: theme.gold, action: () => onNavigate('notifications') },
             { icon: User, label: 'Profile', color: theme.green, action: () => onNavigate('profile') }
           ].map((item, i) => (
             <motion.button key={i} onClick={item.action} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
@@ -1795,6 +2159,319 @@ function DashboardPage({ user, onNavigate }) {
         {showDeposit && <DepositModal onClose={() => setShowDeposit(false)} />}
         {showWithdraw && <WithdrawModal onClose={() => setShowWithdraw(false)} balance={user.balance} />}
       </AnimatePresence>
+    </div>
+  );
+}
+
+// ============ TRANSACTION HISTORY PAGE ============
+function TransactionHistoryPage({ user }) {
+  const [filter, setFilter] = useState('all');
+  const [dateRange, setDateRange] = useState('all');
+  const transactions = Storage.getTransactions().filter(t => t.userId === user?.uid || t.userEmail === user?.email);
+  const pendingInvestments = JSON.parse(localStorage.getItem('saxovault_pending_investments') || '[]')
+    .filter(p => p.userEmail === user?.email);
+
+  const allTransactions = [
+    ...transactions.map(t => ({ ...t, category: t.type })),
+    ...pendingInvestments.map(p => ({
+      id: p.id,
+      type: 'investment',
+      category: 'investment',
+      amount: p.amount,
+      status: p.status,
+      name: p.investmentName,
+      crypto: p.crypto,
+      createdAt: p.createdAt
+    }))
+  ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  const filteredTx = allTransactions.filter(t => filter === 'all' || t.category === filter);
+
+  const getStatusColor = (status) => {
+    switch(status) {
+      case 'completed': case 'approved': return 'bg-green-100 text-green-700';
+      case 'pending': return 'bg-yellow-100 text-yellow-700';
+      case 'rejected': case 'failed': return 'bg-red-100 text-red-700';
+      default: return 'bg-gray-100 text-gray-700';
+    }
+  };
+
+  const getIcon = (type) => {
+    switch(type) {
+      case 'deposit': return <Download className="w-5 h-5 text-green-600" />;
+      case 'withdrawal': return <Upload className="w-5 h-5 text-orange-600" />;
+      case 'investment': return <TrendingUp className="w-5 h-5 text-blue-600" />;
+      default: return <CreditCard className="w-5 h-5 text-gray-600" />;
+    }
+  };
+
+  const handleExport = () => {
+    const csv = [
+      ['Date', 'Type', 'Amount', 'Status', 'Details'].join(','),
+      ...filteredTx.map(t => [
+        new Date(t.createdAt).toLocaleDateString(),
+        t.type,
+        t.amount,
+        t.status,
+        t.name || t.crypto || ''
+      ].join(','))
+    ].join('\n');
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `saxovault_transactions_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+  };
+
+  return (
+    <div className="min-h-screen pt-20 lg:pt-24 pb-24 lg:pb-12" style={{ background: theme.cream }}>
+      <div className="max-w-4xl mx-auto px-4 lg:px-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="font-serif text-xl lg:text-2xl" style={{ color: theme.navy }}>Transaction History</h1>
+            <p className="text-gray-500 text-sm">{filteredTx.length} transactions</p>
+          </div>
+          <motion.button onClick={handleExport} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium"
+            style={{ background: theme.navy, color: 'white' }}>
+            <DownloadCloud className="w-4 h-4" /> Export
+          </motion.button>
+        </div>
+
+        {/* Filters */}
+        <div className="bg-white rounded-xl p-4 shadow-sm mb-6">
+          <div className="flex gap-2 overflow-x-auto">
+            {[
+              { id: 'all', label: 'All' },
+              { id: 'deposit', label: 'Deposits' },
+              { id: 'withdrawal', label: 'Withdrawals' },
+              { id: 'investment', label: 'Investments' }
+            ].map((f) => (
+              <button key={f.id} onClick={() => setFilter(f.id)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                  filter === f.id ? 'text-white' : 'bg-gray-100 text-gray-600'
+                }`}
+                style={filter === f.id ? { background: theme.navy } : {}}>
+                {f.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Transactions List */}
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          {filteredTx.length > 0 ? (
+            <div className="divide-y divide-gray-100">
+              {filteredTx.map((tx, i) => (
+                <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
+                  className="p-4 hover:bg-gray-50 transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
+                      {getIcon(tx.type)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="font-medium" style={{ color: theme.navy }}>
+                          {tx.type.charAt(0).toUpperCase() + tx.type.slice(1)}
+                        </p>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(tx.status)}`}>
+                          {tx.status}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-500 truncate">
+                        {tx.name || tx.crypto || 'Transaction'} • {new Date(tx.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className={`font-bold ${tx.type === 'withdrawal' ? 'text-orange-600' : 'text-green-600'}`}>
+                        {tx.type === 'withdrawal' ? '-' : '+'}${tx.amount?.toLocaleString()}
+                      </p>
+                      <p className="text-xs text-gray-400">{new Date(tx.createdAt).toLocaleTimeString()}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-16">
+              <History className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500">No transactions yet</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============ USER NOTIFICATION CENTER ============
+function NotificationCenterPage({ user }) {
+  const [notifications, setNotifications] = useState([]);
+  
+  useEffect(() => {
+    const userNotifs = JSON.parse(localStorage.getItem('saxovault_user_notifications') || '{}');
+    const systemNotifs = JSON.parse(localStorage.getItem('saxovault_broadcasts') || '[]');
+    
+    const allNotifs = [
+      ...(userNotifs[user?.email] || []),
+      ...systemNotifs.map(b => ({ ...b, type: 'broadcast', title: b.title, message: b.message }))
+    ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    
+    setNotifications(allNotifs);
+  }, [user]);
+
+  const markAsRead = (id) => {
+    const userNotifs = JSON.parse(localStorage.getItem('saxovault_user_notifications') || '{}');
+    if (userNotifs[user?.email]) {
+      userNotifs[user.email] = userNotifs[user.email].map(n => 
+        n.id === id ? { ...n, read: true } : n
+      );
+      localStorage.setItem('saxovault_user_notifications', JSON.stringify(userNotifs));
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    }
+  };
+
+  const getIcon = (type) => {
+    switch(type) {
+      case 'investment_approved': return <CheckCircle className="w-5 h-5 text-green-600" />;
+      case 'investment_rejected': return <X className="w-5 h-5 text-red-600" />;
+      case 'deposit_confirmed': return <Download className="w-5 h-5 text-green-600" />;
+      case 'withdrawal_processed': return <Upload className="w-5 h-5 text-orange-600" />;
+      case 'broadcast': return <Bell className="w-5 h-5 text-blue-600" />;
+      default: return <Bell className="w-5 h-5 text-gray-600" />;
+    }
+  };
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  return (
+    <div className="min-h-screen pt-20 lg:pt-24 pb-24 lg:pb-12" style={{ background: theme.cream }}>
+      <div className="max-w-2xl mx-auto px-4 lg:px-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="font-serif text-xl lg:text-2xl" style={{ color: theme.navy }}>Notifications</h1>
+            <p className="text-gray-500 text-sm">{unreadCount} unread</p>
+          </div>
+          {unreadCount > 0 && (
+            <button onClick={() => {
+              const userNotifs = JSON.parse(localStorage.getItem('saxovault_user_notifications') || '{}');
+              if (userNotifs[user?.email]) {
+                userNotifs[user.email] = userNotifs[user.email].map(n => ({ ...n, read: true }));
+                localStorage.setItem('saxovault_user_notifications', JSON.stringify(userNotifs));
+                setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+              }
+            }} className="text-sm font-medium" style={{ color: theme.gold }}>
+              Mark all as read
+            </button>
+          )}
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          {notifications.length > 0 ? (
+            <div className="divide-y divide-gray-100">
+              {notifications.map((notif, i) => (
+                <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
+                  onClick={() => markAsRead(notif.id)}
+                  className={`p-4 cursor-pointer transition-colors ${notif.read ? 'bg-white' : 'bg-blue-50'} hover:bg-gray-50`}>
+                  <div className="flex gap-4">
+                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                      {getIcon(notif.type)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="font-medium text-sm" style={{ color: theme.navy }}>{notif.title}</p>
+                        {!notif.read && <span className="w-2 h-2 rounded-full bg-blue-500" />}
+                      </div>
+                      <p className="text-sm text-gray-600 mb-1">{notif.message}</p>
+                      <p className="text-xs text-gray-400">{new Date(notif.createdAt).toLocaleString()}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-16">
+              <Bell className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500">No notifications yet</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============ ACTIVITY LOGS PAGE ============
+function ActivityLogsPage({ user }) {
+  const [activities, setActivities] = useState([]);
+
+  useEffect(() => {
+    const logs = JSON.parse(localStorage.getItem('saxovault_activity_logs') || '{}');
+    setActivities(logs[user?.email] || []);
+  }, [user]);
+
+  return (
+    <div className="min-h-screen pt-20 lg:pt-24 pb-24 lg:pb-12" style={{ background: theme.cream }}>
+      <div className="max-w-2xl mx-auto px-4 lg:px-6">
+        <div className="mb-6">
+          <h1 className="font-serif text-xl lg:text-2xl" style={{ color: theme.navy }}>Activity Log</h1>
+          <p className="text-gray-500 text-sm">Your recent account activity</p>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          {activities.length > 0 ? (
+            <div className="divide-y divide-gray-100">
+              {activities.map((activity, i) => (
+                <div key={i} className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      activity.type === 'login' ? 'bg-green-100' : 
+                      activity.type === 'logout' ? 'bg-gray-100' : 
+                      activity.type === 'password_change' ? 'bg-yellow-100' : 'bg-blue-100'
+                    }`}>
+                      {activity.type === 'login' && <LogOut className="w-5 h-5 text-green-600 rotate-180" />}
+                      {activity.type === 'logout' && <LogOut className="w-5 h-5 text-gray-600" />}
+                      {activity.type === 'password_change' && <Key className="w-5 h-5 text-yellow-600" />}
+                      {activity.type === 'profile_update' && <User className="w-5 h-5 text-blue-600" />}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-sm" style={{ color: theme.navy }}>
+                        {activity.type === 'login' ? 'Signed in' : 
+                         activity.type === 'logout' ? 'Signed out' : 
+                         activity.type === 'password_change' ? 'Password changed' : 'Profile updated'}
+                      </p>
+                      <p className="text-xs text-gray-500">{new Date(activity.timestamp).toLocaleString()}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-gray-400">{activity.ip || 'Unknown IP'}</p>
+                      <p className="text-xs text-gray-400">{activity.device || 'Unknown Device'}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-16">
+              <Activity className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500">No activity recorded yet</p>
+            </div>
+          )}
+        </div>
+
+        {/* Security Tips */}
+        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+          <h3 className="font-medium text-blue-800 mb-2 flex items-center gap-2">
+            <ShieldCheck className="w-5 h-5" /> Security Tips
+          </h3>
+          <ul className="text-sm text-blue-700 space-y-1">
+            <li>• Review your activity regularly for suspicious logins</li>
+            <li>• Enable two-factor authentication for extra security</li>
+            <li>• Never share your password with anyone</li>
+          </ul>
+        </div>
+      </div>
     </div>
   );
 }
@@ -3388,10 +4065,50 @@ function AdminDashboard({ onLogout }) {
     alert(`✅ Message sent to ${messageUser.name || messageUser.email}!`);
   };
 
+  // Get pending investments
+  const pendingInvestments = JSON.parse(localStorage.getItem('saxovault_pending_investments') || '[]');
+  const pendingInvCount = pendingInvestments.filter(p => p.status === 'pending').length;
+
+  const handleApproveInvestment = (inv) => {
+    const updated = pendingInvestments.map(p => 
+      p.id === inv.id ? { ...p, status: 'approved', approvedAt: new Date().toISOString() } : p
+    );
+    localStorage.setItem('saxovault_pending_investments', JSON.stringify(updated));
+    
+    // Add to user notifications
+    const userNotifs = JSON.parse(localStorage.getItem('saxovault_user_notifications') || '{}');
+    if (!userNotifs[inv.userEmail]) userNotifs[inv.userEmail] = [];
+    userNotifs[inv.userEmail].unshift({
+      id: Date.now(),
+      type: 'investment_approved',
+      title: '✅ Investment Approved!',
+      message: `Your $${inv.amount.toLocaleString()} investment in ${inv.investmentName} has been approved.`,
+      read: false,
+      createdAt: new Date().toISOString()
+    });
+    localStorage.setItem('saxovault_user_notifications', JSON.stringify(userNotifs));
+    
+    Storage.addNotification({ type: 'investment_approved', message: `Investment approved: $${inv.amount.toLocaleString()}` });
+    alert('Investment approved!');
+    window.location.reload();
+  };
+
+  const handleRejectInvestment = (inv) => {
+    if (!confirm('Are you sure you want to reject this investment?')) return;
+    const updated = pendingInvestments.map(p => 
+      p.id === inv.id ? { ...p, status: 'rejected', rejectedAt: new Date().toISOString() } : p
+    );
+    localStorage.setItem('saxovault_pending_investments', JSON.stringify(updated));
+    Storage.addNotification({ type: 'investment_rejected', message: `Investment rejected: $${inv.amount.toLocaleString()}` });
+    alert('Investment rejected.');
+    window.location.reload();
+  };
+
   const tabs = [
     { id: 'overview', name: 'Overview', icon: PieChart },
     { id: 'users', name: 'Users', icon: Users },
     { id: 'transactions', name: 'Transactions', icon: CreditCard },
+    { id: 'pending', name: 'Pending', icon: Clock, badge: pendingInvCount },
     { id: 'investments', name: 'Investments', icon: TrendingUp },
     { id: 'tickets', name: 'Tickets', icon: Ticket, badge: openTickets },
     { id: 'settings', name: 'Settings', icon: Settings }
@@ -3793,6 +4510,78 @@ function AdminDashboard({ onLogout }) {
             </div>
           )}
 
+          {/* Pending Investments Tab */}
+          {activeTab === 'pending' && (
+            <div>
+              <h2 className="font-serif text-xl lg:text-2xl mb-6" style={{ color: theme.navy }}>Pending Approvals</h2>
+              
+              <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div className="p-4 border-b border-gray-100">
+                  <p className="text-sm text-gray-500">{pendingInvestments.filter(p => p.status === 'pending').length} pending approvals</p>
+                </div>
+                <div className="divide-y divide-gray-100">
+                  {pendingInvestments.filter(p => p.status === 'pending').map((inv, i) => (
+                    <div key={i} className="p-4 hover:bg-yellow-50 transition-colors">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">⏳ Pending</span>
+                            <span className="text-xs text-gray-400">{new Date(inv.createdAt).toLocaleDateString()}</span>
+                          </div>
+                          <p className="font-semibold" style={{ color: theme.navy }}>{inv.investmentName}</p>
+                          <p className="text-sm text-gray-500">{inv.userEmail}</p>
+                          <div className="flex items-center gap-4 mt-2 text-sm">
+                            <span className="font-bold text-lg" style={{ color: theme.green }}>${inv.amount?.toLocaleString()}</span>
+                            <span className="text-gray-400">via {inv.crypto}</span>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <motion.button onClick={() => handleApproveInvestment(inv)} whileHover={{ scale: 1.05 }}
+                            className="px-4 py-2 rounded-lg text-white text-sm font-medium"
+                            style={{ background: theme.green }}>
+                            <Check className="w-4 h-4 inline mr-1" /> Approve
+                          </motion.button>
+                          <motion.button onClick={() => handleRejectInvestment(inv)} whileHover={{ scale: 1.05 }}
+                            className="px-4 py-2 rounded-lg bg-red-100 text-red-600 text-sm font-medium">
+                            <X className="w-4 h-4 inline mr-1" /> Reject
+                          </motion.button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {pendingInvestments.filter(p => p.status === 'pending').length === 0 && (
+                    <p className="text-center text-gray-500 py-12">No pending approvals</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Recently Approved/Rejected */}
+              <h3 className="font-serif text-lg mt-8 mb-4" style={{ color: theme.navy }}>Recent Decisions</h3>
+              <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div className="divide-y divide-gray-100">
+                  {pendingInvestments.filter(p => p.status !== 'pending').slice(0, 10).map((inv, i) => (
+                    <div key={i} className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium text-sm" style={{ color: theme.navy }}>{inv.investmentName}</p>
+                          <p className="text-xs text-gray-500">{inv.userEmail}</p>
+                        </div>
+                        <div className="text-right">
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                            inv.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                          }`}>
+                            {inv.status === 'approved' ? '✅ Approved' : '❌ Rejected'}
+                          </span>
+                          <p className="text-xs text-gray-400 mt-1">${inv.amount?.toLocaleString()}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Investments Tab - FULL CONTROL */}
           {activeTab === 'investments' && (
             <div>
@@ -4135,6 +4924,7 @@ export default function App() {
   const [isAuth, setIsAuth] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [page, setPage] = useState('home');
   const [selected, setSelected] = useState(null);
   const [showInvest, setShowInvest] = useState(false);
@@ -4146,6 +4936,21 @@ export default function App() {
     balance: 0,
     profileImage: null
   });
+
+  // Log activity helper
+  const logActivity = (type, userEmail) => {
+    const logs = JSON.parse(localStorage.getItem('saxovault_activity_logs') || '{}');
+    if (!logs[userEmail]) logs[userEmail] = [];
+    logs[userEmail].unshift({
+      type,
+      timestamp: new Date().toISOString(),
+      ip: 'User IP',
+      device: navigator.userAgent.includes('Mobile') ? 'Mobile Device' : 'Desktop Browser'
+    });
+    // Keep only last 50 activities
+    logs[userEmail] = logs[userEmail].slice(0, 50);
+    localStorage.setItem('saxovault_activity_logs', JSON.stringify(logs));
+  };
 
   // Check for admin route
   useEffect(() => {
@@ -4169,23 +4974,48 @@ export default function App() {
         balance: userData.balance || 0,
         profileImage: userData.profileImage || null
       });
+      
+      // Log the login activity
+      logActivity('login', userData.email);
+      
+      // Check if first time user (show onboarding)
+      const onboardingComplete = localStorage.getItem('saxovault_onboarding_complete');
+      if (!onboardingComplete) {
+        setShowOnboarding(true);
+      }
+      
       // Save to localStorage for admin to see
       const users = Storage.getUsers();
       const existingUser = users.find(u => u.email === userData.email);
       if (!existingUser) {
         users.push({ ...userData, uid: userData.uid || Date.now().toString(), createdAt: new Date().toISOString() });
         Storage.setUsers(users);
+        
+        // Notify admin of new user
+        Storage.addNotification({
+          type: 'new_user',
+          message: `New user registered: ${userData.email}`,
+          urgent: true
+        });
       }
+
+      // Store current user for reference
+      localStorage.setItem('saxovault_current_user', JSON.stringify(userData));
     }
     setIsAuth(true);
   };
 
   const handleLogout = async () => {
     try {
+      // Log the logout activity
+      if (user.email) {
+        logActivity('logout', user.email);
+      }
       await logoutUser();
     } catch (e) {}
     setIsAuth(false);
     setUser({ name: '', email: '', phone: '', address: '', balance: 0, profileImage: null });
+    localStorage.removeItem('saxovault_current_user');
   };
 
   const handleAdminLogout = () => {
@@ -4215,7 +5045,11 @@ export default function App() {
 
   return (
     <div className="min-h-screen" style={{ background: theme.cream }}>
-      <Navbar activePage={page} onNavigate={setPage} user={user} onLogout={() => setAuth(false)} />
+      {/* Onboarding Tour for new users */}
+      <AnimatePresence>
+        {showOnboarding && <OnboardingTour onComplete={() => setShowOnboarding(false)} />}
+      </AnimatePresence>
+      <Navbar activePage={page} onNavigate={setPage} user={user} onLogout={handleLogout} />
 
       <AnimatePresence>
         {selected && !showInvest && <InvestmentModal investment={selected} onClose={() => setSelected(null)} onInvest={() => setShowInvest(true)} />}
@@ -4226,10 +5060,12 @@ export default function App() {
         {page === 'home' && <HomePage key="home" onNavigate={setPage} onSelectInvestment={handleSelectInvestment} />}
         {page === 'investments' && <InvestmentsPage key="investments" onSelectInvestment={handleSelectInvestment} />}
         {page === 'dashboard' && <DashboardPage key="dashboard" user={user} onNavigate={setPage} />}
+        {page === 'history' && <TransactionHistoryPage key="history" user={user} />}
+        {page === 'notifications' && <NotificationCenterPage key="notifications" user={user} />}
+        {page === 'activity' && <ActivityLogsPage key="activity" user={user} />}
         {page === 'referral' && <ReferralPage key="referral" user={user} />}
         {page === 'calculator' && <CalculatorPage key="calculator" />}
-        {page === 'notifications' && <NotificationsPage key="notifications" user={user} />}
-        {page === 'profile' && <ProfilePage key="profile" user={user} setUser={setUser} onLogout={() => setAuth(false)} />}
+        {page === 'profile' && <ProfilePage key="profile" user={user} setUser={setUser} onLogout={handleLogout} />}
       </AnimatePresence>
 
       <MobileBottomNav activePage={page} onNavigate={setPage} />
