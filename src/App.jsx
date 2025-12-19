@@ -216,22 +216,53 @@ function AuthPage({ onLogin }) {
           </div>
           <div className="relative z-10 flex flex-col justify-center items-center p-16 text-center">
             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring' }}
-              className="w-20 h-20 lg:w-24 lg:h-24 rounded-2xl flex items-center justify-center mb-8 shadow-2xl"
-              style={{ background: `linear-gradient(135deg, ${theme.gold} 0%, ${theme.goldDark} 100%)` }}>
-              <Crown className="w-10 h-10 lg:w-14 lg:h-14 text-white" />
+              className="mb-8">
+              <svg viewBox="0 0 50 55" className="w-20 h-20 lg:w-24 lg:h-24">
+                <defs>
+                  <linearGradient id="authLogoGold" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#d4a853"/>
+                    <stop offset="50%" stopColor="#f4d078"/>
+                    <stop offset="100%" stopColor="#d4a853"/>
+                  </linearGradient>
+                </defs>
+                <path d="M25 0 L50 8 L50 30 C50 42 38 50 25 55 C12 50 0 42 0 30 L0 8 Z" fill="rgba(255,255,255,0.15)"/>
+                <path d="M25 5 L45 12 L45 29 C45 39 35 46 25 50 C15 46 5 39 5 29 L5 12 Z" fill="none" stroke="url(#authLogoGold)" strokeWidth="2"/>
+                <text x="25" y="36" fontFamily="Georgia, serif" fontSize="26" fontWeight="bold" fill="url(#authLogoGold)" textAnchor="middle">S</text>
+              </svg>
             </motion.div>
-            <h1 className="font-serif text-4xl lg:text-5xl text-white mb-4">SaxoVault</h1>
-            <p className="text-xl lg:text-2xl mb-2" style={{ color: theme.gold }}>Capital</p>
+            <div className="flex items-baseline gap-2 mb-2">
+              <h1 className="font-serif text-4xl lg:text-5xl text-white">SAXO</h1>
+              <h1 className="font-serif text-4xl lg:text-5xl" style={{ color: theme.gold }}>VAULT</h1>
+            </div>
+            <p className="text-lg tracking-[0.3em] uppercase text-white/70">Capital</p>
           </div>
         </div>
 
         <div className="flex-1 flex items-center justify-center p-6 lg:p-16">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
             <div className="lg:hidden text-center mb-8">
-              <div className="w-14 h-14 mx-auto rounded-xl flex items-center justify-center mb-3" style={{ background: `linear-gradient(135deg, ${theme.gold} 0%, ${theme.goldDark} 100%)` }}>
-                <Crown className="w-7 h-7 text-white" />
+              <div className="w-14 h-14 mx-auto mb-3">
+                <svg viewBox="0 0 50 55" className="w-full h-full">
+                  <defs>
+                    <linearGradient id="authMobileGold" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#d4a853"/>
+                      <stop offset="50%" stopColor="#f4d078"/>
+                      <stop offset="100%" stopColor="#d4a853"/>
+                    </linearGradient>
+                    <linearGradient id="authMobileNavy" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="#1a2d4a"/>
+                      <stop offset="100%" stopColor="#0a1628"/>
+                    </linearGradient>
+                  </defs>
+                  <path d="M25 0 L50 8 L50 30 C50 42 38 50 25 55 C12 50 0 42 0 30 L0 8 Z" fill="url(#authMobileNavy)"/>
+                  <path d="M25 5 L45 12 L45 29 C45 39 35 46 25 50 C15 46 5 39 5 29 L5 12 Z" fill="none" stroke="url(#authMobileGold)" strokeWidth="1.5"/>
+                  <text x="25" y="35" fontFamily="Georgia, serif" fontSize="24" fontWeight="bold" fill="url(#authMobileGold)" textAnchor="middle">S</text>
+                </svg>
               </div>
-              <h1 className="font-serif text-xl" style={{ color: theme.navy }}>SaxoVault Capital</h1>
+              <div className="flex items-baseline justify-center gap-1">
+                <span className="font-serif text-xl" style={{ color: theme.navy }}>SAXO</span>
+                <span className="font-serif text-xl" style={{ color: theme.gold }}>VAULT</span>
+              </div>
             </div>
 
             <div className="text-center mb-8">
@@ -345,12 +376,25 @@ function AuthPage({ onLogin }) {
         </div>
         <div className="relative z-10 flex flex-col justify-center items-center p-16 text-center">
           <motion.div initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring', duration: 0.8 }}
-            className="w-24 h-24 rounded-2xl flex items-center justify-center mb-8 shadow-2xl"
-            style={{ background: `linear-gradient(135deg, ${theme.gold} 0%, ${theme.goldDark} 100%)` }}>
-            <Crown className="w-14 h-14 text-white" />
+            className="mb-8">
+            <svg viewBox="0 0 50 55" className="w-24 h-24">
+              <defs>
+                <linearGradient id="regLogoGold" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#d4a853"/>
+                  <stop offset="50%" stopColor="#f4d078"/>
+                  <stop offset="100%" stopColor="#d4a853"/>
+                </linearGradient>
+              </defs>
+              <path d="M25 0 L50 8 L50 30 C50 42 38 50 25 55 C12 50 0 42 0 30 L0 8 Z" fill="rgba(255,255,255,0.15)"/>
+              <path d="M25 5 L45 12 L45 29 C45 39 35 46 25 50 C15 46 5 39 5 29 L5 12 Z" fill="none" stroke="url(#regLogoGold)" strokeWidth="2"/>
+              <text x="25" y="36" fontFamily="Georgia, serif" fontSize="26" fontWeight="bold" fill="url(#regLogoGold)" textAnchor="middle">S</text>
+            </svg>
           </motion.div>
-          <h1 className="font-serif text-5xl text-white mb-4">SaxoVault</h1>
-          <p className="text-2xl mb-2" style={{ color: theme.gold }}>Capital</p>
+          <div className="flex items-baseline gap-2 mb-2">
+            <h1 className="font-serif text-5xl text-white">SAXO</h1>
+            <h1 className="font-serif text-5xl" style={{ color: theme.gold }}>VAULT</h1>
+          </div>
+          <p className="text-lg tracking-[0.3em] uppercase text-white/70">Capital</p>
           <p className="text-white/60 text-lg max-w-md mt-4">
             Access curated Real Estate, Cryptocurrency, Stocks, and Precious Metals investments.
           </p>
@@ -372,10 +416,28 @@ function AuthPage({ onLogin }) {
       <div className="flex-1 flex items-center justify-center p-6 lg:p-16">
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
           <div className="lg:hidden text-center mb-8">
-            <div className="w-14 h-14 mx-auto rounded-xl flex items-center justify-center mb-3" style={{ background: `linear-gradient(135deg, ${theme.gold} 0%, ${theme.goldDark} 100%)` }}>
-              <Crown className="w-7 h-7 text-white" />
+            <div className="w-14 h-14 mx-auto mb-3">
+              <svg viewBox="0 0 50 55" className="w-full h-full">
+                <defs>
+                  <linearGradient id="regMobileGold" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#d4a853"/>
+                    <stop offset="50%" stopColor="#f4d078"/>
+                    <stop offset="100%" stopColor="#d4a853"/>
+                  </linearGradient>
+                  <linearGradient id="regMobileNavy" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="#1a2d4a"/>
+                    <stop offset="100%" stopColor="#0a1628"/>
+                  </linearGradient>
+                </defs>
+                <path d="M25 0 L50 8 L50 30 C50 42 38 50 25 55 C12 50 0 42 0 30 L0 8 Z" fill="url(#regMobileNavy)"/>
+                <path d="M25 5 L45 12 L45 29 C45 39 35 46 25 50 C15 46 5 39 5 29 L5 12 Z" fill="none" stroke="url(#regMobileGold)" strokeWidth="1.5"/>
+                <text x="25" y="35" fontFamily="Georgia, serif" fontSize="24" fontWeight="bold" fill="url(#regMobileGold)" textAnchor="middle">S</text>
+              </svg>
             </div>
-            <h1 className="font-serif text-xl" style={{ color: theme.navy }}>SaxoVault Capital</h1>
+            <div className="flex items-baseline justify-center gap-1">
+              <span className="font-serif text-xl" style={{ color: theme.navy }}>SAXO</span>
+              <span className="font-serif text-xl" style={{ color: theme.gold }}>VAULT</span>
+            </div>
           </div>
 
           <div className="mb-6">
@@ -562,13 +624,31 @@ function Navbar({ activePage, onNavigate, user, onLogout }) {
         <div className="max-w-7xl mx-auto px-4 lg:px-6 py-3 lg:py-4">
           <div className="flex items-center justify-between">
             <motion.div whileHover={{ scale: 1.02 }} className="flex items-center gap-2 lg:gap-3 cursor-pointer" onClick={() => onNavigate('home')}>
-              <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center shadow-lg"
-                style={{ background: `linear-gradient(135deg, ${theme.navy} 0%, ${theme.navyLight} 100%)` }}>
-                <Crown className="w-5 h-5 lg:w-7 lg:h-7" style={{ color: theme.gold }} />
+              {/* Shield Logo Icon */}
+              <div className="relative w-10 h-10 lg:w-11 lg:h-11">
+                <svg viewBox="0 0 50 55" className="w-full h-full">
+                  <defs>
+                    <linearGradient id="logoGold" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#d4a853"/>
+                      <stop offset="50%" stopColor="#f4d078"/>
+                      <stop offset="100%" stopColor="#d4a853"/>
+                    </linearGradient>
+                    <linearGradient id="logoNavy" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="#1a2d4a"/>
+                      <stop offset="100%" stopColor="#0a1628"/>
+                    </linearGradient>
+                  </defs>
+                  <path d="M25 0 L50 8 L50 30 C50 42 38 50 25 55 C12 50 0 42 0 30 L0 8 Z" fill="url(#logoNavy)"/>
+                  <path d="M25 5 L45 12 L45 29 C45 39 35 46 25 50 C15 46 5 39 5 29 L5 12 Z" fill="none" stroke="url(#logoGold)" strokeWidth="1.5"/>
+                  <text x="25" y="35" fontFamily="Georgia, serif" fontSize="24" fontWeight="bold" fill="url(#logoGold)" textAnchor="middle">S</text>
+                </svg>
               </div>
               <div className="hidden sm:block">
-                <h1 className="font-serif text-lg lg:text-xl" style={{ color: scrolled || activePage !== 'home' ? theme.navy : 'white' }}>SaxoBank</h1>
-                <p className="text-xs" style={{ color: theme.gold }}>Capital</p>
+                <div className="flex items-baseline gap-1">
+                  <span className="font-serif text-lg lg:text-xl font-semibold" style={{ color: scrolled || activePage !== 'home' ? theme.navy : 'white' }}>SAXO</span>
+                  <span className="font-serif text-lg lg:text-xl font-semibold" style={{ color: theme.gold }}>VAULT</span>
+                </div>
+                <p className="text-[10px] tracking-[0.2em] uppercase" style={{ color: scrolled || activePage !== 'home' ? '#6b7280' : 'rgba(255,255,255,0.7)' }}>Capital</p>
               </div>
             </motion.div>
 
@@ -622,11 +702,29 @@ function Navbar({ activePage, onNavigate, user, onLogout }) {
               className="fixed top-0 right-0 bottom-0 w-72 bg-white z-50 shadow-2xl lg:hidden">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-8">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${theme.navy} 0%, ${theme.navyLight} 100%)` }}>
-                      <Crown className="w-5 h-5" style={{ color: theme.gold }} />
+                  <div className="flex items-center gap-2">
+                    <div className="w-9 h-9">
+                      <svg viewBox="0 0 50 55" className="w-full h-full">
+                        <defs>
+                          <linearGradient id="mobileLogoGold" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="#d4a853"/>
+                            <stop offset="50%" stopColor="#f4d078"/>
+                            <stop offset="100%" stopColor="#d4a853"/>
+                          </linearGradient>
+                          <linearGradient id="mobileLogoNavy" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stopColor="#1a2d4a"/>
+                            <stop offset="100%" stopColor="#0a1628"/>
+                          </linearGradient>
+                        </defs>
+                        <path d="M25 0 L50 8 L50 30 C50 42 38 50 25 55 C12 50 0 42 0 30 L0 8 Z" fill="url(#mobileLogoNavy)"/>
+                        <path d="M25 5 L45 12 L45 29 C45 39 35 46 25 50 C15 46 5 39 5 29 L5 12 Z" fill="none" stroke="url(#mobileLogoGold)" strokeWidth="1.5"/>
+                        <text x="25" y="35" fontFamily="Georgia, serif" fontSize="24" fontWeight="bold" fill="url(#mobileLogoGold)" textAnchor="middle">S</text>
+                      </svg>
                     </div>
-                    <span className="font-serif" style={{ color: theme.navy }}>SaxoBank</span>
+                    <div>
+                      <span className="font-serif text-sm" style={{ color: theme.navy }}>SAXO</span>
+                      <span className="font-serif text-sm" style={{ color: theme.gold }}>VAULT</span>
+                    </div>
                   </div>
                   <button onClick={() => setMobileMenu(false)} className="p-2 hover:bg-gray-100 rounded-lg">
                     <X className="w-5 h-5" />
@@ -745,7 +843,7 @@ function FloatingContact() {
         style={{ background: `linear-gradient(135deg, ${theme.green} 0%, ${theme.greenDark} 100%)` }}>
         <AnimatePresence mode="wait">
           {open ? <motion.div key="x" initial={{ rotate: -90 }} animate={{ rotate: 0 }}><X className="w-6 h-6" /></motion.div>
-               : <motion.div key="msg" initial={{ rotate: 90 }} animate={{ rotate: 0 }}><Headphones className="w-6 h-6" /></motion.div>}
+               : <motion.div key="msg" initial={{ rotate: 90 }} animate={{ rotate: 0 }}><MessageCircle className="w-6 h-6" /></motion.div>}
         </AnimatePresence>
       </motion.button>
 
@@ -761,72 +859,47 @@ function FloatingContact() {
               <div className="p-5 lg:p-6" style={{ background: `linear-gradient(135deg, ${theme.navy} 0%, ${theme.navyLight} 100%)` }}>
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: `${theme.gold}30` }}>
-                    <Headphones className="w-6 h-6" style={{ color: theme.gold }} />
+                    <MessageCircle className="w-6 h-6" style={{ color: theme.gold }} />
                   </div>
                   <div>
-                    <h3 className="font-serif text-lg lg:text-xl text-white">Customer Support</h3>
-                    <p className="text-white/60 text-sm">We're here to help 24/7</p>
+                    <h3 className="font-serif text-lg lg:text-xl text-white">Need Help?</h3>
+                    <p className="text-white/60 text-sm">Choose how to reach us</p>
                   </div>
                 </div>
               </div>
 
               {activeTab === 'options' && (
-                <div className="p-5 lg:p-6 space-y-3">
+                <div className="p-5 lg:p-6 space-y-4">
                   {/* WhatsApp */}
-                  <motion.a href="https://wa.me/14642395280" target="_blank" rel="noopener noreferrer"
+                  <motion.a href="https://wa.me/14642395280?text=Hello! I need assistance with my SaxoVault account." target="_blank" rel="noopener noreferrer"
                     whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                    className="flex items-center gap-4 p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-xl hover:shadow-md transition-all border border-green-200">
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-green-500 shadow-lg">
-                      <MessageCircle className="w-6 h-6 text-white" />
+                    className="flex items-center gap-4 p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-xl hover:shadow-lg transition-all border border-green-200">
+                    <div className="w-14 h-14 rounded-xl flex items-center justify-center bg-green-500 shadow-lg">
+                      <MessageCircle className="w-7 h-7 text-white" />
                     </div>
                     <div className="flex-1">
-                      <p className="font-semibold text-green-800">WhatsApp</p>
-                      <p className="text-sm text-green-600">Instant messaging support</p>
+                      <p className="font-semibold text-green-800 text-lg">WhatsApp</p>
+                      <p className="text-sm text-green-600">Chat instantly • 24/7 Available</p>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-green-500" />
+                    <ChevronRight className="w-6 h-6 text-green-500" />
                   </motion.a>
-
-                  {/* Live Support - Opens Zoho SalesIQ */}
-                  <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                    onClick={() => {
-                      // Trigger Zoho SalesIQ chat
-                      if (window.$zoho && window.$zoho.salesiq) {
-                        window.$zoho.salesiq.floatwindow.visible('show');
-                      } else {
-                        // Fallback to WhatsApp if Zoho not loaded
-                        window.open('https://wa.me/14642395280?text=Hello! I need live support assistance.', '_blank');
-                      }
-                    }}
-                    className="w-full flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl hover:shadow-md transition-all border border-blue-200">
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-blue-500 shadow-lg">
-                      <Headphones className="w-6 h-6 text-white" />
-                    </div>
-                    <div className="flex-1 text-left">
-                      <p className="font-semibold text-blue-800">Live Support</p>
-                      <p className="text-sm text-blue-600">Chat with an agent</p>
-                    </div>
-                    <div className="flex items-center gap-1.5 px-2 py-1 bg-green-100 rounded-full">
-                      <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                      <span className="text-xs text-green-700 font-medium">Online</span>
-                    </div>
-                  </motion.button>
 
                   {/* Submit Ticket */}
                   <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                     onClick={() => setActiveTab('ticket')}
-                    className="w-full flex items-center gap-4 p-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl hover:shadow-md transition-all border border-purple-200">
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-purple-500 shadow-lg">
-                      <Ticket className="w-6 h-6 text-white" />
+                    className="w-full flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl hover:shadow-lg transition-all border border-blue-200">
+                    <div className="w-14 h-14 rounded-xl flex items-center justify-center bg-blue-500 shadow-lg">
+                      <Ticket className="w-7 h-7 text-white" />
                     </div>
                     <div className="flex-1 text-left">
-                      <p className="font-semibold text-purple-800">Submit a Ticket</p>
-                      <p className="text-sm text-purple-600">Response within 24 hours</p>
+                      <p className="font-semibold text-blue-800 text-lg">Submit a Ticket</p>
+                      <p className="text-sm text-blue-600">Email support • Response within 24hrs</p>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-purple-500" />
+                    <ChevronRight className="w-6 h-6 text-blue-500" />
                   </motion.button>
 
-                  <div className="pt-4 border-t border-gray-100">
-                    <p className="text-xs text-gray-500 text-center">Average response time: <span className="font-semibold">Under 5 minutes</span></p>
+                  <div className="pt-3 mt-2 border-t border-gray-100 text-center">
+                    <p className="text-xs text-gray-400">We typically respond within <span className="font-semibold text-gray-600">5 minutes</span> on WhatsApp</p>
                   </div>
                 </div>
               )}
@@ -1229,14 +1302,28 @@ function HomePage({ onNavigate, onSelectInvestment }) {
       <footer className="py-8 lg:py-12 px-4 lg:px-6" style={{ background: theme.navy }}>
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-lg flex items-center justify-center" style={{ background: `${theme.gold}20` }}>
-                <Crown className="w-4 h-4 lg:w-5 lg:h-5" style={{ color: theme.gold }} />
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8">
+                <svg viewBox="0 0 50 55" className="w-full h-full">
+                  <defs>
+                    <linearGradient id="footerGold" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#d4a853"/>
+                      <stop offset="50%" stopColor="#f4d078"/>
+                      <stop offset="100%" stopColor="#d4a853"/>
+                    </linearGradient>
+                  </defs>
+                  <path d="M25 0 L50 8 L50 30 C50 42 38 50 25 55 C12 50 0 42 0 30 L0 8 Z" fill="rgba(255,255,255,0.1)"/>
+                  <path d="M25 5 L45 12 L45 29 C45 39 35 46 25 50 C15 46 5 39 5 29 L5 12 Z" fill="none" stroke="url(#footerGold)" strokeWidth="1.5"/>
+                  <text x="25" y="35" fontFamily="Georgia, serif" fontSize="24" fontWeight="bold" fill="url(#footerGold)" textAnchor="middle">S</text>
+                </svg>
               </div>
-              <span className="font-serif text-white text-sm lg:text-base">SaxoBank Capital</span>
+              <div className="flex items-baseline gap-1">
+                <span className="font-serif text-white text-sm lg:text-base">SAXO</span>
+                <span className="font-serif text-sm lg:text-base" style={{ color: theme.gold }}>VAULT</span>
+              </div>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-4 lg:gap-6 text-white/60 text-xs lg:text-sm">
-              <span>© 2024 SaxoBank Capital</span>
+              <span>© 2024 SaxoVault Capital</span>
               <span>Privacy Policy</span>
               <span>Terms of Service</span>
             </div>
@@ -2061,16 +2148,16 @@ function WithdrawModal({ onClose, balance }) {
 function DocumentViewerModal({ document, onClose }) {
   const documents = {
     'White Paper': {
-      title: 'SaxoBank Capital White Paper',
+      title: 'SaxoVault Capital White Paper',
       version: 'Version 2.1 | January 2024',
       sections: [
         {
           title: 'Executive Summary',
-          content: `SaxoBank Capital is a premier institutional-grade investment platform designed to democratize access to high-yield investment opportunities traditionally reserved for accredited investors and financial institutions.
+          content: `SaxoVault Capital is a premier institutional-grade investment platform designed to democratize access to high-yield investment opportunities traditionally reserved for accredited investors and financial institutions.
 
 Our platform leverages cutting-edge technology, rigorous due diligence processes, and diversified asset allocation strategies to deliver consistent, risk-adjusted returns across multiple asset classes including Real Estate, Cryptocurrency, Stocks & Bonds, and Precious Metals.
 
-Founded in 2019, SaxoBank Capital has grown to manage over $600 million in assets under management (AUM), serving more than 12,000 investors across 45+ countries.`
+Founded in 2019, SaxoVault Capital has grown to manage over $600 million in assets under management (AUM), serving more than 12,000 investors across 45+ countries.`
         },
         {
           title: '1. Introduction & Vision',
@@ -2084,7 +2171,7 @@ To provide retail and institutional investors with secure, transparent, and prof
 • Education: Comprehensive investor resources and market insights
 
 1.3 Platform Overview
-SaxoBank Capital offers curated opportunities across four primary asset verticals: Real Estate, Cryptocurrency & Digital Assets, Stocks & Fixed Income, and Precious Metals.`
+SaxoVault Capital offers curated opportunities across four primary asset verticals: Real Estate, Cryptocurrency & Digital Assets, Stocks & Fixed Income, and Precious Metals.`
         },
         {
           title: '2. Investment Philosophy',
@@ -2120,7 +2207,7 @@ Precious Metals (15%): Gold, silver, and platinum exposure`
         },
         {
           title: '5. Regulatory Compliance',
-          content: `SaxoBank Capital maintains appropriate licenses and adheres to AML/KYC procedures. We implement robust Anti-Money Laundering and Know Your Customer procedures with segregated client accounts and independent custodian relationships.`
+          content: `SaxoVault Capital maintains appropriate licenses and adheres to AML/KYC procedures. We implement robust Anti-Money Laundering and Know Your Customer procedures with segregated client accounts and independent custodian relationships.`
         },
         {
           title: '6. Fee Structure',
@@ -2135,13 +2222,13 @@ Withdrawal Fee: Network fees only for cryptocurrency`
       title: 'Terms of Service',
       version: 'Last Updated: December 2024',
       sections: [
-        { title: '1. Agreement to Terms', content: 'By accessing SaxoBank Capital, you agree to these Terms. If you do not agree, you may not use the Platform. We may modify these Terms at any time.' },
+        { title: '1. Agreement to Terms', content: 'By accessing SaxoVault Capital, you agree to these Terms. If you do not agree, you may not use the Platform. We may modify these Terms at any time.' },
         { title: '2. Eligibility', content: 'You must be 18+ years old, have legal capacity to contract, not be in a prohibited jurisdiction, complete KYC verification, and provide accurate information.' },
         { title: '3. Account Security', content: 'You are responsible for maintaining credential confidentiality. Notify us immediately of unauthorized access. One account per person.' },
         { title: '4. Investment Services', content: 'We provide access to curated investment opportunities as an intermediary. All investments carry risk. Past performance does not guarantee future results.' },
         { title: '5. Deposits & Withdrawals', content: 'We accept cryptocurrency deposits. Withdrawals are processed within 24-48 hours. Large withdrawals may require additional verification.' },
         { title: '6. Prohibited Activities', content: 'No money laundering, market manipulation, fraud, unauthorized bots, security circumvention, impersonation, or illegal activity.' },
-        { title: '7. Limitation of Liability', content: 'SaxoBank Capital is not liable for indirect, incidental, or consequential damages. Total liability is limited to fees paid in the preceding 12 months.' }
+        { title: '7. Limitation of Liability', content: 'SaxoVault Capital is not liable for indirect, incidental, or consequential damages. Total liability is limited to fees paid in the preceding 12 months.' }
       ]
     },
     'Privacy Policy': {
@@ -2173,7 +2260,7 @@ Withdrawal Fee: Network fees only for cryptocurrency`
       title: 'Anti-Money Laundering & KYC Policy',
       version: 'FATF Compliant | December 2024',
       sections: [
-        { title: '1. Policy Statement', content: 'SaxoBank Capital is committed to highest AML/CTF standards, adhering to FATF recommendations and applicable laws.' },
+        { title: '1. Policy Statement', content: 'SaxoVault Capital is committed to highest AML/CTF standards, adhering to FATF recommendations and applicable laws.' },
         { title: '2. Customer Identification', content: 'Required: Government photo ID, proof of address (within 90 days), selfie verification. Enhanced due diligence for high-value transactions and PEPs.' },
         { title: '3. Ongoing Monitoring', content: 'Transaction monitoring, periodic reviews, sanctions screening, automated alerts for unusual activity.' },
         { title: '4. Suspicious Activity', content: 'We file SARs and CTRs as required, cooperate with law enforcement, and maintain records for 5+ years.' },
