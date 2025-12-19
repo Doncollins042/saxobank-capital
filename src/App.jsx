@@ -603,6 +603,8 @@ function AuthPage({ onLogin }) {
 function Navbar({ activePage, onNavigate, user, onLogout }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
+  const [showNavDeposit, setShowNavDeposit] = useState(false);
+  const [showNavWithdraw, setShowNavWithdraw] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -614,9 +616,22 @@ function Navbar({ activePage, onNavigate, user, onLogout }) {
     { id: 'home', label: 'Home', icon: Home },
     { id: 'investments', label: 'Investments', icon: TrendingUp },
     { id: 'dashboard', label: 'Dashboard', icon: PieChart },
+    { id: 'deposit', label: 'Deposit', icon: Download, isAction: true, color: '#10b981' },
+    { id: 'withdraw', label: 'Withdraw', icon: Upload, isAction: true, color: '#f59e0b' },
     { id: 'referral', label: 'Referral', icon: Gift },
     { id: 'calculator', label: 'Calculator', icon: Calculator }
   ];
+
+  const handleNavClick = (id) => {
+    if (id === 'deposit') {
+      setShowNavDeposit(true);
+    } else if (id === 'withdraw') {
+      setShowNavWithdraw(true);
+    } else {
+      onNavigate(id);
+    }
+    setMobileMenu(false);
+  };
 
   return (
     <>
@@ -656,11 +671,23 @@ function Navbar({ activePage, onNavigate, user, onLogout }) {
             {/* Desktop Nav */}
             <div className="hidden lg:flex items-center gap-1">
               {navItems.map((item) => (
-                <motion.button key={item.id} onClick={() => onNavigate(item.id)} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}
+                <motion.button key={item.id} onClick={() => handleNavClick(item.id)} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all ${
-                    activePage === item.id ? 'text-white shadow-lg' : scrolled || activePage !== 'home' ? 'text-gray-600 hover:bg-gray-100' : 'text-white/80 hover:text-white hover:bg-white/10'
+                    item.isAction 
+                      ? 'text-white shadow-lg' 
+                      : activePage === item.id 
+                        ? 'text-white shadow-lg' 
+                        : scrolled || activePage !== 'home' 
+                          ? 'text-gray-600 hover:bg-gray-100' 
+                          : 'text-white/80 hover:text-white hover:bg-white/10'
                   }`}
-                  style={activePage === item.id ? { background: `linear-gradient(135deg, ${theme.navy} 0%, ${theme.navyLight} 100%)` } : {}}>
+                  style={
+                    item.isAction 
+                      ? { background: item.color } 
+                      : activePage === item.id 
+                        ? { background: `linear-gradient(135deg, ${theme.navy} 0%, ${theme.navyLight} 100%)` } 
+                        : {}
+                  }>
                   <item.icon className="w-4 h-4" />
                   <span className="text-sm">{item.label}</span>
                 </motion.button>
@@ -668,6 +695,21 @@ function Navbar({ activePage, onNavigate, user, onLogout }) {
             </div>
 
             <div className="flex items-center gap-2 lg:gap-3">
+              {/* Notification Bell */}
+              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }} onClick={() => onNavigate('notifications')}
+                className={`relative p-2 rounded-xl transition-all ${scrolled || activePage !== 'home' ? 'hover:bg-gray-100' : 'hover:bg-white/10'}`}>
+                <Bell className={`w-5 h-5 ${scrolled || activePage !== 'home' ? 'text-gray-600' : 'text-white'}`} />
+                {(() => {
+                  const userNotifs = JSON.parse(localStorage.getItem('saxovault_user_notifications') || '{}');
+                  const unread = (userNotifs[user.uid] || []).filter(n => !n.read).length;
+                  return unread > 0 ? (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-xs text-white font-bold">
+                      {unread > 9 ? '9+' : unread}
+                    </span>
+                  ) : null;
+                })()}
+              </motion.button>
+
               <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }} onClick={() => onNavigate('profile')}
                 className="flex items-center gap-2 px-2 lg:px-4 py-2 rounded-xl transition-all">
                 <div className="w-8 h-8 lg:w-9 lg:h-9 rounded-full flex items-center justify-center text-sm font-bold text-white overflow-hidden"
@@ -734,11 +776,21 @@ function Navbar({ activePage, onNavigate, user, onLogout }) {
 
                 <div className="space-y-2">
                   {navItems.map((item) => (
-                    <button key={item.id} onClick={() => { onNavigate(item.id); setMobileMenu(false); }}
+                    <button key={item.id} onClick={() => handleNavClick(item.id)}
                       className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
-                        activePage === item.id ? 'text-white' : 'text-gray-600 hover:bg-gray-100'
+                        item.isAction 
+                          ? 'text-white' 
+                          : activePage === item.id 
+                            ? 'text-white' 
+                            : 'text-gray-600 hover:bg-gray-100'
                       }`}
-                      style={activePage === item.id ? { background: `linear-gradient(135deg, ${theme.navy} 0%, ${theme.navyLight} 100%)` } : {}}>
+                      style={
+                        item.isAction 
+                          ? { background: item.color } 
+                          : activePage === item.id 
+                            ? { background: `linear-gradient(135deg, ${theme.navy} 0%, ${theme.navyLight} 100%)` } 
+                            : {}
+                      }>
                       <item.icon className="w-5 h-5" />
                       {item.label}
                     </button>
@@ -758,6 +810,12 @@ function Navbar({ activePage, onNavigate, user, onLogout }) {
             </motion.div>
           </>
         )}
+      </AnimatePresence>
+
+      {/* Deposit Modal from Nav */}
+      <AnimatePresence>
+        {showNavDeposit && <DepositModal onClose={() => setShowNavDeposit(false)} />}
+        {showNavWithdraw && <WithdrawModal onClose={() => setShowNavWithdraw(false)} balance={user.balance} />}
       </AnimatePresence>
     </>
   );
@@ -2624,6 +2682,80 @@ function CalculatorPage() {
   );
 }
 
+// ============ NOTIFICATIONS PAGE ============
+function NotificationsPage({ user }) {
+  const [notifications, setNotifications] = useState(() => {
+    const userNotifs = JSON.parse(localStorage.getItem('saxovault_user_notifications') || '{}');
+    return userNotifs[user.uid] || [];
+  });
+
+  const markAsRead = (id) => {
+    const updated = notifications.map(n => n.id === id ? { ...n, read: true } : n);
+    setNotifications(updated);
+    const allNotifs = JSON.parse(localStorage.getItem('saxovault_user_notifications') || '{}');
+    allNotifs[user.uid] = updated;
+    localStorage.setItem('saxovault_user_notifications', JSON.stringify(allNotifs));
+  };
+
+  const markAllAsRead = () => {
+    const updated = notifications.map(n => ({ ...n, read: true }));
+    setNotifications(updated);
+    const allNotifs = JSON.parse(localStorage.getItem('saxovault_user_notifications') || '{}');
+    allNotifs[user.uid] = updated;
+    localStorage.setItem('saxovault_user_notifications', JSON.stringify(allNotifs));
+  };
+
+  return (
+    <div className="min-h-screen pt-20 lg:pt-24 pb-24 lg:pb-12" style={{ background: theme.cream }}>
+      <div className="max-w-3xl mx-auto px-4 lg:px-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="font-serif text-xl lg:text-2xl" style={{ color: theme.navy }}>Notifications</h1>
+            <p className="text-gray-500 text-sm">{notifications.filter(n => !n.read).length} unread</p>
+          </div>
+          {notifications.some(n => !n.read) && (
+            <motion.button onClick={markAllAsRead} whileHover={{ scale: 1.02 }}
+              className="text-sm px-4 py-2 rounded-xl" style={{ background: `${theme.navy}10`, color: theme.navy }}>
+              Mark all as read
+            </motion.button>
+          )}
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+          {notifications.length > 0 ? (
+            <div className="divide-y divide-gray-100">
+              {notifications.map((notif, i) => (
+                <motion.div key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                  onClick={() => markAsRead(notif.id)}
+                  className={`p-4 lg:p-5 cursor-pointer hover:bg-gray-50 transition-colors ${!notif.read ? 'bg-blue-50' : ''}`}>
+                  <div className="flex items-start gap-4">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${notif.type === 'broadcast' ? 'bg-blue-100' : 'bg-green-100'}`}>
+                      {notif.type === 'broadcast' ? <Bell className="w-5 h-5 text-blue-600" /> : <Mail className="w-5 h-5 text-green-600" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="font-semibold text-sm" style={{ color: theme.navy }}>{notif.title}</p>
+                        {!notif.read && <span className="w-2 h-2 bg-blue-500 rounded-full"></span>}
+                      </div>
+                      <p className="text-gray-600 text-sm">{notif.message}</p>
+                      <p className="text-xs text-gray-400 mt-2">{new Date(notif.sentAt).toLocaleDateString()} at {new Date(notif.sentAt).toLocaleTimeString()}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-12 text-center">
+              <Bell className="w-12 h-12 mx-auto text-gray-300 mb-4" />
+              <p className="text-gray-500">No notifications yet</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ============ PROFILE & SETTINGS PAGE ============
 function ProfilePage({ user, setUser, onLogout }) {
   const [activeTab, setActiveTab] = useState('profile');
@@ -3185,6 +3317,77 @@ function AdminDashboard({ onLogout }) {
     }
   };
 
+  // Messaging state
+  const [showBroadcast, setShowBroadcast] = useState(false);
+  const [showPersonalMessage, setShowPersonalMessage] = useState(false);
+  const [messageUser, setMessageUser] = useState(null);
+  const [broadcastTitle, setBroadcastTitle] = useState('');
+  const [broadcastMessage, setBroadcastMessage] = useState('');
+  const [personalSubject, setPersonalSubject] = useState('');
+  const [personalMessage, setPersonalMessage] = useState('');
+
+  const handleSendBroadcast = () => {
+    if (!broadcastTitle || !broadcastMessage) {
+      alert('Please enter both title and message');
+      return;
+    }
+    const msg = {
+      id: Date.now(),
+      type: 'broadcast',
+      title: broadcastTitle,
+      message: broadcastMessage,
+      sentAt: new Date().toISOString(),
+      recipients: users.length
+    };
+    const existing = JSON.parse(localStorage.getItem('saxovault_messages') || '[]');
+    localStorage.setItem('saxovault_messages', JSON.stringify([msg, ...existing]));
+    
+    // Add to each user's notifications
+    const userNotifs = JSON.parse(localStorage.getItem('saxovault_user_notifications') || '{}');
+    users.forEach(u => {
+      if (!userNotifs[u.uid]) userNotifs[u.uid] = [];
+      userNotifs[u.uid].unshift({ ...msg, read: false });
+    });
+    localStorage.setItem('saxovault_user_notifications', JSON.stringify(userNotifs));
+    
+    Storage.addNotification({ type: 'broadcast', message: `Broadcast sent to ${users.length} users` });
+    setBroadcastTitle('');
+    setBroadcastMessage('');
+    setShowBroadcast(false);
+    alert(`✅ Message sent to ${users.length} users!`);
+  };
+
+  const handleSendPersonalMessage = () => {
+    if (!personalSubject || !personalMessage || !messageUser) {
+      alert('Please enter both subject and message');
+      return;
+    }
+    const msg = {
+      id: Date.now(),
+      type: 'personal',
+      title: personalSubject,
+      message: personalMessage,
+      sentAt: new Date().toISOString(),
+      recipient: messageUser.email,
+      recipientId: messageUser.uid
+    };
+    const existing = JSON.parse(localStorage.getItem('saxovault_messages') || '[]');
+    localStorage.setItem('saxovault_messages', JSON.stringify([msg, ...existing]));
+    
+    // Add to user's notifications
+    const userNotifs = JSON.parse(localStorage.getItem('saxovault_user_notifications') || '{}');
+    if (!userNotifs[messageUser.uid]) userNotifs[messageUser.uid] = [];
+    userNotifs[messageUser.uid].unshift({ ...msg, read: false });
+    localStorage.setItem('saxovault_user_notifications', JSON.stringify(userNotifs));
+    
+    Storage.addNotification({ type: 'personal_msg', message: `Message sent to ${messageUser.email}` });
+    setPersonalSubject('');
+    setPersonalMessage('');
+    setMessageUser(null);
+    setShowPersonalMessage(false);
+    alert(`✅ Message sent to ${messageUser.name || messageUser.email}!`);
+  };
+
   const tabs = [
     { id: 'overview', name: 'Overview', icon: PieChart },
     { id: 'users', name: 'Users', icon: Users },
@@ -3300,7 +3503,14 @@ function AdminDashboard({ onLogout }) {
           {/* Users Tab */}
           {activeTab === 'users' && (
             <div>
-              <h2 className="font-serif text-xl lg:text-2xl mb-6" style={{ color: theme.navy }}>User Management</h2>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="font-serif text-xl lg:text-2xl" style={{ color: theme.navy }}>User Management</h2>
+                <motion.button onClick={() => setShowBroadcast(true)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-white text-sm font-medium"
+                  style={{ background: theme.navy }}>
+                  <Send className="w-4 h-4" /> Broadcast Message
+                </motion.button>
+              </div>
               
               <div className="bg-white rounded-xl lg:rounded-2xl shadow-lg overflow-hidden">
                 <div className="p-4 border-b border-gray-100">
@@ -3308,28 +3518,37 @@ function AdminDashboard({ onLogout }) {
                 </div>
                 <div className="divide-y divide-gray-100">
                   {users.map((user, i) => (
-                    <div key={i} className="p-4 hover:bg-gray-50 transition-colors">
+                    <div key={i} className={`p-4 hover:bg-gray-50 transition-colors ${user.status === 'banned' ? 'bg-red-50' : user.status === 'suspended' ? 'bg-yellow-50' : ''}`}>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full flex items-center justify-center text-white font-bold text-sm"
-                            style={{ background: `linear-gradient(135deg, ${theme.navy} 0%, ${theme.navyLight} 100%)` }}>
+                          <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full flex items-center justify-center text-white font-bold text-sm relative"
+                            style={{ background: user.status === 'banned' ? '#ef4444' : user.status === 'suspended' ? '#f59e0b' : `linear-gradient(135deg, ${theme.navy} 0%, ${theme.navyLight} 100%)` }}>
                             {user.name?.charAt(0) || user.email?.charAt(0) || 'U'}
+                            {user.status === 'banned' && <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-600 rounded-full flex items-center justify-center"><X className="w-3 h-3 text-white" /></span>}
                           </div>
                           <div>
-                            <p className="font-medium text-sm" style={{ color: theme.navy }}>{user.name || 'No Name'}</p>
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium text-sm" style={{ color: theme.navy }}>{user.name || 'No Name'}</p>
+                              {user.status === 'banned' && <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700">Banned</span>}
+                              {user.status === 'suspended' && <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700">Suspended</span>}
+                            </div>
                             <p className="text-xs text-gray-500">{user.email}</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 lg:gap-4">
+                        <div className="flex items-center gap-2 lg:gap-3">
                           <div className="text-right hidden sm:block">
                             <p className="font-bold text-sm" style={{ color: theme.green }}>${(user.balance || 0).toLocaleString()}</p>
                             <span className={`text-xs px-2 py-0.5 rounded-full ${user.kycStatus === 'verified' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
                               {user.kycStatus || 'pending'}
                             </span>
                           </div>
+                          <motion.button onClick={() => { setMessageUser(user); setShowPersonalMessage(true); }} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                            className="p-2 rounded-lg hover:bg-blue-100" title="Send Message">
+                            <Mail className="w-4 h-4 text-blue-500" />
+                          </motion.button>
                           <motion.button onClick={() => setEditingUser(user)} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-                            className="p-2 rounded-lg hover:bg-gray-100">
-                            <Settings className="w-5 h-5 text-gray-500" />
+                            className="p-2 rounded-lg hover:bg-gray-100" title="Edit User">
+                            <Settings className="w-4 h-4 text-gray-500" />
                           </motion.button>
                         </div>
                       </div>
@@ -3373,10 +3592,16 @@ function AdminDashboard({ onLogout }) {
                           <select value={editingUser.status || 'active'}
                             onChange={(e) => setEditingUser({...editingUser, status: e.target.value})}
                             className="w-full px-4 py-2 border border-gray-200 rounded-xl">
-                            <option value="active">Active</option>
-                            <option value="suspended">Suspended</option>
-                            <option value="banned">Banned</option>
+                            <option value="active">✅ Active</option>
+                            <option value="suspended">⚠️ Suspended</option>
+                            <option value="banned">🚫 Banned</option>
                           </select>
+                          {editingUser.status === 'suspended' && (
+                            <p className="text-xs text-yellow-600 mt-1">User can't withdraw or invest while suspended</p>
+                          )}
+                          {editingUser.status === 'banned' && (
+                            <p className="text-xs text-red-600 mt-1">User cannot access their account</p>
+                          )}
                         </div>
                       </div>
 
@@ -3386,6 +3611,85 @@ function AdminDashboard({ onLogout }) {
                         <motion.button onClick={() => handleUpdateUser(editingUser.uid, editingUser)} whileHover={{ scale: 1.02 }}
                           className="flex-1 py-2.5 rounded-xl text-white"
                           style={{ background: theme.navy }}>Save Changes</motion.button>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Broadcast Message Modal */}
+              <AnimatePresence>
+                {showBroadcast && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                    onClick={() => setShowBroadcast(false)}>
+                    <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}
+                      className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                      <h3 className="font-serif text-xl mb-4" style={{ color: theme.navy }}>📢 Broadcast Message to All Users</h3>
+                      
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Message Title</label>
+                          <input type="text" value={broadcastTitle} onChange={(e) => setBroadcastTitle(e.target.value)}
+                            className="w-full px-4 py-2 border border-gray-200 rounded-xl" placeholder="Important Announcement" />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                          <textarea rows={4} value={broadcastMessage} onChange={(e) => setBroadcastMessage(e.target.value)}
+                            className="w-full px-4 py-2 border border-gray-200 rounded-xl resize-none"
+                            placeholder="Enter your message to all users..." />
+                        </div>
+                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
+                          <p className="text-sm text-blue-700">📨 This message will be sent to <strong>{users.length}</strong> users</p>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3 mt-6">
+                        <motion.button onClick={() => setShowBroadcast(false)} whileHover={{ scale: 1.02 }}
+                          className="flex-1 py-2.5 rounded-xl border border-gray-200">Cancel</motion.button>
+                        <motion.button onClick={handleSendBroadcast} whileHover={{ scale: 1.02 }}
+                          className="flex-1 py-2.5 rounded-xl text-white flex items-center justify-center gap-2"
+                          style={{ background: theme.navy }}>
+                          <Send className="w-4 h-4" /> Send to All
+                        </motion.button>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Personal Message Modal */}
+              <AnimatePresence>
+                {showPersonalMessage && messageUser && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                    onClick={() => { setShowPersonalMessage(false); setMessageUser(null); }}>
+                    <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}
+                      className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                      <h3 className="font-serif text-xl mb-4" style={{ color: theme.navy }}>💬 Message to {messageUser.name || messageUser.email}</h3>
+                      
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                          <input type="text" value={personalSubject} onChange={(e) => setPersonalSubject(e.target.value)}
+                            className="w-full px-4 py-2 border border-gray-200 rounded-xl" placeholder="Account Update" />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                          <textarea rows={4} value={personalMessage} onChange={(e) => setPersonalMessage(e.target.value)}
+                            className="w-full px-4 py-2 border border-gray-200 rounded-xl resize-none"
+                            placeholder="Enter your message..." />
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3 mt-6">
+                        <motion.button onClick={() => { setShowPersonalMessage(false); setMessageUser(null); }} whileHover={{ scale: 1.02 }}
+                          className="flex-1 py-2.5 rounded-xl border border-gray-200">Cancel</motion.button>
+                        <motion.button onClick={handleSendPersonalMessage} whileHover={{ scale: 1.02 }}
+                          className="flex-1 py-2.5 rounded-xl text-white flex items-center justify-center gap-2"
+                          style={{ background: theme.green }}>
+                          <Send className="w-4 h-4" /> Send Message
+                        </motion.button>
                       </div>
                     </motion.div>
                   </motion.div>
@@ -3924,6 +4228,7 @@ export default function App() {
         {page === 'dashboard' && <DashboardPage key="dashboard" user={user} onNavigate={setPage} />}
         {page === 'referral' && <ReferralPage key="referral" user={user} />}
         {page === 'calculator' && <CalculatorPage key="calculator" />}
+        {page === 'notifications' && <NotificationsPage key="notifications" user={user} />}
         {page === 'profile' && <ProfilePage key="profile" user={user} setUser={setUser} onLogout={() => setAuth(false)} />}
       </AnimatePresence>
 
