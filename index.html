@@ -15,22 +15,7 @@
     <script type="module" src="/src/main.jsx"></script>
     
     <!-- Zoho SalesIQ Live Chat Widget -->
-    <!-- IMPORTANT: Replace YOUR_WIDGET_CODE with your actual Zoho SalesIQ widget code -->
-    <script type="text/javascript">
-      var $zoho=$zoho || {};
-      $zoho.salesiq = $zoho.salesiq || {
-        widgetcode: "siq3b8e9f8a3c1d2e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8", // Replace with your actual widget code
-        values:{},
-        ready:function(){}
-      };
-      var d=document;
-      var s=d.createElement("script");
-      s.type="text/javascript";
-      s.id="zsiqscript";
-      s.defer=true;
-      s.src="https://salesiq.zoho.com/widget";
-      var t=d.getElementsByTagName("script")[0];
-      t.parentNode.insertBefore(s,t);
-    </script>
+    <script>window.$zoho=window.$zoho || {};$zoho.salesiq=$zoho.salesiq||{ready:function(){}};</script>
+    <script id="zsiqscript" src="https://salesiq.zohopublic.com/widget?wc=siq05b70dac774db0f8b4cd554e6e1c707646efa7afb53e21e61b0496f8f4523a25" defer></script>
   </body>
 </html>
