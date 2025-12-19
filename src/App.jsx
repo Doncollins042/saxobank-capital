@@ -1163,34 +1163,6 @@ function HomePage({ onNavigate, onSelectInvestment }) {
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="py-16 lg:py-20 px-4 lg:px-6" style={{ background: 'white' }}>
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12 lg:mb-16">
-            <h2 className="font-serif text-3xl lg:text-4xl mb-3 lg:mb-4" style={{ color: theme.navy }}>How It Works</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto text-sm lg:text-base">Simple, transparent, professional. Start your investment journey in three easy steps.</p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
-            {[
-              { step: '01', title: 'Browse & Select', desc: 'Explore vetted opportunities with full documentation and projections.', icon: Search },
-              { step: '02', title: 'Invest Seamlessly', desc: 'Secure digital transaction with bank-level encryption.', icon: CreditCard },
-              { step: '03', title: 'Earn & Monitor', desc: 'Watch your investment grow and receive payouts as scheduled.', icon: TrendingUp }
-            ].map((item, i) => (
-              <motion.div key={i} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.2 }}
-                className="relative p-6 lg:p-8 rounded-2xl bg-gray-50 hover:bg-white hover:shadow-xl transition-all">
-                <span className="absolute top-4 lg:top-6 right-4 lg:right-6 font-serif text-4xl lg:text-5xl font-bold" style={{ color: `${theme.gold}20` }}>{item.step}</span>
-                <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-xl flex items-center justify-center mb-4 lg:mb-6" style={{ background: `${theme.navy}10` }}>
-                  <item.icon className="w-6 h-6 lg:w-7 lg:h-7" style={{ color: theme.navy }} />
-                </div>
-                <h3 className="font-serif text-lg lg:text-xl mb-2 lg:mb-3" style={{ color: theme.navy }}>{item.title}</h3>
-                <p className="text-gray-600 text-sm lg:text-base">{item.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Investment Verticals */}
       <section className="py-16 lg:py-20 px-4 lg:px-6" style={{ background: theme.cream }}>
         <div className="max-w-7xl mx-auto">
@@ -1642,105 +1614,207 @@ function InvestFlowModal({ investment, onClose, balance }) {
 function DashboardPage({ user, onNavigate }) {
   const [showDeposit, setShowDeposit] = useState(false);
   const [showWithdraw, setShowWithdraw] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
 
   const portfolio = [
-    { name: 'Greenwich Towers', type: 'Real Estate', invested: 25000, current: 28750, returns: 15, color: '#3b82f6' },
-    { name: 'Blue-Chip Crypto Fund', type: 'Cryptocurrency', invested: 15000, current: 18750, returns: 25, color: '#f59e0b' },
-    { name: 'Dividend Aristocrats', type: 'Stocks', invested: 10000, current: 10800, returns: 8, color: '#10b981' },
-    { name: 'Gold Liquidity Strategy', type: 'Precious Metals', invested: 8000, current: 8720, returns: 9, color: '#D4AF37' }
+    { name: 'Greenwich Towers', type: 'Real Estate', invested: 25000, current: 28750, returns: 15, color: '#3b82f6', icon: Building2 },
+    { name: 'Blue-Chip Crypto Fund', type: 'Cryptocurrency', invested: 15000, current: 18750, returns: 25, color: '#f59e0b', icon: Bitcoin },
+    { name: 'Dividend Aristocrats', type: 'Stocks', invested: 10000, current: 10800, returns: 8, color: '#10b981', icon: BarChart3 },
+    { name: 'Gold Liquidity Strategy', type: 'Precious Metals', invested: 8000, current: 8720, returns: 9, color: '#D4AF37', icon: Gem }
+  ];
+
+  const recentTransactions = [
+    { type: 'deposit', amount: 5000, crypto: 'BTC', status: 'completed', date: '2024-01-15' },
+    { type: 'investment', amount: 10000, name: 'Greenwich Towers', status: 'completed', date: '2024-01-14' },
+    { type: 'withdrawal', amount: 2500, crypto: 'USDT', status: 'pending', date: '2024-01-13' },
+    { type: 'dividend', amount: 450, name: 'Dividend Aristocrats', status: 'completed', date: '2024-01-12' }
   ];
 
   const totalInvested = portfolio.reduce((sum, p) => sum + p.invested, 0);
   const totalCurrent = portfolio.reduce((sum, p) => sum + p.current, 0);
   const totalReturns = totalCurrent - totalInvested;
+  const returnPercent = ((totalReturns / totalInvested) * 100).toFixed(1);
 
   return (
     <div className="min-h-screen pt-20 lg:pt-24 pb-24 lg:pb-12" style={{ background: theme.cream }}>
       <div className="max-w-7xl mx-auto px-4 lg:px-6">
+        
+        {/* Welcome Header */}
         <div className="mb-6 lg:mb-8">
-          <h1 className="font-serif text-2xl lg:text-4xl mb-1 lg:mb-2" style={{ color: theme.navy }}>Dashboard</h1>
-          <p className="text-gray-600 text-sm lg:text-base">Monitor your portfolio performance.</p>
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div>
+              <p className="text-gray-500 text-sm mb-1">Welcome back,</p>
+              <h1 className="font-serif text-2xl lg:text-3xl" style={{ color: theme.navy }}>{user.name || 'Investor'}</h1>
+            </div>
+            <div className="flex gap-3">
+              <motion.button onClick={() => setShowDeposit(true)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                className="flex items-center gap-2 px-4 lg:px-6 py-2.5 lg:py-3 rounded-xl text-white font-medium shadow-lg"
+                style={{ background: `linear-gradient(135deg, ${theme.green} 0%, ${theme.greenDark} 100%)` }}>
+                <Download className="w-4 h-4 lg:w-5 lg:h-5" /> Deposit
+              </motion.button>
+              <motion.button onClick={() => setShowWithdraw(true)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                className="flex items-center gap-2 px-4 lg:px-6 py-2.5 lg:py-3 rounded-xl font-medium border-2"
+                style={{ borderColor: theme.navy, color: theme.navy }}>
+                <Upload className="w-4 h-4 lg:w-5 lg:h-5" /> Withdraw
+              </motion.button>
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6 mb-6 lg:mb-8">
-          {[
-            { label: 'Portfolio Value', value: `$${totalCurrent.toLocaleString()}`, change: `+${((totalReturns / totalInvested) * 100).toFixed(1)}%`, icon: Wallet, color: theme.navy },
-            { label: 'Total Invested', value: `$${totalInvested.toLocaleString()}`, change: `${portfolio.length} assets`, icon: TrendingUp, color: theme.gold },
-            { label: 'Total Returns', value: `+$${totalReturns.toLocaleString()}`, change: 'All time', icon: DollarSign, color: theme.green },
-            { label: 'Balance', value: `$${user.balance.toLocaleString()}`, change: 'Available', icon: CreditCard, color: theme.charcoal }
-          ].map((stat, i) => (
-            <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
-              className="bg-white rounded-xl lg:rounded-2xl p-4 lg:p-6 shadow-lg">
-              <div className="flex items-center justify-between mb-3 lg:mb-4">
-                <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center" style={{ background: `${stat.color}15` }}>
-                  <stat.icon className="w-5 h-5 lg:w-6 lg:h-6" style={{ color: stat.color }} />
+        {/* Main Portfolio Card */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          className="rounded-2xl lg:rounded-3xl p-6 lg:p-8 mb-6 lg:mb-8 text-white relative overflow-hidden"
+          style={{ background: `linear-gradient(135deg, ${theme.navy} 0%, ${theme.navyLight} 100%)` }}>
+          <div className="absolute top-0 right-0 w-64 h-64 rounded-full opacity-10" 
+            style={{ background: `radial-gradient(circle, ${theme.gold} 0%, transparent 70%)`, transform: 'translate(30%, -30%)' }} />
+          
+          <div className="relative z-10">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+              <div>
+                <p className="text-white/60 text-xs lg:text-sm mb-1">Total Portfolio Value</p>
+                <p className="text-2xl lg:text-4xl font-bold">${totalCurrent.toLocaleString()}</p>
+                <div className="flex items-center gap-1 mt-2">
+                  <TrendingUp className="w-4 h-4 text-green-400" />
+                  <span className="text-green-400 text-sm font-medium">+{returnPercent}%</span>
                 </div>
-                <span className="text-xs lg:text-sm" style={{ color: stat.color }}>{stat.change}</span>
               </div>
-              <p className="text-xs lg:text-sm text-gray-500 mb-1">{stat.label}</p>
-              <p className="text-lg lg:text-2xl font-bold" style={{ color: stat.color }}>{stat.value}</p>
+              <div>
+                <p className="text-white/60 text-xs lg:text-sm mb-1">Total Invested</p>
+                <p className="text-xl lg:text-2xl font-bold">${totalInvested.toLocaleString()}</p>
+                <p className="text-white/50 text-xs mt-2">{portfolio.length} Active Assets</p>
+              </div>
+              <div>
+                <p className="text-white/60 text-xs lg:text-sm mb-1">Total Returns</p>
+                <p className="text-xl lg:text-2xl font-bold text-green-400">+${totalReturns.toLocaleString()}</p>
+                <p className="text-white/50 text-xs mt-2">All Time Profit</p>
+              </div>
+              <div>
+                <p className="text-white/60 text-xs lg:text-sm mb-1">Available Balance</p>
+                <p className="text-xl lg:text-2xl font-bold" style={{ color: theme.gold }}>${user.balance.toLocaleString()}</p>
+                <p className="text-white/50 text-xs mt-2">Ready to Invest</p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
+          {/* Portfolio Allocation */}
+          <div className="lg:col-span-2">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+              className="bg-white rounded-2xl shadow-lg overflow-hidden h-full">
+              <div className="p-4 lg:p-6 border-b border-gray-100 flex items-center justify-between">
+                <h2 className="font-serif text-lg lg:text-xl" style={{ color: theme.navy }}>Portfolio Allocation</h2>
+                <motion.button onClick={() => onNavigate('investments')} whileHover={{ scale: 1.05 }}
+                  className="text-sm font-medium flex items-center gap-1" style={{ color: theme.gold }}>
+                  View All <ChevronRight className="w-4 h-4" />
+                </motion.button>
+              </div>
+              
+              {/* Portfolio Bar */}
+              <div className="px-4 lg:px-6 py-4">
+                <div className="h-4 rounded-full overflow-hidden flex">
+                  {portfolio.map((item, i) => (
+                    <div key={i} style={{ width: `${(item.current / totalCurrent) * 100}%`, background: item.color }} 
+                      className="transition-all" />
+                  ))}
+                </div>
+              </div>
+
+              <div className="divide-y divide-gray-100">
+                {portfolio.map((item, i) => (
+                  <motion.div key={i} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 + i * 0.05 }}
+                    className="p-4 lg:p-5 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer">
+                    <div className="flex items-center gap-3 lg:gap-4">
+                      <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center" style={{ background: `${item.color}15` }}>
+                        <item.icon className="w-5 h-5 lg:w-6 lg:h-6" style={{ color: item.color }} />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm lg:text-base" style={{ color: theme.navy }}>{item.name}</p>
+                        <p className="text-xs lg:text-sm text-gray-500">{item.type}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-sm lg:text-base" style={{ color: theme.navy }}>${item.current.toLocaleString()}</p>
+                      <div className="flex items-center justify-end gap-2">
+                        <span className="text-xs text-gray-400">${item.invested.toLocaleString()}</span>
+                        <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ background: `${theme.green}15`, color: theme.green }}>
+                          +{item.returns}%
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
             </motion.div>
-          ))}
-        </div>
-
-        <div className="bg-white rounded-xl lg:rounded-2xl shadow-lg overflow-hidden mb-6 lg:mb-8">
-          <div className="p-4 lg:p-6 border-b border-gray-100">
-            <h2 className="font-serif text-lg lg:text-xl" style={{ color: theme.navy }}>Active Investments</h2>
           </div>
-          <div className="divide-y divide-gray-100">
-            {portfolio.map((item, i) => (
-              <div key={i} className="p-4 lg:p-5 flex items-center justify-between hover:bg-gray-50 transition-colors">
-                <div className="flex items-center gap-3 lg:gap-4">
-                  <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center" style={{ background: `${item.color}15` }}>
-                    <Building2 className="w-5 h-5 lg:w-6 lg:h-6" style={{ color: item.color }} />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-sm lg:text-base" style={{ color: theme.navy }}>{item.name}</p>
-                    <p className="text-xs lg:text-sm text-gray-500">{item.type}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-sm lg:text-base" style={{ color: theme.navy }}>${item.current.toLocaleString()}</p>
-                  <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ background: `${theme.green}15`, color: theme.green }}>+{item.returns}%</span>
-                </div>
+
+          {/* Right Sidebar */}
+          <div className="space-y-6">
+            {/* Quick Actions */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+              className="bg-white rounded-2xl shadow-lg p-4 lg:p-6">
+              <h3 className="font-serif text-lg mb-4" style={{ color: theme.navy }}>Quick Actions</h3>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { label: 'Deposit', icon: Download, color: theme.green, action: () => setShowDeposit(true) },
+                  { label: 'Withdraw', icon: Upload, color: theme.gold, action: () => setShowWithdraw(true) },
+                  { label: 'Invest', icon: TrendingUp, color: theme.navy, action: () => onNavigate('investments') },
+                  { label: 'Refer', icon: Users, color: '#8b5cf6', action: () => onNavigate('referral') }
+                ].map((item, i) => (
+                  <motion.button key={i} onClick={item.action} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                    className="flex flex-col items-center gap-2 p-3 lg:p-4 rounded-xl hover:shadow-md transition-all"
+                    style={{ background: `${item.color}10` }}>
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${item.color}20` }}>
+                      <item.icon className="w-5 h-5" style={{ color: item.color }} />
+                    </div>
+                    <span className="text-xs font-medium" style={{ color: item.color }}>{item.label}</span>
+                  </motion.button>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
+            </motion.div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
-          <motion.button onClick={() => setShowDeposit(true)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-            className="flex items-center gap-3 p-4 lg:p-5 bg-white rounded-xl lg:rounded-2xl shadow-lg hover:shadow-xl transition-all">
-            <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center" style={{ background: `${theme.green}15` }}>
-              <Download className="w-5 h-5 lg:w-6 lg:h-6" style={{ color: theme.green }} />
-            </div>
-            <span className="font-medium text-sm lg:text-base" style={{ color: theme.navy }}>Deposit</span>
-          </motion.button>
-          <motion.button onClick={() => setShowWithdraw(true)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-            className="flex items-center gap-3 p-4 lg:p-5 bg-white rounded-xl lg:rounded-2xl shadow-lg hover:shadow-xl transition-all">
-            <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center" style={{ background: `${theme.gold}15` }}>
-              <Upload className="w-5 h-5 lg:w-6 lg:h-6" style={{ color: theme.gold }} />
-            </div>
-            <span className="font-medium text-sm lg:text-base" style={{ color: theme.navy }}>Withdraw</span>
-          </motion.button>
-          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-            className="flex items-center gap-3 p-4 lg:p-5 bg-white rounded-xl lg:rounded-2xl shadow-lg hover:shadow-xl transition-all">
-            <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center" style={{ background: `${theme.navy}15` }}>
-              <History className="w-5 h-5 lg:w-6 lg:h-6" style={{ color: theme.navy }} />
-            </div>
-            <span className="font-medium text-sm lg:text-base" style={{ color: theme.navy }}>History</span>
-          </motion.button>
-          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-            className="flex items-center gap-3 p-4 lg:p-5 bg-white rounded-xl lg:rounded-2xl shadow-lg hover:shadow-xl transition-all">
-            <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center" style={{ background: `${theme.charcoal}15` }}>
-              <FileText className="w-5 h-5 lg:w-6 lg:h-6" style={{ color: theme.charcoal }} />
-            </div>
-            <span className="font-medium text-sm lg:text-base" style={{ color: theme.navy }}>Reports</span>
-          </motion.button>
+            {/* Recent Activity */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+              className="bg-white rounded-2xl shadow-lg overflow-hidden">
+              <div className="p-4 lg:p-6 border-b border-gray-100">
+                <h3 className="font-serif text-lg" style={{ color: theme.navy }}>Recent Activity</h3>
+              </div>
+              <div className="divide-y divide-gray-100">
+                {recentTransactions.slice(0, 4).map((tx, i) => (
+                  <div key={i} className="p-3 lg:p-4 flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                      tx.type === 'deposit' ? 'bg-green-100' : 
+                      tx.type === 'withdrawal' ? 'bg-orange-100' : 
+                      tx.type === 'dividend' ? 'bg-purple-100' : 'bg-blue-100'
+                    }`}>
+                      {tx.type === 'deposit' && <Download className="w-4 h-4 text-green-600" />}
+                      {tx.type === 'withdrawal' && <Upload className="w-4 h-4 text-orange-600" />}
+                      {tx.type === 'dividend' && <DollarSign className="w-4 h-4 text-purple-600" />}
+                      {tx.type === 'investment' && <TrendingUp className="w-4 h-4 text-blue-600" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate" style={{ color: theme.navy }}>
+                        {tx.type.charAt(0).toUpperCase() + tx.type.slice(1)}
+                      </p>
+                      <p className="text-xs text-gray-500">{tx.date}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className={`text-sm font-bold ${tx.type === 'withdrawal' ? 'text-orange-600' : 'text-green-600'}`}>
+                        {tx.type === 'withdrawal' ? '-' : '+'}${tx.amount.toLocaleString()}
+                      </p>
+                      <span className={`text-xs px-1.5 py-0.5 rounded ${
+                        tx.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                      }`}>{tx.status}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
         </div>
       </div>
 
-      {/* Deposit Modal */}
+      {/* Modals */}
       <AnimatePresence>
         {showDeposit && <DepositModal onClose={() => setShowDeposit(false)} />}
         {showWithdraw && <WithdrawModal onClose={() => setShowWithdraw(false)} balance={user.balance} />}
