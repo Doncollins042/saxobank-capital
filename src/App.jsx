@@ -7,7 +7,8 @@ import {
   FileText, Search, Download, MessageCircle, Send, Headphones, ChevronDown,
   Star, Gift, History, Calculator, Globe, Briefcase, ArrowLeft, ShieldCheck,
   MapPin, DollarSign, Target, Award, RefreshCw, Camera, Upload, Key, Smartphone,
-  Ticket, Share2, Link2, UserPlus, Percent, BadgeDollarSign, ChevronUp, AlertCircle
+  Ticket, Share2, Link2, UserPlus, Percent, BadgeDollarSign, ChevronUp, AlertCircle,
+  Plus, Edit, Trash2, Image, Calendar
 } from 'lucide-react';
 import { 
   registerUser, 
@@ -1109,6 +1110,9 @@ function DocumentsFolder({ onViewDocument }) {
 function HomePage({ onNavigate, onSelectInvestment }) {
   const [viewingDocument, setViewingDocument] = useState(null);
 
+  // Get investments from localStorage (admin controlled) or fallback to defaults
+  const displayInvestments = JSON.parse(localStorage.getItem('saxovault_investments') || 'null') || investments;
+
   const onViewDocument = (docTitle) => {
     setViewingDocument(docTitle);
   };
@@ -1214,7 +1218,7 @@ function HomePage({ onNavigate, onSelectInvestment }) {
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-            {investments.slice(0, 6).map((inv, i) => (
+            {displayInvestments.slice(0, 6).map((inv, i) => (
               <motion.div key={inv.id} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
                 onClick={() => onSelectInvestment(inv)}
                 className="bg-white rounded-xl lg:rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all cursor-pointer group">
@@ -1311,7 +1315,10 @@ function InvestmentsPage({ onSelectInvestment }) {
   const [category, setCategory] = useState('all');
   const [search, setSearch] = useState('');
 
-  const filtered = investments.filter(inv =>
+  // Get investments from localStorage (admin controlled) or fallback to defaults
+  const adminInvestments = JSON.parse(localStorage.getItem('saxovault_investments') || 'null') || investments;
+
+  const filtered = adminInvestments.filter(inv =>
     (category === 'all' || inv.type === category) &&
     inv.name.toLowerCase().includes(search.toLowerCase())
   );
@@ -1614,207 +1621,118 @@ function InvestFlowModal({ investment, onClose, balance }) {
 function DashboardPage({ user, onNavigate }) {
   const [showDeposit, setShowDeposit] = useState(false);
   const [showWithdraw, setShowWithdraw] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview');
+
+  // Get investments from localStorage (admin controlled)
+  const storedInvestments = JSON.parse(localStorage.getItem('saxovault_investments') || 'null');
+  const currentInvestments = storedInvestments || investments;
 
   const portfolio = [
-    { name: 'Greenwich Towers', type: 'Real Estate', invested: 25000, current: 28750, returns: 15, color: '#3b82f6', icon: Building2 },
-    { name: 'Blue-Chip Crypto Fund', type: 'Cryptocurrency', invested: 15000, current: 18750, returns: 25, color: '#f59e0b', icon: Bitcoin },
-    { name: 'Dividend Aristocrats', type: 'Stocks', invested: 10000, current: 10800, returns: 8, color: '#10b981', icon: BarChart3 },
-    { name: 'Gold Liquidity Strategy', type: 'Precious Metals', invested: 8000, current: 8720, returns: 9, color: '#D4AF37', icon: Gem }
-  ];
-
-  const recentTransactions = [
-    { type: 'deposit', amount: 5000, crypto: 'BTC', status: 'completed', date: '2024-01-15' },
-    { type: 'investment', amount: 10000, name: 'Greenwich Towers', status: 'completed', date: '2024-01-14' },
-    { type: 'withdrawal', amount: 2500, crypto: 'USDT', status: 'pending', date: '2024-01-13' },
-    { type: 'dividend', amount: 450, name: 'Dividend Aristocrats', status: 'completed', date: '2024-01-12' }
+    { name: 'Greenwich Towers', type: 'Real Estate', invested: 25000, current: 28750, returns: 15, color: '#3b82f6' },
+    { name: 'Blue-Chip Crypto Fund', type: 'Crypto', invested: 15000, current: 18750, returns: 25, color: '#f59e0b' },
+    { name: 'Dividend Aristocrats', type: 'Stocks', invested: 10000, current: 10800, returns: 8, color: '#10b981' }
   ];
 
   const totalInvested = portfolio.reduce((sum, p) => sum + p.invested, 0);
   const totalCurrent = portfolio.reduce((sum, p) => sum + p.current, 0);
   const totalReturns = totalCurrent - totalInvested;
-  const returnPercent = ((totalReturns / totalInvested) * 100).toFixed(1);
 
   return (
     <div className="min-h-screen pt-20 lg:pt-24 pb-24 lg:pb-12" style={{ background: theme.cream }}>
-      <div className="max-w-7xl mx-auto px-4 lg:px-6">
+      <div className="max-w-6xl mx-auto px-4 lg:px-6">
         
-        {/* Welcome Header */}
-        <div className="mb-6 lg:mb-8">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div>
-              <p className="text-gray-500 text-sm mb-1">Welcome back,</p>
-              <h1 className="font-serif text-2xl lg:text-3xl" style={{ color: theme.navy }}>{user.name || 'Investor'}</h1>
-            </div>
-            <div className="flex gap-3">
-              <motion.button onClick={() => setShowDeposit(true)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                className="flex items-center gap-2 px-4 lg:px-6 py-2.5 lg:py-3 rounded-xl text-white font-medium shadow-lg"
-                style={{ background: `linear-gradient(135deg, ${theme.green} 0%, ${theme.greenDark} 100%)` }}>
-                <Download className="w-4 h-4 lg:w-5 lg:h-5" /> Deposit
-              </motion.button>
-              <motion.button onClick={() => setShowWithdraw(true)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                className="flex items-center gap-2 px-4 lg:px-6 py-2.5 lg:py-3 rounded-xl font-medium border-2"
-                style={{ borderColor: theme.navy, color: theme.navy }}>
-                <Upload className="w-4 h-4 lg:w-5 lg:h-5" /> Withdraw
-              </motion.button>
-            </div>
+        {/* Simple Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="font-serif text-xl lg:text-2xl" style={{ color: theme.navy }}>Dashboard</h1>
+            <p className="text-gray-500 text-sm">Welcome back, {user.name || 'Investor'}</p>
           </div>
         </div>
 
-        {/* Main Portfolio Card */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl lg:rounded-3xl p-6 lg:p-8 mb-6 lg:mb-8 text-white relative overflow-hidden"
+        {/* Balance Card */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+          className="rounded-2xl p-5 lg:p-6 mb-6 text-white"
           style={{ background: `linear-gradient(135deg, ${theme.navy} 0%, ${theme.navyLight} 100%)` }}>
-          <div className="absolute top-0 right-0 w-64 h-64 rounded-full opacity-10" 
-            style={{ background: `radial-gradient(circle, ${theme.gold} 0%, transparent 70%)`, transform: 'translate(30%, -30%)' }} />
-          
-          <div className="relative z-10">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-              <div>
-                <p className="text-white/60 text-xs lg:text-sm mb-1">Total Portfolio Value</p>
-                <p className="text-2xl lg:text-4xl font-bold">${totalCurrent.toLocaleString()}</p>
-                <div className="flex items-center gap-1 mt-2">
-                  <TrendingUp className="w-4 h-4 text-green-400" />
-                  <span className="text-green-400 text-sm font-medium">+{returnPercent}%</span>
-                </div>
-              </div>
-              <div>
-                <p className="text-white/60 text-xs lg:text-sm mb-1">Total Invested</p>
-                <p className="text-xl lg:text-2xl font-bold">${totalInvested.toLocaleString()}</p>
-                <p className="text-white/50 text-xs mt-2">{portfolio.length} Active Assets</p>
-              </div>
-              <div>
-                <p className="text-white/60 text-xs lg:text-sm mb-1">Total Returns</p>
-                <p className="text-xl lg:text-2xl font-bold text-green-400">+${totalReturns.toLocaleString()}</p>
-                <p className="text-white/50 text-xs mt-2">All Time Profit</p>
-              </div>
-              <div>
-                <p className="text-white/60 text-xs lg:text-sm mb-1">Available Balance</p>
-                <p className="text-xl lg:text-2xl font-bold" style={{ color: theme.gold }}>${user.balance.toLocaleString()}</p>
-                <p className="text-white/50 text-xs mt-2">Ready to Invest</p>
-              </div>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-white/60 text-sm mb-1">Available Balance</p>
+              <p className="text-3xl lg:text-4xl font-bold">${user.balance.toLocaleString()}</p>
+            </div>
+            <div className="flex gap-2">
+              <motion.button onClick={() => setShowDeposit(true)} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                className="px-4 py-2 rounded-xl text-sm font-medium"
+                style={{ background: theme.green, color: 'white' }}>
+                <Download className="w-4 h-4 inline mr-1" /> Deposit
+              </motion.button>
+              <motion.button onClick={() => setShowWithdraw(true)} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                className="px-4 py-2 rounded-xl text-sm font-medium bg-white/20 text-white">
+                <Upload className="w-4 h-4 inline mr-1" /> Withdraw
+              </motion.button>
             </div>
           </div>
         </motion.div>
 
-        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
-          {/* Portfolio Allocation */}
-          <div className="lg:col-span-2">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-              className="bg-white rounded-2xl shadow-lg overflow-hidden h-full">
-              <div className="p-4 lg:p-6 border-b border-gray-100 flex items-center justify-between">
-                <h2 className="font-serif text-lg lg:text-xl" style={{ color: theme.navy }}>Portfolio Allocation</h2>
-                <motion.button onClick={() => onNavigate('investments')} whileHover={{ scale: 1.05 }}
-                  className="text-sm font-medium flex items-center gap-1" style={{ color: theme.gold }}>
-                  View All <ChevronRight className="w-4 h-4" />
-                </motion.button>
-              </div>
-              
-              {/* Portfolio Bar */}
-              <div className="px-4 lg:px-6 py-4">
-                <div className="h-4 rounded-full overflow-hidden flex">
-                  {portfolio.map((item, i) => (
-                    <div key={i} style={{ width: `${(item.current / totalCurrent) * 100}%`, background: item.color }} 
-                      className="transition-all" />
-                  ))}
+        {/* Stats Row */}
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          <div className="bg-white rounded-xl p-4 shadow-sm">
+            <p className="text-gray-500 text-xs mb-1">Portfolio</p>
+            <p className="text-lg font-bold" style={{ color: theme.navy }}>${totalCurrent.toLocaleString()}</p>
+          </div>
+          <div className="bg-white rounded-xl p-4 shadow-sm">
+            <p className="text-gray-500 text-xs mb-1">Invested</p>
+            <p className="text-lg font-bold" style={{ color: theme.gold }}>${totalInvested.toLocaleString()}</p>
+          </div>
+          <div className="bg-white rounded-xl p-4 shadow-sm">
+            <p className="text-gray-500 text-xs mb-1">Returns</p>
+            <p className="text-lg font-bold" style={{ color: theme.green }}>+${totalReturns.toLocaleString()}</p>
+          </div>
+        </div>
+
+        {/* My Investments */}
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+          <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+            <h2 className="font-medium" style={{ color: theme.navy }}>My Investments</h2>
+            <button onClick={() => onNavigate('investments')} className="text-sm" style={{ color: theme.gold }}>View All</button>
+          </div>
+          <div className="divide-y divide-gray-50">
+            {portfolio.map((item, i) => (
+              <div key={i} className="p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: `${item.color}15` }}>
+                    <TrendingUp className="w-5 h-5" style={{ color: item.color }} />
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm" style={{ color: theme.navy }}>{item.name}</p>
+                    <p className="text-xs text-gray-400">{item.type}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="font-bold text-sm">${item.current.toLocaleString()}</p>
+                  <p className="text-xs text-green-600">+{item.returns}%</p>
                 </div>
               </div>
-
-              <div className="divide-y divide-gray-100">
-                {portfolio.map((item, i) => (
-                  <motion.div key={i} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 + i * 0.05 }}
-                    className="p-4 lg:p-5 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer">
-                    <div className="flex items-center gap-3 lg:gap-4">
-                      <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center" style={{ background: `${item.color}15` }}>
-                        <item.icon className="w-5 h-5 lg:w-6 lg:h-6" style={{ color: item.color }} />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-sm lg:text-base" style={{ color: theme.navy }}>{item.name}</p>
-                        <p className="text-xs lg:text-sm text-gray-500">{item.type}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-sm lg:text-base" style={{ color: theme.navy }}>${item.current.toLocaleString()}</p>
-                      <div className="flex items-center justify-end gap-2">
-                        <span className="text-xs text-gray-400">${item.invested.toLocaleString()}</span>
-                        <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ background: `${theme.green}15`, color: theme.green }}>
-                          +{item.returns}%
-                        </span>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
+            ))}
           </div>
+        </div>
 
-          {/* Right Sidebar */}
-          <div className="space-y-6">
-            {/* Quick Actions */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-              className="bg-white rounded-2xl shadow-lg p-4 lg:p-6">
-              <h3 className="font-serif text-lg mb-4" style={{ color: theme.navy }}>Quick Actions</h3>
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { label: 'Deposit', icon: Download, color: theme.green, action: () => setShowDeposit(true) },
-                  { label: 'Withdraw', icon: Upload, color: theme.gold, action: () => setShowWithdraw(true) },
-                  { label: 'Invest', icon: TrendingUp, color: theme.navy, action: () => onNavigate('investments') },
-                  { label: 'Refer', icon: Users, color: '#8b5cf6', action: () => onNavigate('referral') }
-                ].map((item, i) => (
-                  <motion.button key={i} onClick={item.action} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                    className="flex flex-col items-center gap-2 p-3 lg:p-4 rounded-xl hover:shadow-md transition-all"
-                    style={{ background: `${item.color}10` }}>
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${item.color}20` }}>
-                      <item.icon className="w-5 h-5" style={{ color: item.color }} />
-                    </div>
-                    <span className="text-xs font-medium" style={{ color: item.color }}>{item.label}</span>
-                  </motion.button>
-                ))}
+        {/* Quick Actions */}
+        <div className="grid grid-cols-4 gap-3">
+          {[
+            { icon: TrendingUp, label: 'Invest', color: theme.navy, action: () => onNavigate('investments') },
+            { icon: Users, label: 'Refer', color: '#8b5cf6', action: () => onNavigate('referral') },
+            { icon: Calculator, label: 'Calc', color: theme.gold, action: () => onNavigate('calculator') },
+            { icon: User, label: 'Profile', color: theme.green, action: () => onNavigate('profile') }
+          ].map((item, i) => (
+            <motion.button key={i} onClick={item.action} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+              className="bg-white rounded-xl p-4 shadow-sm flex flex-col items-center gap-2">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: `${item.color}15` }}>
+                <item.icon className="w-5 h-5" style={{ color: item.color }} />
               </div>
-            </motion.div>
-
-            {/* Recent Activity */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-              className="bg-white rounded-2xl shadow-lg overflow-hidden">
-              <div className="p-4 lg:p-6 border-b border-gray-100">
-                <h3 className="font-serif text-lg" style={{ color: theme.navy }}>Recent Activity</h3>
-              </div>
-              <div className="divide-y divide-gray-100">
-                {recentTransactions.slice(0, 4).map((tx, i) => (
-                  <div key={i} className="p-3 lg:p-4 flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      tx.type === 'deposit' ? 'bg-green-100' : 
-                      tx.type === 'withdrawal' ? 'bg-orange-100' : 
-                      tx.type === 'dividend' ? 'bg-purple-100' : 'bg-blue-100'
-                    }`}>
-                      {tx.type === 'deposit' && <Download className="w-4 h-4 text-green-600" />}
-                      {tx.type === 'withdrawal' && <Upload className="w-4 h-4 text-orange-600" />}
-                      {tx.type === 'dividend' && <DollarSign className="w-4 h-4 text-purple-600" />}
-                      {tx.type === 'investment' && <TrendingUp className="w-4 h-4 text-blue-600" />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate" style={{ color: theme.navy }}>
-                        {tx.type.charAt(0).toUpperCase() + tx.type.slice(1)}
-                      </p>
-                      <p className="text-xs text-gray-500">{tx.date}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className={`text-sm font-bold ${tx.type === 'withdrawal' ? 'text-orange-600' : 'text-green-600'}`}>
-                        {tx.type === 'withdrawal' ? '-' : '+'}${tx.amount.toLocaleString()}
-                      </p>
-                      <span className={`text-xs px-1.5 py-0.5 rounded ${
-                        tx.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-                      }`}>{tx.status}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          </div>
+              <span className="text-xs font-medium text-gray-600">{item.label}</span>
+            </motion.button>
+          ))}
         </div>
       </div>
 
-      {/* Modals */}
       <AnimatePresence>
         {showDeposit && <DepositModal onClose={() => setShowDeposit(false)} />}
         {showWithdraw && <WithdrawModal onClose={() => setShowWithdraw(false)} balance={user.balance} />}
@@ -3231,12 +3149,48 @@ function AdminDashboard({ onLogout }) {
   const tickets = JSON.parse(localStorage.getItem('saxovault_tickets') || '[]');
   const openTickets = tickets.filter(t => t.status === 'open').length;
 
+  // Investment management state
+  const [adminInvestments, setAdminInvestments] = useState(() => {
+    const stored = localStorage.getItem('saxovault_investments');
+    return stored ? JSON.parse(stored) : investments;
+  });
+  const [editingInvestment, setEditingInvestment] = useState(null);
+  const [showAddInvestment, setShowAddInvestment] = useState(false);
+  const [newInvestment, setNewInvestment] = useState({
+    name: '', category: 'Real Estate', type: 'real-estate', min: 1000, returns: '10-15%',
+    term: '12 months', desc: '', status: 'Funding', progress: 0, goal: 1000000
+  });
+
+  const handleSaveInvestment = (inv) => {
+    let updated;
+    if (inv.id) {
+      updated = adminInvestments.map(i => i.id === inv.id ? inv : i);
+    } else {
+      inv.id = Date.now();
+      updated = [...adminInvestments, inv];
+    }
+    setAdminInvestments(updated);
+    localStorage.setItem('saxovault_investments', JSON.stringify(updated));
+    Storage.addNotification({ type: 'investment', message: inv.id ? 'Investment updated' : 'Investment added' });
+    setEditingInvestment(null);
+    setShowAddInvestment(false);
+  };
+
+  const handleDeleteInvestment = (id) => {
+    if (confirm('Are you sure you want to delete this investment?')) {
+      const updated = adminInvestments.filter(i => i.id !== id);
+      setAdminInvestments(updated);
+      localStorage.setItem('saxovault_investments', JSON.stringify(updated));
+      Storage.addNotification({ type: 'investment', message: 'Investment deleted' });
+    }
+  };
+
   const tabs = [
     { id: 'overview', name: 'Overview', icon: PieChart },
     { id: 'users', name: 'Users', icon: Users },
     { id: 'transactions', name: 'Transactions', icon: CreditCard },
+    { id: 'investments', name: 'Investments', icon: TrendingUp },
     { id: 'tickets', name: 'Tickets', icon: Ticket, badge: openTickets },
-    { id: 'notifications', name: 'Activity Log', icon: Bell },
     { id: 'settings', name: 'Settings', icon: Settings }
   ];
 
@@ -3532,6 +3486,176 @@ function AdminDashboard({ onLogout }) {
                   )}
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* Investments Tab - FULL CONTROL */}
+          {activeTab === 'investments' && (
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="font-serif text-xl lg:text-2xl" style={{ color: theme.navy }}>Investment Plans</h2>
+                <motion.button onClick={() => setShowAddInvestment(true)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-white text-sm font-medium"
+                  style={{ background: theme.green }}>
+                  <Plus className="w-4 h-4" /> Add Investment
+                </motion.button>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div className="p-4 border-b border-gray-100">
+                  <p className="text-sm text-gray-500">{adminInvestments.length} investment plans</p>
+                </div>
+                <div className="divide-y divide-gray-100">
+                  {adminInvestments.map((inv, i) => (
+                    <div key={i} className="p-4 hover:bg-gray-50">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-center gap-3 flex-1">
+                          <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
+                            <Building2 className="w-6 h-6 text-gray-500" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-semibold truncate" style={{ color: theme.navy }}>{inv.name}</p>
+                            <p className="text-xs text-gray-500">{inv.category} • Min ${inv.min?.toLocaleString()}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700">{inv.returns}</span>
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">{inv.term}</span>
+                              <span className={`text-xs px-2 py-0.5 rounded-full ${inv.status === 'Active' ? 'bg-green-100 text-green-700' : inv.status === 'Funding' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700'}`}>{inv.status}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-2 flex-shrink-0">
+                          <motion.button onClick={() => setEditingInvestment(inv)} whileHover={{ scale: 1.1 }}
+                            className="p-2 rounded-lg bg-blue-100 text-blue-600">
+                            <Edit className="w-4 h-4" />
+                          </motion.button>
+                          <motion.button onClick={() => handleDeleteInvestment(inv.id)} whileHover={{ scale: 1.1 }}
+                            className="p-2 rounded-lg bg-red-100 text-red-600">
+                            <Trash2 className="w-4 h-4" />
+                          </motion.button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Add/Edit Investment Modal */}
+              <AnimatePresence>
+                {(showAddInvestment || editingInvestment) && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                    onClick={() => { setShowAddInvestment(false); setEditingInvestment(null); }}>
+                    <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}
+                      className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto"
+                      onClick={(e) => e.stopPropagation()}>
+                      <h3 className="font-serif text-xl mb-4" style={{ color: theme.navy }}>
+                        {editingInvestment ? 'Edit Investment' : 'Add New Investment'}
+                      </h3>
+                      
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                          <input type="text" value={editingInvestment?.name || newInvestment.name}
+                            onChange={(e) => editingInvestment ? setEditingInvestment({...editingInvestment, name: e.target.value}) : setNewInvestment({...newInvestment, name: e.target.value})}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-xl" placeholder="Greenwich Towers" />
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                            <select value={editingInvestment?.category || newInvestment.category}
+                              onChange={(e) => editingInvestment ? setEditingInvestment({...editingInvestment, category: e.target.value}) : setNewInvestment({...newInvestment, category: e.target.value})}
+                              className="w-full px-3 py-2 border border-gray-200 rounded-xl">
+                              <option>Real Estate</option>
+                              <option>Cryptocurrency</option>
+                              <option>Stocks & Bonds</option>
+                              <option>Precious Metals</option>
+                              <option>Investment Plans</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                            <select value={editingInvestment?.status || newInvestment.status}
+                              onChange={(e) => editingInvestment ? setEditingInvestment({...editingInvestment, status: e.target.value}) : setNewInvestment({...newInvestment, status: e.target.value})}
+                              className="w-full px-3 py-2 border border-gray-200 rounded-xl">
+                              <option>Funding</option>
+                              <option>Active</option>
+                              <option>Open</option>
+                              <option>Closed</option>
+                              <option>Coming Soon</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Returns (e.g. 12-15%)</label>
+                            <input type="text" value={editingInvestment?.returns || newInvestment.returns}
+                              onChange={(e) => editingInvestment ? setEditingInvestment({...editingInvestment, returns: e.target.value}) : setNewInvestment({...newInvestment, returns: e.target.value})}
+                              className="w-full px-3 py-2 border border-gray-200 rounded-xl" placeholder="12-15%" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Term (e.g. 24 months)</label>
+                            <input type="text" value={editingInvestment?.term || newInvestment.term}
+                              onChange={(e) => editingInvestment ? setEditingInvestment({...editingInvestment, term: e.target.value}) : setNewInvestment({...newInvestment, term: e.target.value})}
+                              className="w-full px-3 py-2 border border-gray-200 rounded-xl" placeholder="24 months" />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Min Investment ($)</label>
+                            <input type="number" value={editingInvestment?.min || newInvestment.min}
+                              onChange={(e) => editingInvestment ? setEditingInvestment({...editingInvestment, min: parseInt(e.target.value)}) : setNewInvestment({...newInvestment, min: parseInt(e.target.value)})}
+                              className="w-full px-3 py-2 border border-gray-200 rounded-xl" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Funding Goal ($)</label>
+                            <input type="number" value={editingInvestment?.goal || newInvestment.goal}
+                              onChange={(e) => editingInvestment ? setEditingInvestment({...editingInvestment, goal: parseInt(e.target.value)}) : setNewInvestment({...newInvestment, goal: parseInt(e.target.value)})}
+                              className="w-full px-3 py-2 border border-gray-200 rounded-xl" />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Progress (%)</label>
+                          <input type="number" min="0" max="100" value={editingInvestment?.progress || newInvestment.progress}
+                            onChange={(e) => editingInvestment ? setEditingInvestment({...editingInvestment, progress: parseInt(e.target.value)}) : setNewInvestment({...newInvestment, progress: parseInt(e.target.value)})}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-xl" />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                          <textarea rows={3} value={editingInvestment?.desc || newInvestment.desc}
+                            onChange={(e) => editingInvestment ? setEditingInvestment({...editingInvestment, desc: e.target.value}) : setNewInvestment({...newInvestment, desc: e.target.value})}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-xl resize-none"
+                            placeholder="Premium mixed-use development..." />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Image URL (optional)</label>
+                          <input type="text" value={editingInvestment?.customImg || ''}
+                            onChange={(e) => editingInvestment ? setEditingInvestment({...editingInvestment, customImg: e.target.value}) : setNewInvestment({...newInvestment, customImg: e.target.value})}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-xl"
+                            placeholder="https://example.com/image.jpg" />
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3 mt-6">
+                        <motion.button onClick={() => { setShowAddInvestment(false); setEditingInvestment(null); }} 
+                          whileHover={{ scale: 1.02 }} className="flex-1 py-2.5 rounded-xl border border-gray-200">
+                          Cancel
+                        </motion.button>
+                        <motion.button onClick={() => handleSaveInvestment(editingInvestment || newInvestment)} 
+                          whileHover={{ scale: 1.02 }} className="flex-1 py-2.5 rounded-xl text-white"
+                          style={{ background: theme.green }}>
+                          {editingInvestment ? 'Save Changes' : 'Add Investment'}
+                        </motion.button>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           )}
 
