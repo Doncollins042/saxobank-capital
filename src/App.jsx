@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
+import React, { useState, useEffect, useRef, createContext, useContext, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import emailjs from '@emailjs/browser';
 import {
@@ -468,12 +468,22 @@ function OnboardingTour({ onComplete }) {
     if (step < steps.length - 1) {
       setStep(step + 1);
     } else {
+      // Mark onboarding complete for this specific user
+      const currentUser = JSON.parse(localStorage.getItem('saxovault_current_user') || '{}');
+      if (currentUser.uid) {
+        localStorage.setItem(`saxovault_onboarding_${currentUser.uid}`, 'true');
+      }
       localStorage.setItem('saxovault_onboarding_complete', 'true');
       onComplete();
     }
   };
 
   const handleSkip = () => {
+    // Mark onboarding complete for this specific user
+    const currentUser = JSON.parse(localStorage.getItem('saxovault_current_user') || '{}');
+    if (currentUser.uid) {
+      localStorage.setItem(`saxovault_onboarding_${currentUser.uid}`, 'true');
+    }
     localStorage.setItem('saxovault_onboarding_complete', 'true');
     onComplete();
   };
@@ -2464,15 +2474,31 @@ function DashboardPage({ user, onNavigate }) {
   const storedInvestments = JSON.parse(localStorage.getItem('saxovault_investments') || 'null');
   const currentInvestments = storedInvestments || investments;
 
-  const portfolio = [
-    { name: 'Greenwich Towers', type: 'Real Estate', invested: 25000, current: 28750, returns: 15, color: '#3b82f6' },
-    { name: 'Blue-Chip Crypto Fund', type: 'Crypto', invested: 15000, current: 18750, returns: 25, color: '#f59e0b' },
-    { name: 'Dividend Aristocrats', type: 'Stocks', invested: 10000, current: 10800, returns: 8, color: '#10b981' }
-  ];
+  // Get user's actual investments from transactions
+  const allTransactions = Storage.getTransactions();
+  const userInvestments = allTransactions.filter(t => 
+    t.userId === user.uid && 
+    t.type === 'investment' && 
+    t.status === 'approved'
+  );
 
+  // Calculate actual portfolio from user's approved investments
+  const portfolio = userInvestments.length > 0 ? userInvestments.map(inv => ({
+    name: inv.investmentName || 'Investment',
+    type: inv.investmentType || 'Mixed',
+    invested: inv.amount || 0,
+    current: inv.amount * (1 + (inv.returnRate || 0.1)),
+    returns: ((inv.returnRate || 0.1) * 100),
+    color: '#3b82f6'
+  })) : [];
+
+  // Calculate totals - show zero if no investments
   const totalInvested = portfolio.reduce((sum, p) => sum + p.invested, 0);
   const totalCurrent = portfolio.reduce((sum, p) => sum + p.current, 0);
   const totalReturns = totalCurrent - totalInvested;
+
+  // Get actual user balance (default to 0)
+  const userBalance = user.balance || 0;
 
   return (
     <div className="min-h-screen pt-20 lg:pt-24 pb-24 lg:pb-12" style={{ background: theme.cream }}>
@@ -2493,7 +2519,7 @@ function DashboardPage({ user, onNavigate }) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-white/60 text-sm mb-1">Available Balance</p>
-              <p className="text-3xl lg:text-4xl font-bold">${user.balance.toLocaleString()}</p>
+              <p className="text-3xl lg:text-4xl font-bold">${userBalance.toLocaleString()}</p>
             </div>
             <div className="flex gap-2">
               <motion.button onClick={() => setShowDeposit(true)} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
@@ -2521,7 +2547,7 @@ function DashboardPage({ user, onNavigate }) {
           </div>
           <div className="bg-white rounded-xl p-4 shadow-sm">
             <p className="text-gray-500 text-xs mb-1">Returns</p>
-            <p className="text-lg font-bold" style={{ color: theme.green }}>+${totalReturns.toLocaleString()}</p>
+            <p className="text-lg font-bold" style={{ color: theme.green }}>{totalReturns >= 0 ? '+' : ''}${totalReturns.toLocaleString()}</p>
           </div>
         </div>
 
@@ -2531,13 +2557,14 @@ function DashboardPage({ user, onNavigate }) {
             <h2 className="font-medium" style={{ color: theme.navy }}>My Investments</h2>
             <button onClick={() => onNavigate('investments')} className="text-sm" style={{ color: theme.gold }}>View All</button>
           </div>
-          <div className="divide-y divide-gray-50">
-            {portfolio.map((item, i) => (
-              <div key={i} className="p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: `${item.color}15` }}>
-                    <TrendingUp className="w-5 h-5" style={{ color: item.color }} />
-                  </div>
+          {portfolio.length > 0 ? (
+            <div className="divide-y divide-gray-50">
+              {portfolio.map((item, i) => (
+                <div key={i} className="p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: `${item.color}15` }}>
+                      <TrendingUp className="w-5 h-5" style={{ color: item.color }} />
+                    </div>
                   <div>
                     <p className="font-medium text-sm" style={{ color: theme.navy }}>{item.name}</p>
                     <p className="text-xs text-gray-400">{item.type}</p>
@@ -2550,6 +2577,20 @@ function DashboardPage({ user, onNavigate }) {
               </div>
             ))}
           </div>
+          ) : (
+            <div className="p-8 text-center">
+              <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                <TrendingUp className="w-8 h-8 text-gray-400" />
+              </div>
+              <p className="text-gray-500 font-medium mb-2">No investments yet</p>
+              <p className="text-gray-400 text-sm mb-4">Start your investment journey today</p>
+              <motion.button onClick={() => onNavigate('investments')} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                className="px-6 py-2 rounded-lg text-white text-sm font-medium"
+                style={{ background: theme.gold }}>
+                Browse Investments
+              </motion.button>
+            </div>
+          )}
         </div>
 
         {/* Quick Actions */}
@@ -2573,7 +2614,7 @@ function DashboardPage({ user, onNavigate }) {
 
       <AnimatePresence>
         {showDeposit && <DepositModal onClose={() => setShowDeposit(false)} />}
-        {showWithdraw && <WithdrawModal onClose={() => setShowWithdraw(false)} balance={user.balance} />}
+        {showWithdraw && <WithdrawModal onClose={() => setShowWithdraw(false)} balance={userBalance} />}
         {showAutoInvest && <AutoInvestModal onClose={() => setShowAutoInvest(false)} user={user} />}
       </AnimatePresence>
     </div>
@@ -2899,6 +2940,11 @@ function DepositModal({ onClose }) {
   const [amount, setAmount] = useState('');
   const [selectedCrypto, setSelectedCrypto] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [countdown, setCountdown] = useState(1800); // 30 minutes
+  const [txHash, setTxHash] = useState('');
+  const [proofImage, setProofImage] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
 
   const cryptoOptions = [
     { id: 'btc', name: 'Bitcoin', symbol: 'BTC', icon: '₿', color: '#f7931a', address: 'bc1qzmgg6hw0fttfpczh2whp8f44k497d6pucghk58', network: 'Bitcoin Network' },
@@ -2909,10 +2955,84 @@ function DepositModal({ onClose }) {
     { id: 'ltc', name: 'Litecoin', symbol: 'LTC', icon: 'Ł', color: '#bfbbbb', address: 'bc1qzmgg6hw0fttfpczh2whp8f44k497d6pucghk58', network: 'Litecoin Network' }
   ];
 
+  // Countdown timer
+  useEffect(() => {
+    if (step === 2 && countdown > 0) {
+      const timer = setInterval(() => setCountdown(c => c - 1), 1000);
+      return () => clearInterval(timer);
+    }
+  }, [step, countdown]);
+
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleProofUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File too large. Maximum 5MB allowed.');
+        return;
+      }
+      setUploading(true);
+      const reader = new FileReader();
+      reader.onload = () => {
+        setProofImage(reader.result);
+        setUploading(false);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSubmitPayment = () => {
+    if (!txHash && !proofImage) {
+      alert('Please provide either a transaction hash or proof of payment screenshot.');
+      return;
+    }
+
+    const user = JSON.parse(localStorage.getItem('saxovault_current_user') || '{}');
+    
+    // Create transaction with proof
+    Storage.addTransaction({
+      type: 'deposit',
+      amount: parseFloat(amount),
+      crypto: selectedCrypto.symbol,
+      network: selectedCrypto.network,
+      walletAddress: selectedCrypto.address,
+      txHash: txHash || null,
+      proofImage: proofImage || null,
+      userEmail: user.email,
+      userId: user.uid
+    });
+
+    Storage.logActivity(user.uid, 'deposit_request', { 
+      amount, 
+      crypto: selectedCrypto.symbol,
+      hasTxHash: !!txHash,
+      hasProof: !!proofImage
+    });
+
+    // Send email notification
+    EmailService.sendDepositNotification(user.email, parseFloat(amount), selectedCrypto.symbol);
+
+    setStep(4); // Go to confirmation
+  };
+
+  const handleOpenWallet = () => {
+    const walletUrl = selectedCrypto.id === 'btc' 
+      ? `bitcoin:${selectedCrypto.address}`
+      : selectedCrypto.id === 'eth' || selectedCrypto.id === 'usdc'
+        ? `ethereum:${selectedCrypto.address}`
+        : null;
+    if (walletUrl) window.location.href = walletUrl;
   };
 
   return (
@@ -2921,6 +3041,7 @@ function DepositModal({ onClose }) {
       <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'tween' }}
         className="bg-white rounded-t-3xl lg:rounded-3xl w-full lg:max-w-lg max-h-[90vh] overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
         
+        {/* Header */}
         <div className="p-5 lg:p-6" style={{ background: `linear-gradient(135deg, ${theme.green} 0%, ${theme.greenDark} 100%)` }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -2928,17 +3049,30 @@ function DepositModal({ onClose }) {
                 <Download className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h2 className="text-xl font-serif text-white">Deposit Funds</h2>
-                <p className="text-white/70 text-sm">Add money to your account</p>
+                <h2 className="text-xl font-serif text-white">
+                  {step === 1 ? 'Deposit Funds' : step === 2 ? 'Make Payment' : step === 3 ? 'Verify Payment' : 'Complete'}
+                </h2>
+                <p className="text-white/70 text-sm">
+                  {step === 1 ? 'Select amount & crypto' : step === 2 ? 'Send payment within time' : step === 3 ? 'Submit proof of payment' : 'Pending approval'}
+                </p>
               </div>
             </div>
             <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-full transition-colors">
               <X className="w-6 h-6 text-white" />
             </button>
           </div>
+          
+          {/* Progress Steps */}
+          <div className="flex items-center gap-2 mt-4">
+            {[1, 2, 3, 4].map((s) => (
+              <div key={s} className={`h-1 flex-1 rounded-full ${step >= s ? 'bg-white' : 'bg-white/30'}`} />
+            ))}
+          </div>
         </div>
 
         <div className="p-5 lg:p-6 overflow-y-auto max-h-[70vh]">
+          
+          {/* STEP 1: Select Crypto & Amount */}
           {step === 1 && (
             <div>
               <h3 className="font-semibold mb-4" style={{ color: theme.navy }}>Select Cryptocurrency</h3>
@@ -2968,7 +3102,7 @@ function DepositModal({ onClose }) {
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-bold text-gray-400">$</span>
                   <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 text-xl font-bold border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
-                    placeholder="0.00" />
+                    placeholder="0.00" min="10" />
                 </div>
                 <div className="flex gap-2 mt-2">
                   {[100, 500, 1000, 5000].map((v) => (
@@ -2980,127 +3114,209 @@ function DepositModal({ onClose }) {
                 </div>
               </div>
 
-              <motion.button onClick={() => selectedCrypto && amount && setStep(2)}
-                disabled={!selectedCrypto || !amount}
+              <motion.button onClick={() => selectedCrypto && amount && parseFloat(amount) >= 10 && setStep(2)}
+                disabled={!selectedCrypto || !amount || parseFloat(amount) < 10}
                 whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                 className="w-full py-3.5 rounded-xl text-white font-semibold disabled:opacity-50"
                 style={{ background: `linear-gradient(135deg, ${theme.green} 0%, ${theme.greenDark} 100%)` }}>
                 Continue
               </motion.button>
+              {parseFloat(amount) < 10 && amount && (
+                <p className="text-red-500 text-xs text-center mt-2">Minimum deposit is $10</p>
+              )}
             </div>
           )}
 
+          {/* STEP 2: Payment with Countdown */}
           {step === 2 && selectedCrypto && (
             <div>
-              <button onClick={() => setStep(1)} className="flex items-center gap-2 text-gray-500 hover:text-gray-700 mb-4">
-                <ArrowLeft className="w-4 h-4" /> Back
-              </button>
-
-              <div className="text-center mb-6">
-                <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 text-white text-2xl font-bold"
-                  style={{ background: selectedCrypto.color }}>
-                  {selectedCrypto.icon}
-                </div>
-                <h3 className="font-semibold text-lg" style={{ color: theme.navy }}>Send {selectedCrypto.symbol}</h3>
-                <p className="text-gray-500 text-sm">Network: {selectedCrypto.network}</p>
+              {/* Countdown Timer */}
+              <div className={`text-center mb-6 p-4 rounded-2xl ${countdown < 300 ? 'bg-red-50 border border-red-200' : 'bg-yellow-50 border border-yellow-200'}`}>
+                <p className="text-sm text-gray-600 mb-1">⏱️ Complete payment within</p>
+                <p className={`text-4xl font-mono font-bold ${countdown < 300 ? 'text-red-600' : ''}`} 
+                  style={{ color: countdown >= 300 ? theme.navy : undefined }}>
+                  {formatTime(countdown)}
+                </p>
+                {countdown < 300 && <p className="text-red-500 text-xs mt-1">Hurry! Time is running out</p>}
               </div>
 
+              {/* Amount to Send */}
               <div className="bg-gray-50 rounded-2xl p-4 mb-4">
-                <p className="text-xs text-gray-500 mb-2">Deposit Address</p>
-                <div className="flex items-center gap-2">
-                  <p className="flex-1 font-mono text-xs break-all" style={{ color: theme.navy }}>{selectedCrypto.address}</p>
-                  <button onClick={() => handleCopy(selectedCrypto.address)}
-                    className={`p-2 rounded-lg transition-colors ${copied ? 'bg-green-100 text-green-600' : 'bg-white text-gray-500 hover:bg-gray-100'}`}>
-                    {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                  </button>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-sm text-gray-500">Amount to deposit</p>
+                    <p className="text-2xl font-bold" style={{ color: theme.navy }}>${parseFloat(amount).toLocaleString()}</p>
+                  </div>
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold"
+                    style={{ background: selectedCrypto.color }}>
+                    {selectedCrypto.icon}
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">Send equivalent in {selectedCrypto.symbol} ({selectedCrypto.network})</p>
+              </div>
+
+              {/* Wallet Address */}
+              <div className="mb-4">
+                <p className="text-sm font-medium text-gray-700 mb-2">Send {selectedCrypto.symbol} to this address:</p>
+                <div className="bg-gray-900 rounded-xl p-4">
+                  <p className="text-xs text-gray-400 mb-2 text-center">{selectedCrypto.network} Address</p>
+                  <p className="font-mono text-sm text-white break-all text-center mb-3">{selectedCrypto.address}</p>
+                  <div className="flex gap-2">
+                    <motion.button onClick={() => handleCopy(selectedCrypto.address)} 
+                      whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                      className="flex-1 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2"
+                      style={{ background: copied ? theme.green : theme.gold, color: 'white' }}>
+                      {copied ? <><CheckCircle className="w-4 h-4" /> Copied!</> : <><Copy className="w-4 h-4" /> Copy Address</>}
+                    </motion.button>
+                    <motion.button onClick={handleOpenWallet} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                      className="flex-1 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2 bg-blue-500 text-white">
+                      <ExternalLink className="w-4 h-4" /> Open Wallet
+                    </motion.button>
+                  </div>
                 </div>
               </div>
 
+              {/* Warning */}
               <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-4">
                 <div className="flex gap-3">
-                  <div className="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center flex-shrink-0">
-                    <Bell className="w-4 h-4 text-yellow-600" />
-                  </div>
+                  <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0" />
                   <div>
                     <p className="font-medium text-yellow-800 text-sm">Important</p>
                     <p className="text-yellow-700 text-xs mt-1">
-                      Only send {selectedCrypto.symbol} to this address. Sending any other cryptocurrency may result in permanent loss.
+                      Only send {selectedCrypto.symbol} via {selectedCrypto.network}. Sending wrong crypto or using wrong network will result in permanent loss.
                     </p>
                   </div>
-                </div>
-              </div>
-
-              <div className="space-y-3 mb-6">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Amount to deposit</span>
-                  <span className="font-bold" style={{ color: theme.navy }}>${parseFloat(amount).toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Network fee</span>
-                  <span className="font-bold text-gray-600">Paid by sender</span>
-                </div>
-              </div>
-
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
-                <div className="flex gap-3">
-                  <MessageCircle className="w-5 h-5 text-blue-600 flex-shrink-0" />
-                  <p className="text-blue-700 text-xs">
-                    For other deposit methods not listed here, please <span className="font-semibold">contact Customer Support</span> via WhatsApp or Live Chat.
-                  </p>
                 </div>
               </div>
 
               <motion.button onClick={() => setStep(3)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                 className="w-full py-3.5 rounded-xl text-white font-semibold"
                 style={{ background: `linear-gradient(135deg, ${theme.green} 0%, ${theme.greenDark} 100%)` }}>
-                I've Sent the Payment
+                I've Sent the Payment →
               </motion.button>
             </div>
           )}
 
-          {step === 3 && (
+          {/* STEP 3: Proof of Payment */}
+          {step === 3 && selectedCrypto && (
+            <div>
+              <button onClick={() => setStep(2)} className="flex items-center gap-2 text-gray-500 hover:text-gray-700 mb-4">
+                <ArrowLeft className="w-4 h-4" /> Back
+              </button>
+
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3"
+                  style={{ background: `${theme.navy}10` }}>
+                  <FileText className="w-8 h-8" style={{ color: theme.navy }} />
+                </div>
+                <h3 className="font-semibold text-lg" style={{ color: theme.navy }}>Verify Your Payment</h3>
+                <p className="text-gray-500 text-sm">Provide transaction details for faster verification</p>
+              </div>
+
+              {/* Transaction Hash Input */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Transaction Hash (TX ID) <span className="text-gray-400 font-normal">- Recommended</span>
+                </label>
+                <input type="text" value={txHash} onChange={(e) => setTxHash(e.target.value)}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 font-mono text-sm"
+                  placeholder="e.g., 0x1234...abcd or txid..." />
+                <p className="text-xs text-gray-400 mt-1">Find this in your wallet's transaction history</p>
+              </div>
+
+              {/* OR Divider */}
+              <div className="flex items-center gap-4 my-4">
+                <div className="flex-1 h-px bg-gray-200" />
+                <span className="text-gray-400 text-sm">OR</span>
+                <div className="flex-1 h-px bg-gray-200" />
+              </div>
+
+              {/* Proof of Payment Upload */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Upload Proof of Payment <span className="text-gray-400 font-normal">- Screenshot</span>
+                </label>
+                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleProofUpload} className="hidden" />
+                
+                {!proofImage ? (
+                  <motion.button onClick={() => fileInputRef.current?.click()}
+                    whileHover={{ scale: 1.01 }}
+                    className="w-full border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-gray-400 transition-colors">
+                    {uploading ? (
+                      <RefreshCw className="w-8 h-8 text-gray-400 mx-auto animate-spin" />
+                    ) : (
+                      <>
+                        <Camera className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                        <p className="text-sm text-gray-600">Click to upload screenshot</p>
+                        <p className="text-xs text-gray-400 mt-1">PNG, JPG up to 5MB</p>
+                      </>
+                    )}
+                  </motion.button>
+                ) : (
+                  <div className="relative">
+                    <img src={proofImage} alt="Proof" className="w-full h-40 object-cover rounded-xl" />
+                    <button onClick={() => setProofImage(null)}
+                      className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Summary */}
+              <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-gray-500">Amount</span>
+                  <span className="font-bold">${parseFloat(amount).toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-gray-500">Crypto</span>
+                  <span className="font-bold">{selectedCrypto.symbol}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Verification</span>
+                  <span className="font-medium text-green-600">
+                    {txHash && proofImage ? '✓ Hash + Proof' : txHash ? '✓ TX Hash' : proofImage ? '✓ Screenshot' : '⚠️ Required'}
+                  </span>
+                </div>
+              </div>
+
+              <motion.button onClick={handleSubmitPayment}
+                disabled={!txHash && !proofImage}
+                whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                className="w-full py-3.5 rounded-xl text-white font-semibold disabled:opacity-50"
+                style={{ background: `linear-gradient(135deg, ${theme.green} 0%, ${theme.greenDark} 100%)` }}>
+                Submit for Verification
+              </motion.button>
+            </div>
+          )}
+
+          {/* STEP 4: Confirmation */}
+          {step === 4 && (
             <div className="text-center py-8">
-              {/* Create transaction and notify admin on mount */}
-              {(() => {
-                // Only run once
-                if (!window._depositNotified) {
-                  window._depositNotified = true;
-                  const user = JSON.parse(localStorage.getItem('saxovault_current_user') || '{}');
-                  Storage.addTransaction({
-                    type: 'deposit',
-                    amount: parseFloat(amount),
-                    crypto: selectedCrypto.symbol,
-                    network: selectedCrypto.network,
-                    userEmail: user.email,
-                    userId: user.uid
-                  });
-                  Storage.logActivity(user.uid, 'deposit_request', { amount, crypto: selectedCrypto.symbol });
-                  
-                  // Send email notification
-                  EmailService.sendDepositNotification(user.email, parseFloat(amount), selectedCrypto.symbol);
-                  
-                  setTimeout(() => { window._depositNotified = false; }, 1000);
-                }
-                return null;
-              })()}
               <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring' }}
                 className="w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4" style={{ background: `${theme.green}20` }}>
-                <Clock className="w-10 h-10" style={{ color: theme.green }} />
+                <CheckCircle className="w-10 h-10" style={{ color: theme.green }} />
               </motion.div>
-              <h3 className="font-serif text-xl mb-2" style={{ color: theme.navy }}>Deposit Pending</h3>
+              <h3 className="font-serif text-xl mb-2" style={{ color: theme.navy }}>Deposit Submitted!</h3>
               <p className="text-gray-500 text-sm mb-6">
-                Your deposit is being processed. It may take 10-30 minutes for the transaction to be confirmed on the blockchain.
+                Your deposit is being verified by our team. You'll receive a confirmation once approved.
               </p>
               <div className="bg-gray-50 rounded-xl p-4 text-left mb-6">
                 <div className="flex justify-between text-sm mb-2">
                   <span className="text-gray-500">Amount</span>
                   <span className="font-bold">${parseFloat(amount).toLocaleString()}</span>
                 </div>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-gray-500">Cryptocurrency</span>
+                  <span className="font-bold">{selectedCrypto?.symbol}</span>
+                </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Status</span>
-                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">Pending Approval</span>
+                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">⏳ Pending Approval</span>
                 </div>
               </div>
+              <p className="text-xs text-gray-400 mb-4">Verification typically takes 10-30 minutes</p>
               <motion.button onClick={onClose} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                 className="w-full py-3.5 rounded-xl font-semibold"
                 style={{ background: `${theme.navy}10`, color: theme.navy }}>
@@ -3546,8 +3762,16 @@ Withdrawal Fee: Network fees only for cryptocurrency`
 
 // ============ REFERRAL PROGRAM PAGE ============
 function ReferralPage({ user }) {
-  const referralCode = 'SAXO' + user.name.split(' ')[0].toUpperCase().slice(0, 4) + Math.random().toString(36).substr(2, 4).toUpperCase();
-  const referralLink = `https://saxobank.capital/ref/${referralCode}`;
+  // Generate stable referral code based on user ID
+  const referralCode = useMemo(() => {
+    const storedCode = localStorage.getItem(`saxovault_referral_code_${user.uid}`);
+    if (storedCode) return storedCode;
+    const newCode = 'SAXO' + (user.name || 'USER').split(' ')[0].toUpperCase().slice(0, 4) + Math.random().toString(36).substr(2, 4).toUpperCase();
+    localStorage.setItem(`saxovault_referral_code_${user.uid}`, newCode);
+    return newCode;
+  }, [user.uid, user.name]);
+  
+  const referralLink = `https://saxovault.com/ref/${referralCode}`;
   const [copied, setCopied] = useState(false);
 
   const handleCopy = (text) => {
@@ -3556,12 +3780,28 @@ function ReferralPage({ user }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const referrals = [
-    { name: 'John D.', date: '2024-01-15', deposits: 15000, bonus: 150, status: 'Active' },
-    { name: 'Sarah M.', date: '2024-01-20', deposits: 25000, bonus: 250, status: 'Active' },
-    { name: 'Mike R.', date: '2024-02-01', deposits: 5000, bonus: 50, status: 'Pending' }
-  ];
+  // Get ACTUAL referrals from localStorage (users who signed up with this user's referral code)
+  const allUsers = Storage.getUsers();
+  const referrals = allUsers
+    .filter(u => u.referredBy === user.uid || u.referralCode === referralCode)
+    .map(u => {
+      // Get this user's approved deposits
+      const userTransactions = Storage.getTransactions().filter(t => 
+        t.userId === u.uid && t.type === 'deposit' && t.status === 'approved'
+      );
+      const totalDeposits = userTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+      const bonus = totalDeposits * 0.01; // 1% referral bonus
+      
+      return {
+        name: u.name ? u.name.split(' ')[0] + ' ' + (u.name.split(' ')[1]?.[0] || '') + '.' : 'User',
+        date: u.createdAt || new Date().toISOString(),
+        deposits: totalDeposits,
+        bonus: bonus,
+        status: totalDeposits > 0 ? 'Active' : 'Pending'
+      };
+    });
 
+  // Calculate totals - will be 0 if no referrals
   const totalEarnings = referrals.reduce((sum, r) => sum + r.bonus, 0);
   const totalReferrals = referrals.length;
   const activeReferrals = referrals.filter(r => r.status === 'Active').length;
@@ -3580,23 +3820,37 @@ function ReferralPage({ user }) {
           <p className="text-gray-600 text-sm lg:text-base max-w-lg mx-auto">Earn rewards when your friends invest. Get 1% bonus on every deposit your referrals make!</p>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-3 lg:gap-6 mb-6 lg:mb-8">
-          {[
-            { label: 'Total Earnings', value: `$${totalEarnings}`, icon: BadgeDollarSign, color: theme.green },
-            { label: 'Total Referrals', value: totalReferrals, icon: Users, color: theme.navy },
-            { label: 'Active Referrals', value: activeReferrals, icon: UserPlus, color: theme.gold }
-          ].map((stat, i) => (
-            <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
-              className="bg-white rounded-xl lg:rounded-2xl p-4 lg:p-6 shadow-lg text-center">
-              <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center mx-auto mb-2 lg:mb-3" style={{ background: `${stat.color}15` }}>
-                <stat.icon className="w-5 h-5 lg:w-6 lg:h-6" style={{ color: stat.color }} />
-              </div>
-              <p className="text-xl lg:text-3xl font-bold" style={{ color: stat.color }}>{stat.value}</p>
-              <p className="text-xs lg:text-sm text-gray-500">{stat.label}</p>
-            </motion.div>
-          ))}
-        </div>
+        {/* Stats - Only show if user has referrals, otherwise show invite prompt */}
+        {referrals.length > 0 ? (
+          <div className="grid grid-cols-3 gap-3 lg:gap-6 mb-6 lg:mb-8">
+            {[
+              { label: 'Total Earnings', value: `$${totalEarnings.toLocaleString()}`, icon: BadgeDollarSign, color: theme.green },
+              { label: 'Total Referrals', value: totalReferrals, icon: Users, color: theme.navy },
+              { label: 'Active Referrals', value: activeReferrals, icon: UserPlus, color: theme.gold }
+            ].map((stat, i) => (
+              <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
+                className="bg-white rounded-xl lg:rounded-2xl p-4 lg:p-6 shadow-lg text-center">
+                <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center mx-auto mb-2 lg:mb-3" style={{ background: `${stat.color}15` }}>
+                  <stat.icon className="w-5 h-5 lg:w-6 lg:h-6" style={{ color: stat.color }} />
+                </div>
+                <p className="text-xl lg:text-3xl font-bold" style={{ color: stat.color }}>{stat.value}</p>
+                <p className="text-xs lg:text-sm text-gray-500">{stat.label}</p>
+              </motion.div>
+            ))}
+          </div>
+        ) : (
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 lg:p-8 mb-6 lg:mb-8 text-center border border-blue-100">
+            <div className="w-16 h-16 rounded-full bg-white shadow-md flex items-center justify-center mx-auto mb-4">
+              <UserPlus className="w-8 h-8 text-blue-500" />
+            </div>
+            <h3 className="font-semibold text-lg mb-2" style={{ color: theme.navy }}>Start Earning Today!</h3>
+            <p className="text-gray-600 text-sm mb-4">Share your referral link with friends and earn 1% bonus on every deposit they make.</p>
+            <div className="flex items-center justify-center gap-2 text-sm">
+              <span className="px-3 py-1 bg-white rounded-full text-gray-500">No referrals yet</span>
+              <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full">$0 earned</span>
+            </div>
+          </div>
+        )}
 
         {/* Referral Code & Link */}
         <div className="bg-white rounded-xl lg:rounded-2xl shadow-lg p-5 lg:p-8 mb-6 lg:mb-8">
@@ -4492,16 +4746,10 @@ const Storage = {
 };
 
 // ============ EMAIL SERVICE (EmailJS - Real Email Sending) ============
-// SETUP INSTRUCTIONS:
-// 1. Go to https://www.emailjs.com/ and create FREE account
-// 2. Add Email Service: Dashboard → Email Services → Add New → Choose "Zoho" or "Custom SMTP"
-//    - For Zoho: Service ID will be something like "service_zoho" 
-//    - SMTP: smtp.zoho.com, Port: 587, TLS: Yes
-//    - Username: support@saxovault.com, Password: your Zoho app password
-// 3. Create Templates: Dashboard → Email Templates → Create New
-//    - Create templates for: notification, admin_alert, 2fa
-// 4. Get Public Key: Dashboard → Account → API Keys → Copy Public Key
-// 5. Replace the values below with your actual IDs
+// IMPORTANT: Your EmailJS template MUST have these variables:
+// Subject: {{subject}}
+// Content: {{message}}
+// To: Set in template settings as {{to_email}}
 
 const EMAILJS_CONFIG = {
   publicKey: 'trmaHaGeZzBpjKtaj',
@@ -4513,211 +4761,212 @@ const EMAILJS_CONFIG = {
   }
 };
 
-// Initialize EmailJS
-emailjs.init(EMAILJS_CONFIG.publicKey);
+// Initialize EmailJS on load
+try {
+  emailjs.init(EMAILJS_CONFIG.publicKey);
+  console.log('✅ EmailJS initialized with public key');
+} catch (err) {
+  console.error('❌ EmailJS init failed:', err);
+}
 
 const EmailService = {
   // Check if EmailJS is configured
   isConfigured: () => {
-    return EMAILJS_CONFIG.publicKey !== 'YOUR_PUBLIC_KEY';
+    return EMAILJS_CONFIG.publicKey && EMAILJS_CONFIG.publicKey !== 'YOUR_PUBLIC_KEY';
   },
 
-  // Core email sending function - SIMPLIFIED for reliability
-  sendEmail: async (to, subject, body, type = 'notification') => {
-    const email = {
+  // Core email sending function
+  sendEmail: async (to, subject, messageBody, type = 'notification') => {
+    console.log('📧 Attempting to send email:', { to, subject, type });
+    
+    // Create log entry
+    const emailLog = {
       to,
       subject,
-      body,
       type,
       status: 'pending',
       createdAt: new Date().toISOString()
     };
     
-    // If EmailJS not configured, queue email
+    // Check if configured
     if (!EmailService.isConfigured()) {
-      email.status = 'queued';
-      Storage.queueEmail(email);
-      console.log('⚠️ EmailJS not configured. Email queued:', { to, subject });
+      console.warn('⚠️ EmailJS not configured');
+      emailLog.status = 'failed';
+      emailLog.error = 'Not configured';
+      Storage.queueEmail(emailLog);
       return { success: false, message: 'EmailJS not configured' };
     }
     
     try {
-      // Send via EmailJS with SIMPLE variable names
-      // These must match your EmailJS template exactly:
-      // {{to_email}}, {{subject}}, {{message}}
+      // Clean the message - strip HTML tags for plain text
+      const cleanMessage = messageBody
+        .replace(/<[^>]*>/g, '') // Remove HTML tags
+        .replace(/&nbsp;/g, ' ') // Replace HTML spaces
+        .replace(/\s+/g, ' ')    // Collapse whitespace
+        .trim();
+
+      // Template parameters - MUST match your EmailJS template exactly
+      const templateParams = {
+        to_email: to,
+        subject: subject,
+        message: cleanMessage,
+        from_name: 'SaxoVault Capital',
+        reply_to: 'support@saxovault.com'
+      };
+
+      console.log('📤 Sending with params:', templateParams);
+
       const response = await emailjs.send(
         EMAILJS_CONFIG.serviceId,
         EMAILJS_CONFIG.templates.notification,
-        {
-          to_email: to,
-          to_name: to.split('@')[0],
-          from_name: 'SaxoVault Capital',
-          subject: subject,
-          message: body.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim(), // Plain text version
-          reply_to: 'support@saxovault.com'
-        }
+        templateParams
       );
       
-      console.log('✅ Email sent successfully:', { to, subject, status: response.status });
-      email.status = 'sent';
-      Storage.queueEmail(email);
+      console.log('✅ Email sent successfully!', response);
+      emailLog.status = 'sent';
+      emailLog.response = response.status;
+      Storage.queueEmail(emailLog);
       
-      // Show success toast
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('saxovault-toast', { 
-          detail: { message: `Email sent to ${to}`, type: 'success' } 
-        }));
-      }
+      return { success: true, message: 'Email sent!', response };
       
-      return { success: true, message: 'Email sent successfully', response };
     } catch (error) {
-      console.error('❌ Email failed:', error);
-      email.status = 'failed';
-      email.error = error?.text || error?.message || 'Unknown error';
-      Storage.queueEmail(email);
-      
-      // Log detailed error for debugging
-      console.log('EmailJS Error Details:', {
-        serviceId: EMAILJS_CONFIG.serviceId,
-        templateId: EMAILJS_CONFIG.templates.notification,
-        errorText: error?.text,
-        errorMessage: error?.message,
-        fullError: error
+      console.error('❌ EmailJS Error:', error);
+      console.error('Error details:', {
+        message: error?.message,
+        text: error?.text,
+        status: error?.status
       });
       
-      return { success: false, message: error?.text || 'Failed to send email' };
+      emailLog.status = 'failed';
+      emailLog.error = error?.text || error?.message || 'Unknown error';
+      Storage.queueEmail(emailLog);
+      
+      return { success: false, message: error?.text || 'Email failed' };
     }
   },
 
-  // Template-based emails with beautiful HTML
+  // Simplified notification emails
   sendDepositNotification: async (userEmail, amount, crypto) => {
-    const subject = `✅ Deposit Request Received - $${amount.toLocaleString()}`;
-    const body = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="color: #0a1628; margin: 0;">SaxoVault Capital</h1>
-        </div>
-        <h2 style="color: #0a1628;">Deposit Request Received</h2>
-        <p style="color: #4b5563;">Your deposit request has been received and is pending confirmation.</p>
-        <div style="background: #f3f4f6; padding: 20px; border-radius: 12px; margin: 20px 0;">
-          <p style="margin: 5px 0;"><strong>Amount:</strong> $${amount.toLocaleString()}</p>
-          <p style="margin: 5px 0;"><strong>Payment Method:</strong> ${crypto}</p>
-          <p style="margin: 5px 0;"><strong>Status:</strong> <span style="color: #f59e0b;">⏳ Pending Confirmation</span></p>
-        </div>
-        <p style="color: #4b5563;">Your funds will be credited once the transaction is confirmed on the blockchain (usually 10-30 minutes).</p>
-        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-        <p style="color: #9ca3af; font-size: 12px; text-align: center;">Thank you for choosing SaxoVault Capital.<br>support@saxovault.com</p>
-      </div>
-    `;
-    await EmailService.sendEmail(userEmail, subject, body, 'deposit');
-    EmailService.notifyAdmin('deposit', userEmail, amount, crypto);
+    const subject = `Deposit Request Received - $${amount.toLocaleString()}`;
+    const message = `
+Hello,
+
+Your deposit request has been received!
+
+Amount: $${amount.toLocaleString()}
+Payment Method: ${crypto}
+Status: Pending Confirmation
+
+Your funds will be credited once the transaction is confirmed on the blockchain (usually 10-30 minutes).
+
+Thank you for choosing SaxoVault Capital.
+
+Best regards,
+The SaxoVault Team
+support@saxovault.com
+    `.trim();
+    
+    const result = await EmailService.sendEmail(userEmail, subject, message, 'deposit');
+    
+    // Also notify admin
+    await EmailService.notifyAdmin('deposit', userEmail, amount, crypto);
+    
+    return result;
   },
 
   sendWithdrawalNotification: async (userEmail, amount, address) => {
-    const subject = `💸 Withdrawal Request - $${amount.toLocaleString()}`;
-    const body = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="color: #0a1628; margin: 0;">SaxoVault Capital</h1>
-        </div>
-        <h2 style="color: #0a1628;">Withdrawal Request Submitted</h2>
-        <p style="color: #4b5563;">Your withdrawal request has been submitted for review.</p>
-        <div style="background: #f3f4f6; padding: 20px; border-radius: 12px; margin: 20px 0;">
-          <p style="margin: 5px 0;"><strong>Amount:</strong> $${amount.toLocaleString()}</p>
-          <p style="margin: 5px 0;"><strong>Destination:</strong> ${address.slice(0,10)}...${address.slice(-6)}</p>
-          <p style="margin: 5px 0;"><strong>Status:</strong> <span style="color: #f59e0b;">⏳ Under Review</span></p>
-        </div>
-        <p style="color: #4b5563;">Withdrawals are typically processed within 24-48 hours after approval.</p>
-        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-        <p style="color: #9ca3af; font-size: 12px; text-align: center;">SaxoVault Capital<br>support@saxovault.com</p>
-      </div>
-    `;
-    await EmailService.sendEmail(userEmail, subject, body, 'withdrawal');
-    EmailService.notifyAdmin('withdrawal', userEmail, amount, address);
+    const subject = `Withdrawal Request - $${amount.toLocaleString()}`;
+    const message = `
+Hello,
+
+Your withdrawal request has been submitted for review.
+
+Amount: $${amount.toLocaleString()}
+Destination: ${address.slice(0,10)}...${address.slice(-6)}
+Status: Under Review
+
+Withdrawals are typically processed within 24-48 hours after approval.
+
+Thank you for choosing SaxoVault Capital.
+
+Best regards,
+The SaxoVault Team
+    `.trim();
+    
+    const result = await EmailService.sendEmail(userEmail, subject, message, 'withdrawal');
+    await EmailService.notifyAdmin('withdrawal', userEmail, amount, address);
+    return result;
   },
 
   sendInvestmentNotification: async (userEmail, investmentName, amount) => {
-    const subject = `📈 Investment Request - ${investmentName}`;
-    const body = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="color: #0a1628; margin: 0;">SaxoVault Capital</h1>
-        </div>
-        <h2 style="color: #0a1628;">Investment Request Received</h2>
-        <p style="color: #4b5563;">Your investment request is pending admin approval.</p>
-        <div style="background: #f3f4f6; padding: 20px; border-radius: 12px; margin: 20px 0;">
-          <p style="margin: 5px 0;"><strong>Investment:</strong> ${investmentName}</p>
-          <p style="margin: 5px 0;"><strong>Amount:</strong> $${amount.toLocaleString()}</p>
-          <p style="margin: 5px 0;"><strong>Status:</strong> <span style="color: #f59e0b;">⏳ Pending Approval</span></p>
-        </div>
-        <p style="color: #4b5563;">You'll receive a confirmation email once your investment is approved.</p>
-        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-        <p style="color: #9ca3af; font-size: 12px; text-align: center;">SaxoVault Capital<br>support@saxovault.com</p>
-      </div>
-    `;
-    await EmailService.sendEmail(userEmail, subject, body, 'investment');
-    EmailService.notifyAdmin('investment', userEmail, amount, investmentName);
+    const subject = `Investment Request - ${investmentName}`;
+    const message = `
+Hello,
+
+Your investment request has been received and is pending approval.
+
+Investment: ${investmentName}
+Amount: $${amount.toLocaleString()}
+Status: Pending Approval
+
+You'll receive a confirmation email once your investment is approved.
+
+Thank you for choosing SaxoVault Capital.
+
+Best regards,
+The SaxoVault Team
+    `.trim();
+    
+    const result = await EmailService.sendEmail(userEmail, subject, message, 'investment');
+    await EmailService.notifyAdmin('investment', userEmail, amount, investmentName);
+    return result;
   },
 
   sendReferralNotification: async (referrerEmail, newUserName) => {
-    const subject = `🎉 Congratulations! New Referral Signup!`;
-    const body = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="color: #0a1628; margin: 0;">SaxoVault Capital</h1>
-        </div>
-        <h2 style="color: #10b981;">🎉 Congratulations!</h2>
-        <p style="color: #4b5563;">Someone just signed up using your referral link!</p>
-        <div style="background: #ecfdf5; padding: 20px; border-radius: 12px; margin: 20px 0; border: 1px solid #10b981;">
-          <p style="margin: 5px 0;"><strong>New User:</strong> ${newUserName}</p>
-          <p style="margin: 5px 0;"><strong>Your Bonus:</strong> Will be credited when they make their first investment</p>
-        </div>
-        <p style="color: #4b5563;">Keep sharing your referral link to earn more rewards!</p>
-        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-        <p style="color: #9ca3af; font-size: 12px; text-align: center;">SaxoVault Capital<br>support@saxovault.com</p>
-      </div>
-    `;
-    await EmailService.sendEmail(referrerEmail, subject, body, 'referral');
+    const subject = `Congratulations! New Referral Signup!`;
+    const message = `
+Hello,
+
+Great news! Someone just signed up using your referral link!
+
+New User: ${newUserName}
+Your Bonus: Will be credited when they make their first investment (1% of their deposits)
+
+Keep sharing your referral link to earn more rewards!
+
+Thank you for spreading the word about SaxoVault Capital.
+
+Best regards,
+The SaxoVault Team
+    `.trim();
+    
+    return await EmailService.sendEmail(referrerEmail, subject, message, 'referral');
   },
 
   send2FACode: async (userEmail, code) => {
-    const subject = `🔐 Your SaxoVault Security Code: ${code}`;
-    const body = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="color: #0a1628; margin: 0;">SaxoVault Capital</h1>
-        </div>
-        <h2 style="color: #0a1628; text-align: center;">Two-Factor Authentication</h2>
-        <p style="color: #4b5563; text-align: center;">Your verification code is:</p>
-        <div style="background: #0a1628; padding: 30px; border-radius: 12px; margin: 20px auto; text-align: center; max-width: 300px;">
-          <h1 style="color: #D4AF37; font-size: 36px; letter-spacing: 8px; margin: 0; font-family: monospace;">${code}</h1>
-        </div>
-        <p style="color: #ef4444; text-align: center; font-weight: bold;">⚠️ This code expires in 5 minutes</p>
-        <p style="color: #9ca3af; text-align: center; font-size: 12px;">Do not share this code with anyone. SaxoVault will never ask for your code.</p>
-        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-        <p style="color: #9ca3af; font-size: 12px; text-align: center;">If you didn't request this code, please secure your account immediately.</p>
-      </div>
-    `;
-    return await EmailService.sendEmail(userEmail, subject, body, '2fa');
+    const subject = `Your Security Code: ${code}`;
+    const message = `
+Your SaxoVault verification code is:
+
+${code}
+
+This code expires in 5 minutes.
+
+WARNING: Never share this code with anyone. SaxoVault will never ask for your code.
+
+If you didn't request this code, please secure your account immediately.
+
+Best regards,
+The SaxoVault Team
+    `.trim();
+    
+    return await EmailService.sendEmail(userEmail, subject, message, '2fa');
   },
 
   sendBroadcast: async (users, title, message) => {
     const results = [];
     for (const user of users) {
-      const body = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #0a1628; margin: 0;">SaxoVault Capital</h1>
-          </div>
-          <h2 style="color: #0a1628;">📢 ${title}</h2>
-          <div style="background: #f3f4f6; padding: 20px; border-radius: 12px; margin: 20px 0;">
-            <p style="color: #4b5563; margin: 0;">${message}</p>
-          </div>
-          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-          <p style="color: #9ca3af; font-size: 12px; text-align: center;">- The SaxoVault Team<br>support@saxovault.com</p>
-        </div>
-      `;
-      const result = await EmailService.sendEmail(user.email, `📢 ${title}`, body, 'broadcast');
+      const result = await EmailService.sendEmail(user.email, title, message, 'broadcast');
       results.push({ email: user.email, ...result });
     }
     return results;
@@ -4726,39 +4975,33 @@ const EmailService = {
   notifyAdmin: async (type, userEmail, amount, details) => {
     const adminEmail = 'support@saxovault.com';
     const typeLabels = {
-      deposit: '💰 New Deposit Request',
-      withdrawal: '💸 New Withdrawal Request',
-      investment: '📈 New Investment Request',
-      referral: '👥 New Referral Signup',
-      new_user: '👤 New User Registration'
+      deposit: 'New Deposit Request',
+      withdrawal: 'New Withdrawal Request',
+      investment: 'New Investment Request',
+      referral: 'New Referral Signup',
+      new_user: 'New User Registration'
     };
     
-    const subject = typeLabels[type] || `📋 New ${type} Action Required`;
-    const body = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="color: #0a1628; margin: 0;">SaxoVault Admin Alert</h1>
-        </div>
-        <h2 style="color: #0a1628;">${subject}</h2>
-        <div style="background: #fef3c7; padding: 20px; border-radius: 12px; margin: 20px 0; border: 1px solid #f59e0b;">
-          <p style="margin: 5px 0;"><strong>User:</strong> ${userEmail}</p>
-          <p style="margin: 5px 0;"><strong>Amount:</strong> $${amount?.toLocaleString() || 'N/A'}</p>
-          <p style="margin: 5px 0;"><strong>Details:</strong> ${details || 'None'}</p>
-          <p style="margin: 5px 0;"><strong>Time:</strong> ${new Date().toLocaleString()}</p>
-        </div>
-        <p style="color: #ef4444; font-weight: bold; text-align: center;">⚠️ Action Required - Please review in admin panel</p>
-        <div style="text-align: center; margin-top: 20px;">
-          <a href="https://saxovault.com/#admin" style="display: inline-block; background: #0a1628; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">Open Admin Panel</a>
-        </div>
-      </div>
-    `;
+    const subject = `ADMIN: ${typeLabels[type] || type}`;
+    const message = `
+ADMIN ALERT
+
+Type: ${typeLabels[type] || type}
+User: ${userEmail}
+Amount: $${amount?.toLocaleString() || 'N/A'}
+Details: ${details || 'None'}
+Time: ${new Date().toLocaleString()}
+
+Please review in admin panel: https://saxovault.com/#admin
+    `.trim();
     
-    await EmailService.sendEmail(adminEmail, subject, body, 'admin_alert');
+    // Send email to admin
+    await EmailService.sendEmail(adminEmail, subject, message, 'admin_alert');
     
-    // Also add to admin in-app notifications
+    // Also add in-app notification
     Storage.notifyAdmin({
       type,
-      title: subject,
+      title: typeLabels[type] || type,
       message: `${userEmail} - $${amount?.toLocaleString() || 'N/A'}`,
       details,
       urgent: true,
@@ -4766,41 +5009,24 @@ const EmailService = {
     });
   },
 
-  // Send transaction status update to user
   sendStatusUpdate: async (userEmail, type, status, amount, details = '') => {
-    const statusColors = {
-      approved: '#10b981',
-      rejected: '#ef4444',
-      completed: '#10b981',
-      pending: '#f59e0b'
-    };
+    const subject = `Your ${type} has been ${status}`;
+    const message = `
+Hello,
+
+Your ${type} request has been ${status}.
+
+Amount: $${amount?.toLocaleString() || 'N/A'}
+Status: ${status.toUpperCase()}
+${details ? `Note: ${details}` : ''}
+
+Thank you for choosing SaxoVault Capital.
+
+Best regards,
+The SaxoVault Team
+    `.trim();
     
-    const statusEmoji = {
-      approved: '✅',
-      rejected: '❌',
-      completed: '✅',
-      pending: '⏳'
-    };
-    
-    const subject = `${statusEmoji[status]} Your ${type} has been ${status}`;
-    const body = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="color: #0a1628; margin: 0;">SaxoVault Capital</h1>
-        </div>
-        <h2 style="color: ${statusColors[status]};">${statusEmoji[status]} ${type.charAt(0).toUpperCase() + type.slice(1)} ${status.charAt(0).toUpperCase() + status.slice(1)}</h2>
-        <p style="color: #4b5563;">Your ${type} request has been ${status}.</p>
-        <div style="background: #f3f4f6; padding: 20px; border-radius: 12px; margin: 20px 0;">
-          <p style="margin: 5px 0;"><strong>Amount:</strong> $${amount?.toLocaleString()}</p>
-          <p style="margin: 5px 0;"><strong>Status:</strong> <span style="color: ${statusColors[status]};">${status.toUpperCase()}</span></p>
-          ${details ? `<p style="margin: 5px 0;"><strong>Note:</strong> ${details}</p>` : ''}
-        </div>
-        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-        <p style="color: #9ca3af; font-size: 12px; text-align: center;">SaxoVault Capital<br>support@saxovault.com</p>
-      </div>
-    `;
-    
-    return await EmailService.sendEmail(userEmail, subject, body, 'status_update');
+    return await EmailService.sendEmail(userEmail, subject, message, 'status_update');
   }
 };
 
@@ -6340,18 +6566,33 @@ export default function App() {
       // Log the login activity
       logActivity('login', userData.email);
       
-      // Check if first time user (show onboarding)
-      const onboardingComplete = localStorage.getItem('saxovault_onboarding_complete');
-      if (!onboardingComplete) {
-        setShowOnboarding(true);
-      }
-      
       // Save to localStorage for admin to see
       const users = Storage.getUsers();
       const existingUser = users.find(u => u.email === userData.email);
-      if (!existingUser) {
-        users.push({ ...userData, uid: userData.uid || Date.now().toString(), createdAt: new Date().toISOString() });
+      
+      // Check if this is a brand new user (first time being added to localStorage)
+      const isNewUser = !existingUser;
+      
+      if (isNewUser) {
+        // This is a new user - add them with zero balances
+        users.push({ 
+          ...userData, 
+          uid: userData.uid || Date.now().toString(), 
+          createdAt: new Date().toISOString(),
+          // Initialize all figures to zero
+          balance: 0,
+          totalDeposited: 0,
+          totalWithdrawn: 0,
+          totalEarnings: 0,
+          activeInvestments: 0,
+          referralEarnings: 0,
+          referralCount: 0,
+          onboardingComplete: false // Mark as new user
+        });
         Storage.setUsers(users);
+        
+        // Show onboarding ONLY for brand new users
+        setShowOnboarding(true);
         
         // Notify admin of new user
         Storage.notifyAdmin({
