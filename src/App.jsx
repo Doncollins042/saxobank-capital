@@ -594,10 +594,64 @@ function AuthPage({ onLogin }) {
   const [mode, setMode] = useState('login');
   const [showPass, setShowPass] = useState(false);
   const [step, setStep] = useState(1);
-  const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', confirmPassword: '', referralCode: '', country: '' });
+  const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', confirmPassword: '', referralCode: '', country: '', countryCode: '+234' });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState({ type: '', text: '' });
+  
+  // Country codes list
+  const countryCodes = [
+    { code: '+234', country: 'Nigeria', flag: '🇳🇬' },
+    { code: '+1', country: 'USA/Canada', flag: '🇺🇸' },
+    { code: '+44', country: 'UK', flag: '🇬🇧' },
+    { code: '+91', country: 'India', flag: '🇮🇳' },
+    { code: '+86', country: 'China', flag: '🇨🇳' },
+    { code: '+81', country: 'Japan', flag: '🇯🇵' },
+    { code: '+49', country: 'Germany', flag: '🇩🇪' },
+    { code: '+33', country: 'France', flag: '🇫🇷' },
+    { code: '+39', country: 'Italy', flag: '🇮🇹' },
+    { code: '+34', country: 'Spain', flag: '🇪🇸' },
+    { code: '+55', country: 'Brazil', flag: '🇧🇷' },
+    { code: '+52', country: 'Mexico', flag: '🇲🇽' },
+    { code: '+61', country: 'Australia', flag: '🇦🇺' },
+    { code: '+82', country: 'South Korea', flag: '🇰🇷' },
+    { code: '+7', country: 'Russia', flag: '🇷🇺' },
+    { code: '+27', country: 'South Africa', flag: '🇿🇦' },
+    { code: '+254', country: 'Kenya', flag: '🇰🇪' },
+    { code: '+233', country: 'Ghana', flag: '🇬🇭' },
+    { code: '+20', country: 'Egypt', flag: '🇪🇬' },
+    { code: '+971', country: 'UAE', flag: '🇦🇪' },
+    { code: '+966', country: 'Saudi Arabia', flag: '🇸🇦' },
+    { code: '+62', country: 'Indonesia', flag: '🇮🇩' },
+    { code: '+60', country: 'Malaysia', flag: '🇲🇾' },
+    { code: '+65', country: 'Singapore', flag: '🇸🇬' },
+    { code: '+63', country: 'Philippines', flag: '🇵🇭' },
+    { code: '+84', country: 'Vietnam', flag: '🇻🇳' },
+    { code: '+66', country: 'Thailand', flag: '🇹🇭' },
+    { code: '+31', country: 'Netherlands', flag: '🇳🇱' },
+    { code: '+32', country: 'Belgium', flag: '🇧🇪' },
+    { code: '+41', country: 'Switzerland', flag: '🇨🇭' },
+    { code: '+43', country: 'Austria', flag: '🇦🇹' },
+    { code: '+46', country: 'Sweden', flag: '🇸🇪' },
+    { code: '+47', country: 'Norway', flag: '🇳🇴' },
+    { code: '+45', country: 'Denmark', flag: '🇩🇰' },
+    { code: '+358', country: 'Finland', flag: '🇫🇮' },
+    { code: '+48', country: 'Poland', flag: '🇵🇱' },
+    { code: '+380', country: 'Ukraine', flag: '🇺🇦' },
+    { code: '+90', country: 'Turkey', flag: '🇹🇷' },
+    { code: '+972', country: 'Israel', flag: '🇮🇱' },
+    { code: '+92', country: 'Pakistan', flag: '🇵🇰' },
+    { code: '+880', country: 'Bangladesh', flag: '🇧🇩' },
+    { code: '+94', country: 'Sri Lanka', flag: '🇱🇰' },
+    { code: '+977', country: 'Nepal', flag: '🇳🇵' },
+    { code: '+64', country: 'New Zealand', flag: '🇳🇿' },
+    { code: '+353', country: 'Ireland', flag: '🇮🇪' },
+    { code: '+351', country: 'Portugal', flag: '🇵🇹' },
+    { code: '+30', country: 'Greece', flag: '🇬🇷' },
+    { code: '+36', country: 'Hungary', flag: '🇭🇺' },
+    { code: '+40', country: 'Romania', flag: '🇷🇴' },
+    { code: '+420', country: 'Czech Republic', flag: '🇨🇿' }
+  ];
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
 
@@ -626,7 +680,7 @@ function AuthPage({ onLogin }) {
       // Register new user
       const result = await registerUser(form.email, form.password, {
         name: form.name,
-        phone: form.phone,
+        phone: `${form.countryCode} ${form.phone}`,
         country: form.country,
         referralCode: form.referralCode
       });
@@ -982,12 +1036,29 @@ function AuthPage({ onLogin }) {
                 <>
                   <motion.div key="phone" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone Number</label>
-                    <div className="relative">
-                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <input type="tel" value={form.phone} onChange={(e) => setForm({...form, phone: e.target.value})}
-                        className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none"
-                        placeholder="+1 234 567 890" />
+                    <div className="flex gap-2">
+                      {/* Country Code Dropdown */}
+                      <div className="relative w-32 flex-shrink-0">
+                        <select 
+                          value={form.countryCode} 
+                          onChange={(e) => setForm({...form, countryCode: e.target.value})}
+                          className="w-full px-3 py-3 border border-gray-200 rounded-xl focus:outline-none appearance-none bg-white text-sm font-medium"
+                          style={{ color: theme.navy }}>
+                          {countryCodes.map((c) => (
+                            <option key={c.code} value={c.code}>{c.flag} {c.code}</option>
+                          ))}
+                        </select>
+                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                      </div>
+                      {/* Phone Number Input */}
+                      <div className="relative flex-1">
+                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input type="tel" value={form.phone} onChange={(e) => setForm({...form, phone: e.target.value.replace(/\D/g, '')})}
+                          className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none"
+                          placeholder="8142266776" maxLength="15" />
+                      </div>
                     </div>
+                    <p className="text-xs text-gray-400 mt-1">Full number: {form.countryCode} {form.phone || '...'}</p>
                   </motion.div>
 
                   <motion.div key="country" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
@@ -4451,7 +4522,7 @@ const EmailService = {
     return EMAILJS_CONFIG.publicKey !== 'YOUR_PUBLIC_KEY';
   },
 
-  // Core email sending function
+  // Core email sending function - SIMPLIFIED for reliability
   sendEmail: async (to, subject, body, type = 'notification') => {
     const email = {
       to,
@@ -4462,48 +4533,59 @@ const EmailService = {
       createdAt: new Date().toISOString()
     };
     
-    // If EmailJS not configured, queue email and show setup message
+    // If EmailJS not configured, queue email
     if (!EmailService.isConfigured()) {
       email.status = 'queued';
       Storage.queueEmail(email);
       console.log('⚠️ EmailJS not configured. Email queued:', { to, subject });
-      console.log('📋 Setup EmailJS: https://www.emailjs.com/ (free 200 emails/month)');
-      return { success: false, message: 'EmailJS not configured - email queued' };
+      return { success: false, message: 'EmailJS not configured' };
     }
     
     try {
-      // Determine which template to use
-      const templateId = type === '2fa' ? EMAILJS_CONFIG.templates.twofa 
-                       : type === 'admin_alert' ? EMAILJS_CONFIG.templates.admin 
-                       : EMAILJS_CONFIG.templates.notification;
-      
-      // Send via EmailJS
+      // Send via EmailJS with SIMPLE variable names
+      // These must match your EmailJS template exactly:
+      // {{to_email}}, {{subject}}, {{message}}
       const response = await emailjs.send(
         EMAILJS_CONFIG.serviceId,
-        templateId,
+        EMAILJS_CONFIG.templates.notification,
         {
           to_email: to,
-          subject: subject,
-          message: body.replace(/<[^>]*>/g, ''), // Strip HTML for plain text
-          html_content: body,
+          to_name: to.split('@')[0],
           from_name: 'SaxoVault Capital',
+          subject: subject,
+          message: body.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim(), // Plain text version
           reply_to: 'support@saxovault.com'
         }
       );
       
       console.log('✅ Email sent successfully:', { to, subject, status: response.status });
       email.status = 'sent';
-      email.response = response;
-      Storage.queueEmail(email); // Log sent email
+      Storage.queueEmail(email);
+      
+      // Show success toast
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('saxovault-toast', { 
+          detail: { message: `Email sent to ${to}`, type: 'success' } 
+        }));
+      }
       
       return { success: true, message: 'Email sent successfully', response };
     } catch (error) {
       console.error('❌ Email failed:', error);
       email.status = 'failed';
-      email.error = error.text || error.message;
+      email.error = error?.text || error?.message || 'Unknown error';
       Storage.queueEmail(email);
       
-      return { success: false, message: error.text || 'Failed to send email' };
+      // Log detailed error for debugging
+      console.log('EmailJS Error Details:', {
+        serviceId: EMAILJS_CONFIG.serviceId,
+        templateId: EMAILJS_CONFIG.templates.notification,
+        errorText: error?.text,
+        errorMessage: error?.message,
+        fullError: error
+      });
+      
+      return { success: false, message: error?.text || 'Failed to send email' };
     }
   },
 
