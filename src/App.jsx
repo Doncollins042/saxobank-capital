@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import emailjs from '@emailjs/browser';
 import {
   Crown, TrendingUp, Shield, Users, ArrowRight, Eye, EyeOff, Mail, Lock, User, Phone,
   Home, PieChart, Wallet, Settings, ChevronRight, Building2, Bitcoin, BarChart3, Gem,
@@ -70,11 +71,334 @@ import {
   getCurrentUserData
 } from './firebase';
 
-// Multi-language support
+// Multi-language support - 30+ Languages
 const translations = {
-  en: { welcome: 'Welcome', dashboard: 'Dashboard', investments: 'Investments', deposit: 'Deposit', withdraw: 'Withdraw', balance: 'Balance', pending: 'Pending', approved: 'Approved' },
-  es: { welcome: 'Bienvenido', dashboard: 'Panel', investments: 'Inversiones', deposit: 'Depositar', withdraw: 'Retirar', balance: 'Saldo', pending: 'Pendiente', approved: 'Aprobado' },
-  fr: { welcome: 'Bienvenue', dashboard: 'Tableau de bord', investments: 'Investissements', deposit: 'Dépôt', withdraw: 'Retirer', balance: 'Solde', pending: 'En attente', approved: 'Approuvé' }
+  // English
+  en: {
+    welcome: 'Welcome', dashboard: 'Dashboard', investments: 'Investments', deposit: 'Deposit', withdraw: 'Withdraw',
+    balance: 'Balance', pending: 'Pending', approved: 'Approved', home: 'Home', profile: 'Profile', settings: 'Settings',
+    logout: 'Logout', login: 'Login', register: 'Register', email: 'Email', password: 'Password', name: 'Name',
+    phone: 'Phone', submit: 'Submit', cancel: 'Cancel', confirm: 'Confirm', amount: 'Amount', history: 'History',
+    notifications: 'Notifications', referral: 'Referral', calculator: 'Calculator', investNow: 'Invest Now',
+    minInvestment: 'Min Investment', returns: 'Returns', duration: 'Duration', status: 'Status', copyAddress: 'Copy Address',
+    paymentPending: 'Payment Pending', transactionHistory: 'Transaction History', noTransactions: 'No transactions yet',
+    securityTips: 'Security Tips', activityLog: 'Activity Log', viewAll: 'View All', search: 'Search',
+    filter: 'Filter', export: 'Export', support: 'Support', help: 'Help', about: 'About', terms: 'Terms',
+    privacy: 'Privacy', contact: 'Contact', language: 'Language', darkMode: 'Dark Mode', lightMode: 'Light Mode'
+  },
+  // Spanish
+  es: {
+    welcome: 'Bienvenido', dashboard: 'Panel', investments: 'Inversiones', deposit: 'Depositar', withdraw: 'Retirar',
+    balance: 'Saldo', pending: 'Pendiente', approved: 'Aprobado', home: 'Inicio', profile: 'Perfil', settings: 'Ajustes',
+    logout: 'Cerrar sesión', login: 'Iniciar sesión', register: 'Registrarse', email: 'Correo', password: 'Contraseña', name: 'Nombre',
+    phone: 'Teléfono', submit: 'Enviar', cancel: 'Cancelar', confirm: 'Confirmar', amount: 'Cantidad', history: 'Historial',
+    notifications: 'Notificaciones', referral: 'Referidos', calculator: 'Calculadora', investNow: 'Invertir Ahora',
+    minInvestment: 'Inversión Mínima', returns: 'Retornos', duration: 'Duración', status: 'Estado', copyAddress: 'Copiar Dirección',
+    paymentPending: 'Pago Pendiente', transactionHistory: 'Historial de Transacciones', noTransactions: 'Sin transacciones',
+    securityTips: 'Consejos de Seguridad', activityLog: 'Registro de Actividad', viewAll: 'Ver Todo', search: 'Buscar',
+    filter: 'Filtrar', export: 'Exportar', support: 'Soporte', help: 'Ayuda', about: 'Acerca de', terms: 'Términos',
+    privacy: 'Privacidad', contact: 'Contacto', language: 'Idioma', darkMode: 'Modo Oscuro', lightMode: 'Modo Claro'
+  },
+  // French
+  fr: {
+    welcome: 'Bienvenue', dashboard: 'Tableau de bord', investments: 'Investissements', deposit: 'Dépôt', withdraw: 'Retirer',
+    balance: 'Solde', pending: 'En attente', approved: 'Approuvé', home: 'Accueil', profile: 'Profil', settings: 'Paramètres',
+    logout: 'Déconnexion', login: 'Connexion', register: "S'inscrire", email: 'E-mail', password: 'Mot de passe', name: 'Nom',
+    phone: 'Téléphone', submit: 'Soumettre', cancel: 'Annuler', confirm: 'Confirmer', amount: 'Montant', history: 'Historique',
+    notifications: 'Notifications', referral: 'Parrainage', calculator: 'Calculatrice', investNow: 'Investir Maintenant',
+    minInvestment: 'Investissement Min', returns: 'Rendements', duration: 'Durée', status: 'Statut', copyAddress: "Copier l'adresse",
+    paymentPending: 'Paiement en attente', transactionHistory: 'Historique des transactions', noTransactions: 'Aucune transaction',
+    securityTips: 'Conseils de sécurité', activityLog: "Journal d'activité", viewAll: 'Voir tout', search: 'Rechercher',
+    filter: 'Filtrer', export: 'Exporter', support: 'Support', help: 'Aide', about: 'À propos', terms: 'Conditions',
+    privacy: 'Confidentialité', contact: 'Contact', language: 'Langue', darkMode: 'Mode sombre', lightMode: 'Mode clair'
+  },
+  // German
+  de: {
+    welcome: 'Willkommen', dashboard: 'Übersicht', investments: 'Investitionen', deposit: 'Einzahlung', withdraw: 'Auszahlung',
+    balance: 'Guthaben', pending: 'Ausstehend', approved: 'Genehmigt', home: 'Startseite', profile: 'Profil', settings: 'Einstellungen',
+    logout: 'Abmelden', login: 'Anmelden', register: 'Registrieren', email: 'E-Mail', password: 'Passwort', name: 'Name',
+    phone: 'Telefon', submit: 'Absenden', cancel: 'Abbrechen', confirm: 'Bestätigen', amount: 'Betrag', history: 'Verlauf',
+    notifications: 'Benachrichtigungen', referral: 'Empfehlung', calculator: 'Rechner', investNow: 'Jetzt investieren',
+    minInvestment: 'Mindestanlage', returns: 'Rendite', duration: 'Laufzeit', status: 'Status', copyAddress: 'Adresse kopieren'
+  },
+  // Portuguese
+  pt: {
+    welcome: 'Bem-vindo', dashboard: 'Painel', investments: 'Investimentos', deposit: 'Depósito', withdraw: 'Saque',
+    balance: 'Saldo', pending: 'Pendente', approved: 'Aprovado', home: 'Início', profile: 'Perfil', settings: 'Configurações',
+    logout: 'Sair', login: 'Entrar', register: 'Cadastrar', email: 'E-mail', password: 'Senha', name: 'Nome',
+    phone: 'Telefone', submit: 'Enviar', cancel: 'Cancelar', confirm: 'Confirmar', amount: 'Valor', history: 'Histórico',
+    notifications: 'Notificações', referral: 'Indicação', calculator: 'Calculadora', investNow: 'Investir Agora'
+  },
+  // Italian
+  it: {
+    welcome: 'Benvenuto', dashboard: 'Pannello', investments: 'Investimenti', deposit: 'Deposito', withdraw: 'Prelievo',
+    balance: 'Saldo', pending: 'In attesa', approved: 'Approvato', home: 'Home', profile: 'Profilo', settings: 'Impostazioni',
+    logout: 'Esci', login: 'Accedi', register: 'Registrati', email: 'Email', password: 'Password', name: 'Nome',
+    phone: 'Telefono', submit: 'Invia', cancel: 'Annulla', confirm: 'Conferma', amount: 'Importo', history: 'Cronologia',
+    investNow: 'Investi Ora', minInvestment: 'Investimento Minimo', returns: 'Rendimenti', duration: 'Durata'
+  },
+  // Dutch
+  nl: {
+    welcome: 'Welkom', dashboard: 'Dashboard', investments: 'Investeringen', deposit: 'Storting', withdraw: 'Opname',
+    balance: 'Saldo', pending: 'In behandeling', approved: 'Goedgekeurd', home: 'Home', profile: 'Profiel', settings: 'Instellingen',
+    logout: 'Uitloggen', login: 'Inloggen', register: 'Registreren', investNow: 'Nu Investeren'
+  },
+  // Russian
+  ru: {
+    welcome: 'Добро пожаловать', dashboard: 'Панель', investments: 'Инвестиции', deposit: 'Депозит', withdraw: 'Вывод',
+    balance: 'Баланс', pending: 'Ожидание', approved: 'Одобрено', home: 'Главная', profile: 'Профиль', settings: 'Настройки',
+    logout: 'Выйти', login: 'Войти', register: 'Регистрация', email: 'Эл. почта', password: 'Пароль', name: 'Имя',
+    phone: 'Телефон', submit: 'Отправить', cancel: 'Отмена', confirm: 'Подтвердить', amount: 'Сумма', history: 'История',
+    investNow: 'Инвестировать', minInvestment: 'Мин. инвестиция', returns: 'Доходность', duration: 'Срок'
+  },
+  // Chinese (Simplified)
+  zh: {
+    welcome: '欢迎', dashboard: '仪表板', investments: '投资', deposit: '存款', withdraw: '取款',
+    balance: '余额', pending: '待处理', approved: '已批准', home: '首页', profile: '个人资料', settings: '设置',
+    logout: '退出', login: '登录', register: '注册', email: '电子邮件', password: '密码', name: '姓名',
+    phone: '电话', submit: '提交', cancel: '取消', confirm: '确认', amount: '金额', history: '历史',
+    investNow: '立即投资', minInvestment: '最低投资', returns: '回报', duration: '期限', notifications: '通知'
+  },
+  // Japanese
+  ja: {
+    welcome: 'ようこそ', dashboard: 'ダッシュボード', investments: '投資', deposit: '入金', withdraw: '出金',
+    balance: '残高', pending: '保留中', approved: '承認済み', home: 'ホーム', profile: 'プロフィール', settings: '設定',
+    logout: 'ログアウト', login: 'ログイン', register: '登録', email: 'メール', password: 'パスワード', name: '名前',
+    phone: '電話', submit: '送信', cancel: 'キャンセル', confirm: '確認', amount: '金額', history: '履歴',
+    investNow: '今すぐ投資', minInvestment: '最低投資額', returns: 'リターン', duration: '期間'
+  },
+  // Korean
+  ko: {
+    welcome: '환영합니다', dashboard: '대시보드', investments: '투자', deposit: '입금', withdraw: '출금',
+    balance: '잔액', pending: '대기 중', approved: '승인됨', home: '홈', profile: '프로필', settings: '설정',
+    logout: '로그아웃', login: '로그인', register: '가입', email: '이메일', password: '비밀번호', name: '이름',
+    phone: '전화', submit: '제출', cancel: '취소', confirm: '확인', amount: '금액', history: '내역',
+    investNow: '지금 투자', minInvestment: '최소 투자', returns: '수익률', duration: '기간'
+  },
+  // Arabic
+  ar: {
+    welcome: 'مرحبًا', dashboard: 'لوحة القيادة', investments: 'الاستثمارات', deposit: 'إيداع', withdraw: 'سحب',
+    balance: 'الرصيد', pending: 'قيد الانتظار', approved: 'موافق عليه', home: 'الرئيسية', profile: 'الملف الشخصي', settings: 'الإعدادات',
+    logout: 'تسجيل الخروج', login: 'تسجيل الدخول', register: 'التسجيل', email: 'البريد الإلكتروني', password: 'كلمة المرور',
+    name: 'الاسم', phone: 'الهاتف', submit: 'إرسال', cancel: 'إلغاء', confirm: 'تأكيد', amount: 'المبلغ', history: 'السجل',
+    investNow: 'استثمر الآن', minInvestment: 'الحد الأدنى للاستثمار', returns: 'العوائد', duration: 'المدة'
+  },
+  // Hindi
+  hi: {
+    welcome: 'स्वागत है', dashboard: 'डैशबोर्ड', investments: 'निवेश', deposit: 'जमा', withdraw: 'निकासी',
+    balance: 'शेष राशि', pending: 'लंबित', approved: 'स्वीकृत', home: 'होम', profile: 'प्रोफ़ाइल', settings: 'सेटिंग्स',
+    logout: 'लॉग आउट', login: 'लॉग इन', register: 'रजिस्टर', email: 'ईमेल', password: 'पासवर्ड', name: 'नाम',
+    phone: 'फ़ोन', submit: 'जमा करें', cancel: 'रद्द करें', confirm: 'पुष्टि करें', amount: 'राशि', history: 'इतिहास',
+    investNow: 'अभी निवेश करें', minInvestment: 'न्यूनतम निवेश', returns: 'रिटर्न', duration: 'अवधि'
+  },
+  // Turkish
+  tr: {
+    welcome: 'Hoş geldiniz', dashboard: 'Kontrol Paneli', investments: 'Yatırımlar', deposit: 'Para Yatır', withdraw: 'Para Çek',
+    balance: 'Bakiye', pending: 'Beklemede', approved: 'Onaylandı', home: 'Ana Sayfa', profile: 'Profil', settings: 'Ayarlar',
+    logout: 'Çıkış', login: 'Giriş', register: 'Kayıt Ol', email: 'E-posta', password: 'Şifre', name: 'Ad',
+    phone: 'Telefon', submit: 'Gönder', cancel: 'İptal', confirm: 'Onayla', amount: 'Tutar', history: 'Geçmiş',
+    investNow: 'Şimdi Yatırım Yap', minInvestment: 'Min Yatırım', returns: 'Getiri', duration: 'Süre'
+  },
+  // Polish
+  pl: {
+    welcome: 'Witamy', dashboard: 'Panel', investments: 'Inwestycje', deposit: 'Wpłata', withdraw: 'Wypłata',
+    balance: 'Saldo', pending: 'Oczekujące', approved: 'Zatwierdzone', home: 'Strona główna', profile: 'Profil', settings: 'Ustawienia',
+    logout: 'Wyloguj', login: 'Zaloguj', register: 'Zarejestruj', investNow: 'Inwestuj Teraz'
+  },
+  // Vietnamese
+  vi: {
+    welcome: 'Chào mừng', dashboard: 'Bảng điều khiển', investments: 'Đầu tư', deposit: 'Nạp tiền', withdraw: 'Rút tiền',
+    balance: 'Số dư', pending: 'Đang chờ', approved: 'Đã duyệt', home: 'Trang chủ', profile: 'Hồ sơ', settings: 'Cài đặt',
+    logout: 'Đăng xuất', login: 'Đăng nhập', register: 'Đăng ký', investNow: 'Đầu tư ngay'
+  },
+  // Thai
+  th: {
+    welcome: 'ยินดีต้อนรับ', dashboard: 'แดชบอร์ด', investments: 'การลงทุน', deposit: 'ฝากเงิน', withdraw: 'ถอนเงิน',
+    balance: 'ยอดเงิน', pending: 'รอดำเนินการ', approved: 'อนุมัติแล้ว', home: 'หน้าแรก', profile: 'โปรไฟล์', settings: 'ตั้งค่า',
+    logout: 'ออกจากระบบ', login: 'เข้าสู่ระบบ', register: 'ลงทะเบียน', investNow: 'ลงทุนเลย'
+  },
+  // Indonesian
+  id: {
+    welcome: 'Selamat datang', dashboard: 'Dasbor', investments: 'Investasi', deposit: 'Setor', withdraw: 'Tarik',
+    balance: 'Saldo', pending: 'Tertunda', approved: 'Disetujui', home: 'Beranda', profile: 'Profil', settings: 'Pengaturan',
+    logout: 'Keluar', login: 'Masuk', register: 'Daftar', investNow: 'Investasi Sekarang'
+  },
+  // Malay
+  ms: {
+    welcome: 'Selamat datang', dashboard: 'Papan pemuka', investments: 'Pelaburan', deposit: 'Deposit', withdraw: 'Pengeluaran',
+    balance: 'Baki', pending: 'Menunggu', approved: 'Diluluskan', home: 'Laman utama', profile: 'Profil', settings: 'Tetapan',
+    logout: 'Log keluar', login: 'Log masuk', register: 'Daftar', investNow: 'Labur Sekarang'
+  },
+  // Filipino/Tagalog
+  tl: {
+    welcome: 'Maligayang pagdating', dashboard: 'Dashboard', investments: 'Mga Pamumuhunan', deposit: 'Deposito', withdraw: 'Withdraw',
+    balance: 'Balanse', pending: 'Nakabinbin', approved: 'Aprubado', home: 'Home', profile: 'Profile', settings: 'Settings',
+    logout: 'Mag-logout', login: 'Mag-login', register: 'Mag-register', investNow: 'Mamuhunan Ngayon'
+  },
+  // Greek
+  el: {
+    welcome: 'Καλώς ήρθατε', dashboard: 'Πίνακας ελέγχου', investments: 'Επενδύσεις', deposit: 'Κατάθεση', withdraw: 'Ανάληψη',
+    balance: 'Υπόλοιπο', pending: 'Εκκρεμεί', approved: 'Εγκρίθηκε', home: 'Αρχική', profile: 'Προφίλ', settings: 'Ρυθμίσεις',
+    logout: 'Αποσύνδεση', login: 'Σύνδεση', register: 'Εγγραφή', investNow: 'Επενδύστε Τώρα'
+  },
+  // Czech
+  cs: {
+    welcome: 'Vítejte', dashboard: 'Přehled', investments: 'Investice', deposit: 'Vklad', withdraw: 'Výběr',
+    balance: 'Zůstatek', pending: 'Čekající', approved: 'Schváleno', home: 'Domů', profile: 'Profil', settings: 'Nastavení',
+    logout: 'Odhlásit', login: 'Přihlásit', register: 'Registrace', investNow: 'Investovat nyní'
+  },
+  // Swedish
+  sv: {
+    welcome: 'Välkommen', dashboard: 'Instrumentpanel', investments: 'Investeringar', deposit: 'Insättning', withdraw: 'Uttag',
+    balance: 'Saldo', pending: 'Väntande', approved: 'Godkänd', home: 'Hem', profile: 'Profil', settings: 'Inställningar',
+    logout: 'Logga ut', login: 'Logga in', register: 'Registrera', investNow: 'Investera Nu'
+  },
+  // Norwegian
+  no: {
+    welcome: 'Velkommen', dashboard: 'Kontrollpanel', investments: 'Investeringer', deposit: 'Innskudd', withdraw: 'Uttak',
+    balance: 'Saldo', pending: 'Venter', approved: 'Godkjent', home: 'Hjem', profile: 'Profil', settings: 'Innstillinger',
+    logout: 'Logg ut', login: 'Logg inn', register: 'Registrer', investNow: 'Invester Nå'
+  },
+  // Danish
+  da: {
+    welcome: 'Velkommen', dashboard: 'Kontrolpanel', investments: 'Investeringer', deposit: 'Indbetaling', withdraw: 'Udbetaling',
+    balance: 'Saldo', pending: 'Afventer', approved: 'Godkendt', home: 'Hjem', profile: 'Profil', settings: 'Indstillinger',
+    logout: 'Log ud', login: 'Log ind', register: 'Registrer', investNow: 'Invester Nu'
+  },
+  // Finnish
+  fi: {
+    welcome: 'Tervetuloa', dashboard: 'Hallintapaneeli', investments: 'Sijoitukset', deposit: 'Talletus', withdraw: 'Nosto',
+    balance: 'Saldo', pending: 'Odottaa', approved: 'Hyväksytty', home: 'Etusivu', profile: 'Profiili', settings: 'Asetukset',
+    logout: 'Kirjaudu ulos', login: 'Kirjaudu', register: 'Rekisteröidy', investNow: 'Sijoita Nyt'
+  },
+  // Hebrew
+  he: {
+    welcome: 'ברוך הבא', dashboard: 'לוח בקרה', investments: 'השקעות', deposit: 'הפקדה', withdraw: 'משיכה',
+    balance: 'יתרה', pending: 'ממתין', approved: 'אושר', home: 'בית', profile: 'פרופיל', settings: 'הגדרות',
+    logout: 'התנתק', login: 'התחבר', register: 'הרשמה', investNow: 'השקע עכשיו'
+  },
+  // Ukrainian
+  uk: {
+    welcome: 'Ласкаво просимо', dashboard: 'Панель', investments: 'Інвестиції', deposit: 'Депозит', withdraw: 'Виведення',
+    balance: 'Баланс', pending: 'Очікує', approved: 'Схвалено', home: 'Головна', profile: 'Профіль', settings: 'Налаштування',
+    logout: 'Вийти', login: 'Увійти', register: 'Реєстрація', investNow: 'Інвестувати зараз'
+  },
+  // Romanian
+  ro: {
+    welcome: 'Bun venit', dashboard: 'Panou', investments: 'Investiții', deposit: 'Depunere', withdraw: 'Retragere',
+    balance: 'Sold', pending: 'În așteptare', approved: 'Aprobat', home: 'Acasă', profile: 'Profil', settings: 'Setări',
+    logout: 'Deconectare', login: 'Conectare', register: 'Înregistrare', investNow: 'Investește Acum'
+  },
+  // Hungarian
+  hu: {
+    welcome: 'Üdvözöljük', dashboard: 'Irányítópult', investments: 'Befektetések', deposit: 'Befizetés', withdraw: 'Kifizetés',
+    balance: 'Egyenleg', pending: 'Függőben', approved: 'Jóváhagyott', home: 'Főoldal', profile: 'Profil', settings: 'Beállítások',
+    logout: 'Kijelentkezés', login: 'Bejelentkezés', register: 'Regisztráció', investNow: 'Befektetés Most'
+  },
+  // Bengali
+  bn: {
+    welcome: 'স্বাগতম', dashboard: 'ড্যাশবোর্ড', investments: 'বিনিয়োগ', deposit: 'জমা', withdraw: 'উত্তোলন',
+    balance: 'ব্যালেন্স', pending: 'মুলতুবি', approved: 'অনুমোদিত', home: 'হোম', profile: 'প্রোফাইল', settings: 'সেটিংস',
+    logout: 'লগআউট', login: 'লগইন', register: 'রেজিস্টার', investNow: 'এখনই বিনিয়োগ করুন'
+  },
+  // Swahili
+  sw: {
+    welcome: 'Karibu', dashboard: 'Dashibodi', investments: 'Uwekezaji', deposit: 'Amana', withdraw: 'Kutoa',
+    balance: 'Salio', pending: 'Inasubiri', approved: 'Imeidhinishwa', home: 'Nyumbani', profile: 'Wasifu', settings: 'Mipangilio',
+    logout: 'Ondoka', login: 'Ingia', register: 'Jisajili', investNow: 'Wekeza Sasa'
+  },
+  // Yoruba (Nigerian)
+  yo: {
+    welcome: 'Ẹ káàbọ̀', dashboard: 'Pánẹ́lì', investments: 'Ìdókòwò', deposit: 'Ìfipamọ́', withdraw: 'Ìmúkúrò',
+    balance: 'Ìyókù', pending: 'Ń dúró', approved: 'Ti fọwọ́sí', home: 'Ilé', profile: 'Àkọsílẹ̀', settings: 'Ètò',
+    investNow: 'Ṣe ìdókòwò báyìí'
+  },
+  // Hausa (Nigerian)
+  ha: {
+    welcome: 'Barka da zuwa', dashboard: 'Dashboard', investments: 'Saka hannun jari', deposit: 'Ajiya', withdraw: 'Cire kuɗi',
+    balance: 'Ragowar kuɗi', pending: 'Ana jira', approved: 'An amince', home: 'Gida', profile: 'Bayani', settings: 'Saiti',
+    investNow: 'Saka hannun jari yanzu'
+  },
+  // Igbo (Nigerian)
+  ig: {
+    welcome: 'Nnọọ', dashboard: 'Dashboard', investments: 'Ntinye ego', deposit: 'Tinyere ego', withdraw: 'Wepu ego',
+    balance: 'Ego fọdụrụ', pending: 'Na-echere', approved: 'Kwadoro', home: 'Ụlọ', profile: 'Profaịlụ', settings: 'Ntọala',
+    investNow: 'Tinye ego ugbu a'
+  }
+};
+
+// Language names for dropdown
+const languageNames = {
+  en: 'English', es: 'Español', fr: 'Français', de: 'Deutsch', pt: 'Português',
+  it: 'Italiano', nl: 'Nederlands', ru: 'Русский', zh: '中文', ja: '日本語',
+  ko: '한국어', ar: 'العربية', hi: 'हिन्दी', tr: 'Türkçe', pl: 'Polski',
+  vi: 'Tiếng Việt', th: 'ไทย', id: 'Bahasa Indonesia', ms: 'Bahasa Melayu',
+  tl: 'Filipino', el: 'Ελληνικά', cs: 'Čeština', sv: 'Svenska', no: 'Norsk',
+  da: 'Dansk', fi: 'Suomi', he: 'עברית', uk: 'Українська', ro: 'Română',
+  hu: 'Magyar', bn: 'বাংলা', sw: 'Kiswahili', yo: 'Yorùbá', ha: 'Hausa', ig: 'Igbo'
+};
+
+// Auto-detect user's language from browser
+const detectUserLanguage = () => {
+  const browserLang = navigator.language || navigator.userLanguage;
+  const langCode = browserLang.split('-')[0].toLowerCase();
+  return translations[langCode] ? langCode : 'en';
+};
+
+// Get current language from localStorage or detect
+const getCurrentLanguage = () => {
+  return localStorage.getItem('saxovault_language') || detectUserLanguage();
+};
+
+// Translation helper function
+const t = (key) => {
+  const lang = getCurrentLanguage();
+  return translations[lang]?.[key] || translations.en[key] || key;
+};
+
+// Language Selector Component
+const LanguageSelector = ({ onClose }) => {
+  const [currentLang, setCurrentLang] = useState(getCurrentLanguage());
+
+  const handleSelectLanguage = (langCode) => {
+    localStorage.setItem('saxovault_language', langCode);
+    setCurrentLang(langCode);
+    window.location.reload(); // Refresh to apply new language
+  };
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      onClick={onClose}>
+      <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }}
+        className="bg-white rounded-2xl p-6 w-full max-w-md max-h-[80vh] overflow-hidden shadow-2xl"
+        onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-serif text-xl" style={{ color: theme.navy }}>
+            <Languages className="w-5 h-5 inline mr-2" />
+            Select Language
+          </h2>
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="grid grid-cols-2 gap-2 max-h-[60vh] overflow-y-auto">
+          {Object.entries(languageNames).map(([code, name]) => (
+            <button key={code} onClick={() => handleSelectLanguage(code)}
+              className={`p-3 rounded-xl text-left text-sm font-medium transition-all ${
+                currentLang === code 
+                  ? 'text-white shadow-lg' 
+                  : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+              }`}
+              style={currentLang === code ? { background: theme.navy } : {}}>
+              {name}
+              {currentLang === code && <Check className="w-4 h-4 inline ml-2" />}
+            </button>
+          ))}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
 };
 
 // Loading Skeleton Component
@@ -1571,65 +1895,72 @@ function InvestmentsPage({ onSelectInvestment }) {
 
         <p className="text-sm text-gray-500 mb-4">{filtered.length} investments found</p>
 
-        {/* Investment Grid - Cleaner Cards */}
+        {/* Investment Grid - Clean Elegant Cards */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
           {filtered.map((inv, i) => (
             <motion.div key={inv.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
               onClick={() => onSelectInvestment(inv)}
-              className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all cursor-pointer border border-gray-100">
-              {/* Image */}
-              <div className="relative h-36 lg:h-40">
-                <img src={inv.img || inv.customImg} alt={inv.name} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                <div className="absolute top-2 right-2">
-                  <span className="px-2 py-1 rounded text-xs font-medium text-white"
-                    style={{ background: inv.status === 'Active' ? theme.green : inv.status === 'Open' ? theme.navy : theme.gold }}>
+              className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all cursor-pointer border border-gray-100 group">
+              {/* Image - Taller for better visibility */}
+              <div className="relative h-44 lg:h-48">
+                <img src={inv.img || inv.customImg} alt={inv.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                <div className="absolute top-3 right-3">
+                  <span className="px-2.5 py-1 rounded-full text-xs font-medium text-white backdrop-blur-sm"
+                    style={{ background: inv.status === 'Active' ? 'rgba(16,185,129,0.9)' : inv.status === 'Open' ? 'rgba(10,22,40,0.9)' : 'rgba(212,175,55,0.9)' }}>
                     {inv.status}
                   </span>
                 </div>
-                <div className="absolute bottom-2 left-3 right-3">
-                  <p className="text-white/80 text-xs">{inv.category}</p>
-                  <h3 className="font-semibold text-white text-lg leading-tight">{inv.name}</h3>
+                <div className="absolute bottom-3 left-4 right-4">
+                  <p className="text-white/70 text-xs uppercase tracking-wide mb-1">{inv.category}</p>
+                  <h3 className="font-serif text-white text-xl leading-tight">{inv.name}</h3>
                 </div>
               </div>
 
-              {/* Content - Cleaner Layout */}
-              <div className="p-4">
-                {/* Key Stats Row */}
-                <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-100">
+              {/* Content - Cleaner, Less Bold */}
+              <div className="p-5">
+                {/* Key Stats Row - Softer colors */}
+                <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
                   <div className="text-center flex-1">
-                    <p className="text-lg font-bold" style={{ color: theme.green }}>{inv.returns}</p>
-                    <p className="text-xs text-gray-400">Returns</p>
+                    <p className="text-base font-semibold" style={{ color: theme.green }}>{inv.returns}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Returns</p>
                   </div>
-                  <div className="w-px h-8 bg-gray-200" />
+                  <div className="w-px h-10 bg-gray-100" />
                   <div className="text-center flex-1">
-                    <p className="text-lg font-bold" style={{ color: theme.navy }}>${(inv.min / 1000)}K</p>
-                    <p className="text-xs text-gray-400">Min</p>
+                    <p className="text-base font-semibold" style={{ color: theme.navy }}>${(inv.min / 1000).toFixed(0)}K</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Min</p>
                   </div>
-                  <div className="w-px h-8 bg-gray-200" />
+                  <div className="w-px h-10 bg-gray-100" />
                   <div className="text-center flex-1">
-                    <p className="text-lg font-bold" style={{ color: theme.gold }}>{inv.term?.split(' ')[0] || '12'}</p>
-                    <p className="text-xs text-gray-400">Months</p>
+                    <p className="text-base font-semibold" style={{ color: theme.gold }}>{inv.term?.split(' ')[0] || '12'}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Months</p>
                   </div>
                 </div>
 
+                {/* Description Preview */}
+                <p className="text-sm text-gray-500 mb-4 line-clamp-2">
+                  {inv.desc || 'Premium investment opportunity with professional management and strong projected returns.'}
+                </p>
+
                 {/* Progress Bar */}
                 {inv.progress !== undefined && (
-                  <div className="mb-3">
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-gray-500">{inv.progress}% funded</span>
+                  <div className="mb-4">
+                    <div className="flex justify-between text-xs mb-1.5">
+                      <span className="text-gray-600 font-medium">{inv.progress}% funded</span>
                       <span className="text-gray-400">${((inv.progress / 100) * (inv.goal || 1000000) / 1000).toFixed(0)}K raised</span>
                     </div>
-                    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                      <div className="h-full rounded-full" style={{ width: `${inv.progress}%`, background: theme.green }} />
+                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <motion.div initial={{ width: 0 }} animate={{ width: `${inv.progress}%` }} transition={{ duration: 1, delay: i * 0.1 }}
+                        className="h-full rounded-full" style={{ background: `linear-gradient(90deg, ${theme.green}, ${theme.gold})` }} />
                     </div>
                   </div>
                 )}
 
-                {/* Invest Button */}
-                <button className="w-full py-2.5 rounded-lg text-sm font-medium text-white transition-all hover:opacity-90"
+                {/* View Button - Softer */}
+                <button className="w-full py-3 rounded-xl text-sm font-medium text-white transition-all hover:shadow-lg group-hover:scale-[1.02]"
                   style={{ background: `linear-gradient(135deg, ${theme.navy} 0%, ${theme.navyLight} 100%)` }}>
                   View Details
+                  <ChevronRight className="w-4 h-4 inline ml-1" />
                 </button>
               </div>
             </motion.div>
@@ -1814,6 +2145,8 @@ function InvestFlowModal({ investment, onClose, balance }) {
   };
 
   const handleConfirmPayment = () => {
+    const currentUser = JSON.parse(localStorage.getItem('saxovault_current_user') || '{}');
+    
     // Create pending investment
     const pendingInvestment = {
       id: Date.now(),
@@ -1826,7 +2159,8 @@ function InvestFlowModal({ investment, onClose, balance }) {
       expectedReturn,
       term: investment.term,
       createdAt: new Date().toISOString(),
-      userEmail: JSON.parse(localStorage.getItem('saxovault_current_user') || '{}').email
+      userEmail: currentUser.email,
+      userName: currentUser.name
     };
 
     // Save to pending investments
@@ -1834,12 +2168,22 @@ function InvestFlowModal({ investment, onClose, balance }) {
     pending.push(pendingInvestment);
     localStorage.setItem('saxovault_pending_investments', JSON.stringify(pending));
 
-    // Notify admin
+    // Notify admin (in-app)
     Storage.addNotification({
       type: 'investment_request',
       message: `New investment request: $${amount.toLocaleString()} in ${investment.name}`,
       investmentId: pendingInvestment.id,
       urgent: true
+    });
+
+    // Send email notifications
+    EmailService.sendInvestmentNotification(currentUser.email, investment.name, amount);
+
+    // Log activity
+    Storage.logActivity(currentUser.uid, 'investment_request', {
+      investment: investment.name,
+      amount,
+      crypto: selectedCrypto
     });
 
     setStep(3);
@@ -2043,6 +2387,7 @@ function InvestFlowModal({ investment, onClose, balance }) {
 function DashboardPage({ user, onNavigate }) {
   const [showDeposit, setShowDeposit] = useState(false);
   const [showWithdraw, setShowWithdraw] = useState(false);
+  const [showAutoInvest, setShowAutoInvest] = useState(false);
 
   // Get investments from localStorage (admin controlled)
   const storedInvestments = JSON.parse(localStorage.getItem('saxovault_investments') || 'null');
@@ -2140,8 +2485,8 @@ function DashboardPage({ user, onNavigate }) {
         <div className="grid grid-cols-4 gap-3">
           {[
             { icon: TrendingUp, label: 'Invest', color: theme.navy, action: () => onNavigate('investments') },
+            { icon: Zap, label: 'Auto-Invest', color: '#f59e0b', action: () => setShowAutoInvest(true) },
             { icon: History, label: 'History', color: '#8b5cf6', action: () => onNavigate('history') },
-            { icon: Bell, label: 'Alerts', color: theme.gold, action: () => onNavigate('notifications') },
             { icon: User, label: 'Profile', color: theme.green, action: () => onNavigate('profile') }
           ].map((item, i) => (
             <motion.button key={i} onClick={item.action} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
@@ -2158,6 +2503,7 @@ function DashboardPage({ user, onNavigate }) {
       <AnimatePresence>
         {showDeposit && <DepositModal onClose={() => setShowDeposit(false)} />}
         {showWithdraw && <WithdrawModal onClose={() => setShowWithdraw(false)} balance={user.balance} />}
+        {showAutoInvest && <AutoInvestModal onClose={() => setShowAutoInvest(false)} user={user} />}
       </AnimatePresence>
     </div>
   );
@@ -2643,6 +2989,29 @@ function DepositModal({ onClose }) {
 
           {step === 3 && (
             <div className="text-center py-8">
+              {/* Create transaction and notify admin on mount */}
+              {(() => {
+                // Only run once
+                if (!window._depositNotified) {
+                  window._depositNotified = true;
+                  const user = JSON.parse(localStorage.getItem('saxovault_current_user') || '{}');
+                  Storage.addTransaction({
+                    type: 'deposit',
+                    amount: parseFloat(amount),
+                    crypto: selectedCrypto.symbol,
+                    network: selectedCrypto.network,
+                    userEmail: user.email,
+                    userId: user.uid
+                  });
+                  Storage.logActivity(user.uid, 'deposit_request', { amount, crypto: selectedCrypto.symbol });
+                  
+                  // Send email notification
+                  EmailService.sendDepositNotification(user.email, parseFloat(amount), selectedCrypto.symbol);
+                  
+                  setTimeout(() => { window._depositNotified = false; }, 1000);
+                }
+                return null;
+              })()}
               <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring' }}
                 className="w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4" style={{ background: `${theme.green}20` }}>
                 <Clock className="w-10 h-10" style={{ color: theme.green }} />
@@ -2658,7 +3027,7 @@ function DepositModal({ onClose }) {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Status</span>
-                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">Pending</span>
+                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">Pending Approval</span>
                 </div>
               </div>
               <motion.button onClick={onClose} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
@@ -2836,13 +3205,36 @@ function WithdrawModal({ onClose, balance }) {
 
           {step === 3 && (
             <div className="text-center py-8">
+              {/* Create transaction and notify admin on mount */}
+              {(() => {
+                if (!window._withdrawNotified) {
+                  window._withdrawNotified = true;
+                  const user = JSON.parse(localStorage.getItem('saxovault_current_user') || '{}');
+                  Storage.addTransaction({
+                    type: 'withdrawal',
+                    amount: parseFloat(amount),
+                    crypto: selectedCrypto?.symbol,
+                    network: selectedCrypto?.network,
+                    walletAddress,
+                    userEmail: user.email,
+                    userId: user.uid
+                  });
+                  Storage.logActivity(user.uid, 'withdrawal_request', { amount, crypto: selectedCrypto?.symbol, walletAddress });
+                  
+                  // Send email notification
+                  EmailService.sendWithdrawalNotification(user.email, parseFloat(amount), walletAddress);
+                  
+                  setTimeout(() => { window._withdrawNotified = false; }, 1000);
+                }
+                return null;
+              })()}
               <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring' }}
                 className="w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4" style={{ background: `${theme.green}20` }}>
-                <CheckCircle className="w-10 h-10" style={{ color: theme.green }} />
+                <Clock className="w-10 h-10" style={{ color: theme.gold }} />
               </motion.div>
-              <h3 className="font-serif text-xl mb-2" style={{ color: theme.navy }}>Withdrawal Submitted</h3>
+              <h3 className="font-serif text-xl mb-2" style={{ color: theme.navy }}>Withdrawal Pending</h3>
               <p className="text-gray-500 text-sm mb-6">
-                Your withdrawal request has been submitted and is being processed. You will receive your {selectedCrypto?.symbol} within 24 hours.
+                Your withdrawal request has been submitted and is awaiting admin approval. You will receive your {selectedCrypto?.symbol} within 24-48 hours.
               </p>
               <div className="bg-gray-50 rounded-xl p-4 text-left mb-6">
                 <div className="flex justify-between text-sm mb-2">
@@ -2855,7 +3247,7 @@ function WithdrawModal({ onClose, balance }) {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Status</span>
-                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Processing</span>
+                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">Pending Approval</span>
                 </div>
               </div>
               <motion.button onClick={onClose} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
@@ -3443,7 +3835,15 @@ function ProfilePage({ user, setUser, onLogout }) {
   const [kycStep, setKycStep] = useState(1);
   const [saved, setSaved] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [showLanguageSelector, setShowLanguageSelector] = useState(false);
+  const [is2FAEnabled, setIs2FAEnabled] = useState(() => TwoFactorAuth.is2FAEnabled(user?.uid));
+  const [show2FASetup, setShow2FASetup] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [verifying2FA, setVerifying2FA] = useState(false);
   const fileInputRef = useRef(null);
+
+  const currentLangCode = getCurrentLanguage();
+  const currentLangName = languageNames[currentLangCode] || 'English';
 
   const handleProfileSave = () => {
     setUser({ ...user, ...profileForm });
@@ -3488,6 +3888,7 @@ function ProfilePage({ user, setUser, onLogout }) {
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
     { id: 'security', label: 'Security', icon: Shield },
+    { id: 'language', label: 'Language', icon: Globe },
     { id: 'kyc', label: 'KYC', icon: ShieldCheck },
     { id: 'notifications', label: 'Alerts', icon: Bell }
   ];
@@ -3606,15 +4007,68 @@ function ProfilePage({ user, setUser, onLogout }) {
             </div>
 
             <div className="bg-white rounded-2xl lg:rounded-3xl shadow-xl p-5 lg:p-8">
-              <div className="flex items-start justify-between">
+              <div className="flex items-start justify-between mb-4">
                 <div>
                   <h2 className="font-serif text-lg lg:text-xl mb-1 lg:mb-2" style={{ color: theme.navy }}>Two-Factor Authentication</h2>
                   <p className="text-gray-500 text-xs lg:text-sm">Extra security layer for your account</p>
                 </div>
-                <button className="px-3 lg:px-4 py-1.5 lg:py-2 rounded-lg text-xs lg:text-sm font-medium" style={{ background: `${theme.green}15`, color: theme.green }}>
-                  Enable
-                </button>
+                <div className={`px-3 py-1 rounded-full text-xs font-medium ${is2FAEnabled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                  {is2FAEnabled ? '✓ Enabled' : 'Disabled'}
+                </div>
               </div>
+              
+              {!is2FAEnabled ? (
+                <div>
+                  {!show2FASetup ? (
+                    <motion.button onClick={() => {
+                      TwoFactorAuth.send2FACode(user?.uid, user?.email);
+                      setShow2FASetup(true);
+                    }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                      className="w-full py-3 rounded-xl font-medium flex items-center justify-center gap-2"
+                      style={{ background: `${theme.green}15`, color: theme.green }}>
+                      <Shield className="w-4 h-4" /> Enable 2FA
+                    </motion.button>
+                  ) : (
+                    <div className="space-y-4">
+                      <p className="text-sm text-gray-600">A verification code has been sent to <strong>{user?.email}</strong></p>
+                      <input type="text" value={verificationCode} onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl text-center text-2xl font-mono tracking-widest"
+                        placeholder="000000" maxLength="6" />
+                      <div className="flex gap-2">
+                        <button onClick={() => setShow2FASetup(false)} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm">
+                          Cancel
+                        </button>
+                        <motion.button onClick={() => {
+                          const result = TwoFactorAuth.verify2FACode(user?.uid, verificationCode);
+                          if (result.valid) {
+                            TwoFactorAuth.enable2FA(user?.uid);
+                            setIs2FAEnabled(true);
+                            setShow2FASetup(false);
+                            setVerificationCode('');
+                            alert('✅ Two-Factor Authentication enabled!');
+                          } else {
+                            alert('❌ ' + result.message);
+                          }
+                        }} whileHover={{ scale: 1.02 }}
+                          className="flex-1 py-2.5 rounded-xl text-white text-sm font-medium"
+                          style={{ background: theme.green }}>
+                          {verifying2FA ? 'Verifying...' : 'Verify & Enable'}
+                        </motion.button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <motion.button onClick={() => {
+                  if (confirm('Are you sure you want to disable 2FA?')) {
+                    TwoFactorAuth.disable2FA(user?.uid);
+                    setIs2FAEnabled(false);
+                  }
+                }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                  className="w-full py-3 rounded-xl font-medium flex items-center justify-center gap-2 bg-red-50 text-red-600">
+                  <Shield className="w-4 h-4" /> Disable 2FA
+                </motion.button>
+              )}
             </div>
 
             <div className="bg-white rounded-2xl lg:rounded-3xl shadow-xl p-5 lg:p-8">
@@ -3636,6 +4090,54 @@ function ProfilePage({ user, setUser, onLogout }) {
                   </div>
                 ))}
               </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Language Tab */}
+        {activeTab === 'language' && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl lg:rounded-3xl shadow-xl p-5 lg:p-8">
+            <h2 className="font-serif text-lg lg:text-2xl mb-2" style={{ color: theme.navy }}>Language Settings</h2>
+            <p className="text-gray-500 text-sm mb-6">Select your preferred language</p>
+
+            {/* Current Language */}
+            <div className="p-4 rounded-xl mb-6" style={{ background: `${theme.gold}15` }}>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: theme.gold }}>
+                  <Globe className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="font-medium" style={{ color: theme.navy }}>Current Language</p>
+                  <p className="text-sm text-gray-500">{currentLangName}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Language Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[400px] overflow-y-auto">
+              {Object.entries(languageNames).map(([code, name]) => (
+                <button key={code} onClick={() => {
+                  localStorage.setItem('saxovault_language', code);
+                  window.location.reload();
+                }}
+                  className={`p-3 rounded-xl text-left text-sm font-medium transition-all ${
+                    currentLangCode === code 
+                      ? 'text-white shadow-lg' 
+                      : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                  }`}
+                  style={currentLangCode === code ? { background: theme.navy } : {}}>
+                  {name}
+                  {currentLangCode === code && <Check className="w-4 h-4 inline ml-2" />}
+                </button>
+              ))}
+            </div>
+
+            {/* Auto-detect info */}
+            <div className="mt-6 p-4 bg-blue-50 rounded-xl">
+              <p className="text-sm text-blue-700">
+                <HelpCircle className="w-4 h-4 inline mr-2" />
+                Language is automatically detected from your browser settings. You can manually change it above.
+              </p>
             </div>
           </motion.div>
         )}
@@ -3806,6 +4308,14 @@ const Storage = {
     const txs = Storage.getTransactions();
     txs.unshift({ ...tx, id: Date.now(), createdAt: new Date().toISOString(), status: 'pending' });
     Storage.setTransactions(txs);
+    // Notify admin
+    Storage.notifyAdmin({
+      type: tx.type,
+      title: `New ${tx.type} Request`,
+      message: `$${tx.amount?.toLocaleString()} ${tx.type} from ${tx.userEmail || 'user'}`,
+      urgent: true,
+      actionRequired: true
+    });
     return txs[0];
   },
   
@@ -3826,8 +4336,743 @@ const Storage = {
     const notifs = Storage.getNotifications();
     notifs.unshift({ ...notif, id: Date.now(), read: false, createdAt: new Date().toISOString() });
     localStorage.setItem('saxovault_notifications', JSON.stringify(notifs.slice(0, 100)));
+  },
+
+  // Admin notification system
+  getAdminNotifications: () => JSON.parse(localStorage.getItem('saxovault_admin_notifs') || '[]'),
+  notifyAdmin: (notif) => {
+    const notifs = Storage.getAdminNotifications();
+    const newNotif = {
+      ...notif,
+      id: Date.now(),
+      read: false,
+      createdAt: new Date().toISOString()
+    };
+    notifs.unshift(newNotif);
+    localStorage.setItem('saxovault_admin_notifs', JSON.stringify(notifs.slice(0, 200)));
+    
+    // Play notification sound (if admin is viewing)
+    if (localStorage.getItem('saxovault_admin') === 'true') {
+      try {
+        const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2teleQABMjV4wdvqhBwIPnyV0+TkeEU5Un+13e6ZRxcnOFJsocHn04FGNjBIYZi+4t6QSjE0SGqay+LYglM4M0NTfqrN3tCMaD0wP0pqpcnc3I5kOC9AWGyiwtff');
+        audio.volume = 0.3;
+        audio.play().catch(() => {});
+      } catch(e) {}
+    }
+    
+    return newNotif;
+  },
+  markAdminNotifRead: (id) => {
+    const notifs = Storage.getAdminNotifications();
+    const updated = notifs.map(n => n.id === id ? { ...n, read: true } : n);
+    localStorage.setItem('saxovault_admin_notifs', JSON.stringify(updated));
+  },
+
+  // Email notification queue (for real email integration)
+  queueEmail: (email) => {
+    const queue = JSON.parse(localStorage.getItem('saxovault_email_queue') || '[]');
+    queue.push({
+      ...email,
+      id: Date.now(),
+      status: 'queued',
+      createdAt: new Date().toISOString()
+    });
+    localStorage.setItem('saxovault_email_queue', JSON.stringify(queue));
+  },
+
+  // Activity log
+  logActivity: (userId, action, details) => {
+    const logs = JSON.parse(localStorage.getItem('saxovault_activity_logs') || '[]');
+    logs.unshift({
+      id: Date.now(),
+      userId,
+      action,
+      details,
+      ip: 'xxx.xxx.xxx.xxx', // Would be captured server-side
+      userAgent: navigator.userAgent,
+      createdAt: new Date().toISOString()
+    });
+    localStorage.setItem('saxovault_activity_logs', JSON.stringify(logs.slice(0, 500)));
+  },
+  getActivityLogs: (userId) => {
+    const logs = JSON.parse(localStorage.getItem('saxovault_activity_logs') || '[]');
+    return userId ? logs.filter(l => l.userId === userId) : logs;
+  },
+
+  // Auto-Invest Plans
+  getAutoInvestPlans: (userId) => {
+    const plans = JSON.parse(localStorage.getItem('saxovault_autoinvest') || '[]');
+    return userId ? plans.filter(p => p.userId === userId) : plans;
+  },
+  saveAutoInvestPlan: (plan) => {
+    const plans = Storage.getAutoInvestPlans();
+    const existingIdx = plans.findIndex(p => p.id === plan.id);
+    if (existingIdx >= 0) {
+      plans[existingIdx] = plan;
+    } else {
+      plans.push({ ...plan, id: Date.now(), createdAt: new Date().toISOString() });
+    }
+    localStorage.setItem('saxovault_autoinvest', JSON.stringify(plans));
+  },
+  deleteAutoInvestPlan: (planId) => {
+    const plans = Storage.getAutoInvestPlans().filter(p => p.id !== planId);
+    localStorage.setItem('saxovault_autoinvest', JSON.stringify(plans));
   }
 };
+
+// ============ EMAIL SERVICE (EmailJS - Real Email Sending) ============
+// SETUP INSTRUCTIONS:
+// 1. Go to https://www.emailjs.com/ and create FREE account
+// 2. Add Email Service: Dashboard → Email Services → Add New → Choose "Zoho" or "Custom SMTP"
+//    - For Zoho: Service ID will be something like "service_zoho" 
+//    - SMTP: smtp.zoho.com, Port: 587, TLS: Yes
+//    - Username: support@saxovault.com, Password: your Zoho app password
+// 3. Create Templates: Dashboard → Email Templates → Create New
+//    - Create templates for: notification, admin_alert, 2fa
+// 4. Get Public Key: Dashboard → Account → API Keys → Copy Public Key
+// 5. Replace the values below with your actual IDs
+
+const EMAILJS_CONFIG = {
+  publicKey: 'trmaHaGeZzBpjKtaj',
+  serviceId: 'service_ibr21lg',
+  templates: {
+    notification: 'template_kskirgx',
+    admin: 'template_kskirgx',
+    twofa: 'template_kskirgx'
+  }
+};
+
+// Initialize EmailJS
+emailjs.init(EMAILJS_CONFIG.publicKey);
+
+const EmailService = {
+  // Check if EmailJS is configured
+  isConfigured: () => {
+    return EMAILJS_CONFIG.publicKey !== 'YOUR_PUBLIC_KEY';
+  },
+
+  // Core email sending function
+  sendEmail: async (to, subject, body, type = 'notification') => {
+    const email = {
+      to,
+      subject,
+      body,
+      type,
+      status: 'pending',
+      createdAt: new Date().toISOString()
+    };
+    
+    // If EmailJS not configured, queue email and show setup message
+    if (!EmailService.isConfigured()) {
+      email.status = 'queued';
+      Storage.queueEmail(email);
+      console.log('⚠️ EmailJS not configured. Email queued:', { to, subject });
+      console.log('📋 Setup EmailJS: https://www.emailjs.com/ (free 200 emails/month)');
+      return { success: false, message: 'EmailJS not configured - email queued' };
+    }
+    
+    try {
+      // Determine which template to use
+      const templateId = type === '2fa' ? EMAILJS_CONFIG.templates.twofa 
+                       : type === 'admin_alert' ? EMAILJS_CONFIG.templates.admin 
+                       : EMAILJS_CONFIG.templates.notification;
+      
+      // Send via EmailJS
+      const response = await emailjs.send(
+        EMAILJS_CONFIG.serviceId,
+        templateId,
+        {
+          to_email: to,
+          subject: subject,
+          message: body.replace(/<[^>]*>/g, ''), // Strip HTML for plain text
+          html_content: body,
+          from_name: 'SaxoVault Capital',
+          reply_to: 'support@saxovault.com'
+        }
+      );
+      
+      console.log('✅ Email sent successfully:', { to, subject, status: response.status });
+      email.status = 'sent';
+      email.response = response;
+      Storage.queueEmail(email); // Log sent email
+      
+      return { success: true, message: 'Email sent successfully', response };
+    } catch (error) {
+      console.error('❌ Email failed:', error);
+      email.status = 'failed';
+      email.error = error.text || error.message;
+      Storage.queueEmail(email);
+      
+      return { success: false, message: error.text || 'Failed to send email' };
+    }
+  },
+
+  // Template-based emails with beautiful HTML
+  sendDepositNotification: async (userEmail, amount, crypto) => {
+    const subject = `✅ Deposit Request Received - $${amount.toLocaleString()}`;
+    const body = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #0a1628; margin: 0;">SaxoVault Capital</h1>
+        </div>
+        <h2 style="color: #0a1628;">Deposit Request Received</h2>
+        <p style="color: #4b5563;">Your deposit request has been received and is pending confirmation.</p>
+        <div style="background: #f3f4f6; padding: 20px; border-radius: 12px; margin: 20px 0;">
+          <p style="margin: 5px 0;"><strong>Amount:</strong> $${amount.toLocaleString()}</p>
+          <p style="margin: 5px 0;"><strong>Payment Method:</strong> ${crypto}</p>
+          <p style="margin: 5px 0;"><strong>Status:</strong> <span style="color: #f59e0b;">⏳ Pending Confirmation</span></p>
+        </div>
+        <p style="color: #4b5563;">Your funds will be credited once the transaction is confirmed on the blockchain (usually 10-30 minutes).</p>
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+        <p style="color: #9ca3af; font-size: 12px; text-align: center;">Thank you for choosing SaxoVault Capital.<br>support@saxovault.com</p>
+      </div>
+    `;
+    await EmailService.sendEmail(userEmail, subject, body, 'deposit');
+    EmailService.notifyAdmin('deposit', userEmail, amount, crypto);
+  },
+
+  sendWithdrawalNotification: async (userEmail, amount, address) => {
+    const subject = `💸 Withdrawal Request - $${amount.toLocaleString()}`;
+    const body = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #0a1628; margin: 0;">SaxoVault Capital</h1>
+        </div>
+        <h2 style="color: #0a1628;">Withdrawal Request Submitted</h2>
+        <p style="color: #4b5563;">Your withdrawal request has been submitted for review.</p>
+        <div style="background: #f3f4f6; padding: 20px; border-radius: 12px; margin: 20px 0;">
+          <p style="margin: 5px 0;"><strong>Amount:</strong> $${amount.toLocaleString()}</p>
+          <p style="margin: 5px 0;"><strong>Destination:</strong> ${address.slice(0,10)}...${address.slice(-6)}</p>
+          <p style="margin: 5px 0;"><strong>Status:</strong> <span style="color: #f59e0b;">⏳ Under Review</span></p>
+        </div>
+        <p style="color: #4b5563;">Withdrawals are typically processed within 24-48 hours after approval.</p>
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+        <p style="color: #9ca3af; font-size: 12px; text-align: center;">SaxoVault Capital<br>support@saxovault.com</p>
+      </div>
+    `;
+    await EmailService.sendEmail(userEmail, subject, body, 'withdrawal');
+    EmailService.notifyAdmin('withdrawal', userEmail, amount, address);
+  },
+
+  sendInvestmentNotification: async (userEmail, investmentName, amount) => {
+    const subject = `📈 Investment Request - ${investmentName}`;
+    const body = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #0a1628; margin: 0;">SaxoVault Capital</h1>
+        </div>
+        <h2 style="color: #0a1628;">Investment Request Received</h2>
+        <p style="color: #4b5563;">Your investment request is pending admin approval.</p>
+        <div style="background: #f3f4f6; padding: 20px; border-radius: 12px; margin: 20px 0;">
+          <p style="margin: 5px 0;"><strong>Investment:</strong> ${investmentName}</p>
+          <p style="margin: 5px 0;"><strong>Amount:</strong> $${amount.toLocaleString()}</p>
+          <p style="margin: 5px 0;"><strong>Status:</strong> <span style="color: #f59e0b;">⏳ Pending Approval</span></p>
+        </div>
+        <p style="color: #4b5563;">You'll receive a confirmation email once your investment is approved.</p>
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+        <p style="color: #9ca3af; font-size: 12px; text-align: center;">SaxoVault Capital<br>support@saxovault.com</p>
+      </div>
+    `;
+    await EmailService.sendEmail(userEmail, subject, body, 'investment');
+    EmailService.notifyAdmin('investment', userEmail, amount, investmentName);
+  },
+
+  sendReferralNotification: async (referrerEmail, newUserName) => {
+    const subject = `🎉 Congratulations! New Referral Signup!`;
+    const body = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #0a1628; margin: 0;">SaxoVault Capital</h1>
+        </div>
+        <h2 style="color: #10b981;">🎉 Congratulations!</h2>
+        <p style="color: #4b5563;">Someone just signed up using your referral link!</p>
+        <div style="background: #ecfdf5; padding: 20px; border-radius: 12px; margin: 20px 0; border: 1px solid #10b981;">
+          <p style="margin: 5px 0;"><strong>New User:</strong> ${newUserName}</p>
+          <p style="margin: 5px 0;"><strong>Your Bonus:</strong> Will be credited when they make their first investment</p>
+        </div>
+        <p style="color: #4b5563;">Keep sharing your referral link to earn more rewards!</p>
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+        <p style="color: #9ca3af; font-size: 12px; text-align: center;">SaxoVault Capital<br>support@saxovault.com</p>
+      </div>
+    `;
+    await EmailService.sendEmail(referrerEmail, subject, body, 'referral');
+  },
+
+  send2FACode: async (userEmail, code) => {
+    const subject = `🔐 Your SaxoVault Security Code: ${code}`;
+    const body = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #0a1628; margin: 0;">SaxoVault Capital</h1>
+        </div>
+        <h2 style="color: #0a1628; text-align: center;">Two-Factor Authentication</h2>
+        <p style="color: #4b5563; text-align: center;">Your verification code is:</p>
+        <div style="background: #0a1628; padding: 30px; border-radius: 12px; margin: 20px auto; text-align: center; max-width: 300px;">
+          <h1 style="color: #D4AF37; font-size: 36px; letter-spacing: 8px; margin: 0; font-family: monospace;">${code}</h1>
+        </div>
+        <p style="color: #ef4444; text-align: center; font-weight: bold;">⚠️ This code expires in 5 minutes</p>
+        <p style="color: #9ca3af; text-align: center; font-size: 12px;">Do not share this code with anyone. SaxoVault will never ask for your code.</p>
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+        <p style="color: #9ca3af; font-size: 12px; text-align: center;">If you didn't request this code, please secure your account immediately.</p>
+      </div>
+    `;
+    return await EmailService.sendEmail(userEmail, subject, body, '2fa');
+  },
+
+  sendBroadcast: async (users, title, message) => {
+    const results = [];
+    for (const user of users) {
+      const body = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #0a1628; margin: 0;">SaxoVault Capital</h1>
+          </div>
+          <h2 style="color: #0a1628;">📢 ${title}</h2>
+          <div style="background: #f3f4f6; padding: 20px; border-radius: 12px; margin: 20px 0;">
+            <p style="color: #4b5563; margin: 0;">${message}</p>
+          </div>
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+          <p style="color: #9ca3af; font-size: 12px; text-align: center;">- The SaxoVault Team<br>support@saxovault.com</p>
+        </div>
+      `;
+      const result = await EmailService.sendEmail(user.email, `📢 ${title}`, body, 'broadcast');
+      results.push({ email: user.email, ...result });
+    }
+    return results;
+  },
+
+  notifyAdmin: async (type, userEmail, amount, details) => {
+    const adminEmail = 'support@saxovault.com';
+    const typeLabels = {
+      deposit: '💰 New Deposit Request',
+      withdrawal: '💸 New Withdrawal Request',
+      investment: '📈 New Investment Request',
+      referral: '👥 New Referral Signup',
+      new_user: '👤 New User Registration'
+    };
+    
+    const subject = typeLabels[type] || `📋 New ${type} Action Required`;
+    const body = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #0a1628; margin: 0;">SaxoVault Admin Alert</h1>
+        </div>
+        <h2 style="color: #0a1628;">${subject}</h2>
+        <div style="background: #fef3c7; padding: 20px; border-radius: 12px; margin: 20px 0; border: 1px solid #f59e0b;">
+          <p style="margin: 5px 0;"><strong>User:</strong> ${userEmail}</p>
+          <p style="margin: 5px 0;"><strong>Amount:</strong> $${amount?.toLocaleString() || 'N/A'}</p>
+          <p style="margin: 5px 0;"><strong>Details:</strong> ${details || 'None'}</p>
+          <p style="margin: 5px 0;"><strong>Time:</strong> ${new Date().toLocaleString()}</p>
+        </div>
+        <p style="color: #ef4444; font-weight: bold; text-align: center;">⚠️ Action Required - Please review in admin panel</p>
+        <div style="text-align: center; margin-top: 20px;">
+          <a href="https://saxovault.com/#admin" style="display: inline-block; background: #0a1628; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">Open Admin Panel</a>
+        </div>
+      </div>
+    `;
+    
+    await EmailService.sendEmail(adminEmail, subject, body, 'admin_alert');
+    
+    // Also add to admin in-app notifications
+    Storage.notifyAdmin({
+      type,
+      title: subject,
+      message: `${userEmail} - $${amount?.toLocaleString() || 'N/A'}`,
+      details,
+      urgent: true,
+      actionRequired: true
+    });
+  },
+
+  // Send transaction status update to user
+  sendStatusUpdate: async (userEmail, type, status, amount, details = '') => {
+    const statusColors = {
+      approved: '#10b981',
+      rejected: '#ef4444',
+      completed: '#10b981',
+      pending: '#f59e0b'
+    };
+    
+    const statusEmoji = {
+      approved: '✅',
+      rejected: '❌',
+      completed: '✅',
+      pending: '⏳'
+    };
+    
+    const subject = `${statusEmoji[status]} Your ${type} has been ${status}`;
+    const body = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #0a1628; margin: 0;">SaxoVault Capital</h1>
+        </div>
+        <h2 style="color: ${statusColors[status]};">${statusEmoji[status]} ${type.charAt(0).toUpperCase() + type.slice(1)} ${status.charAt(0).toUpperCase() + status.slice(1)}</h2>
+        <p style="color: #4b5563;">Your ${type} request has been ${status}.</p>
+        <div style="background: #f3f4f6; padding: 20px; border-radius: 12px; margin: 20px 0;">
+          <p style="margin: 5px 0;"><strong>Amount:</strong> $${amount?.toLocaleString()}</p>
+          <p style="margin: 5px 0;"><strong>Status:</strong> <span style="color: ${statusColors[status]};">${status.toUpperCase()}</span></p>
+          ${details ? `<p style="margin: 5px 0;"><strong>Note:</strong> ${details}</p>` : ''}
+        </div>
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+        <p style="color: #9ca3af; font-size: 12px; text-align: center;">SaxoVault Capital<br>support@saxovault.com</p>
+      </div>
+    `;
+    
+    return await EmailService.sendEmail(userEmail, subject, body, 'status_update');
+  }
+};
+
+// ============ TWO-FACTOR AUTHENTICATION ============
+const TwoFactorAuth = {
+  generate2FACode: () => {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  },
+  
+  store2FACode: (userId, code) => {
+    const codes = JSON.parse(localStorage.getItem('saxovault_2fa_codes') || '{}');
+    codes[userId] = {
+      code,
+      createdAt: Date.now(),
+      expires: Date.now() + (5 * 60 * 1000) // 5 minutes
+    };
+    localStorage.setItem('saxovault_2fa_codes', JSON.stringify(codes));
+    return code;
+  },
+  
+  verify2FACode: (userId, inputCode) => {
+    const codes = JSON.parse(localStorage.getItem('saxovault_2fa_codes') || '{}');
+    const stored = codes[userId];
+    
+    if (!stored) return { valid: false, message: 'No code found' };
+    if (Date.now() > stored.expires) return { valid: false, message: 'Code expired' };
+    if (stored.code !== inputCode) return { valid: false, message: 'Invalid code' };
+    
+    // Clear the code after successful verification
+    delete codes[userId];
+    localStorage.setItem('saxovault_2fa_codes', JSON.stringify(codes));
+    
+    return { valid: true, message: 'Verified' };
+  },
+  
+  send2FACode: (userId, email) => {
+    const code = TwoFactorAuth.generate2FACode();
+    TwoFactorAuth.store2FACode(userId, code);
+    EmailService.send2FACode(email, code);
+    return code;
+  },
+  
+  is2FAEnabled: (userId) => {
+    const settings = JSON.parse(localStorage.getItem('saxovault_user_2fa') || '{}');
+    return settings[userId]?.enabled || false;
+  },
+  
+  enable2FA: (userId) => {
+    const settings = JSON.parse(localStorage.getItem('saxovault_user_2fa') || '{}');
+    settings[userId] = { enabled: true, enabledAt: new Date().toISOString() };
+    localStorage.setItem('saxovault_user_2fa', JSON.stringify(settings));
+  },
+  
+  disable2FA: (userId) => {
+    const settings = JSON.parse(localStorage.getItem('saxovault_user_2fa') || '{}');
+    settings[userId] = { enabled: false };
+    localStorage.setItem('saxovault_user_2fa', JSON.stringify(settings));
+  }
+};
+
+// ============ AUTO-INVEST COMPONENT ============
+function AutoInvestModal({ onClose, user }) {
+  const [frequency, setFrequency] = useState('weekly');
+  const [amount, setAmount] = useState(100);
+  const [selectedInvestment, setSelectedInvestment] = useState(null);
+  const [plans, setPlans] = useState([]);
+  
+  const adminInvestments = JSON.parse(localStorage.getItem('saxovault_investments') || 'null') || investments;
+  
+  useEffect(() => {
+    setPlans(Storage.getAutoInvestPlans(user?.uid));
+  }, [user]);
+  
+  const frequencies = [
+    { id: 'daily', label: 'Daily', desc: 'Every day' },
+    { id: 'weekly', label: 'Weekly', desc: 'Every Monday' },
+    { id: 'biweekly', label: 'Bi-Weekly', desc: 'Every 2 weeks' },
+    { id: 'monthly', label: 'Monthly', desc: '1st of each month' }
+  ];
+  
+  const handleCreatePlan = () => {
+    if (!selectedInvestment || amount < 50) {
+      alert('Please select an investment and enter at least $50');
+      return;
+    }
+    
+    const plan = {
+      userId: user?.uid,
+      investmentId: selectedInvestment.id,
+      investmentName: selectedInvestment.name,
+      amount,
+      frequency,
+      status: 'active',
+      nextExecution: getNextExecutionDate(frequency),
+      totalInvested: 0,
+      executionCount: 0
+    };
+    
+    Storage.saveAutoInvestPlan(plan);
+    setPlans([...plans, plan]);
+    setSelectedInvestment(null);
+    setAmount(100);
+    
+    Storage.addNotification({ type: 'autoinvest', message: `Auto-invest plan created: $${amount}/${frequency} into ${selectedInvestment.name}` });
+  };
+  
+  const getNextExecutionDate = (freq) => {
+    const now = new Date();
+    switch(freq) {
+      case 'daily': return new Date(now.setDate(now.getDate() + 1)).toISOString();
+      case 'weekly': return new Date(now.setDate(now.getDate() + (7 - now.getDay() + 1) % 7 + 1)).toISOString();
+      case 'biweekly': return new Date(now.setDate(now.getDate() + 14)).toISOString();
+      case 'monthly': return new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString();
+      default: return new Date(now.setDate(now.getDate() + 7)).toISOString();
+    }
+  };
+  
+  const handleDeletePlan = (planId) => {
+    if (confirm('Delete this auto-invest plan?')) {
+      Storage.deleteAutoInvestPlan(planId);
+      setPlans(plans.filter(p => p.id !== planId));
+    }
+  };
+  
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }}
+        className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
+        
+        <div className="p-6 border-b border-gray-100">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="font-serif text-xl" style={{ color: theme.navy }}>
+                <Zap className="w-5 h-5 inline mr-2 text-yellow-500" />
+                Auto-Invest Plans
+              </h2>
+              <p className="text-sm text-gray-500">Set up recurring investments automatically</p>
+            </div>
+            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+        
+        <div className="p-6">
+          {/* Existing Plans */}
+          {plans.length > 0 && (
+            <div className="mb-6">
+              <h3 className="font-medium text-sm text-gray-700 mb-3">Active Plans</h3>
+              <div className="space-y-2">
+                {plans.map(plan => (
+                  <div key={plan.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                    <div>
+                      <p className="font-medium text-sm" style={{ color: theme.navy }}>{plan.investmentName}</p>
+                      <p className="text-xs text-gray-500">${plan.amount}/{plan.frequency}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2 py-0.5 rounded text-xs ${plan.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                        {plan.status}
+                      </span>
+                      <button onClick={() => handleDeletePlan(plan.id)} className="p-1.5 hover:bg-red-100 rounded text-red-500">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {/* Create New Plan */}
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Select Investment</label>
+              <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto">
+                {adminInvestments.slice(0, 8).map(inv => (
+                  <button key={inv.id} onClick={() => setSelectedInvestment(inv)}
+                    className={`p-3 rounded-xl text-left text-sm transition-all ${
+                      selectedInvestment?.id === inv.id ? 'ring-2 bg-blue-50' : 'bg-gray-50 hover:bg-gray-100'
+                    }`}
+                    style={selectedInvestment?.id === inv.id ? { ringColor: theme.navy } : {}}>
+                    <p className="font-medium truncate" style={{ color: theme.navy }}>{inv.name}</p>
+                    <p className="text-xs text-gray-500">{inv.returns} returns</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Amount per Investment</label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">$</span>
+                <input type="number" value={amount} onChange={e => setAmount(Math.max(50, +e.target.value))}
+                  className="w-full pl-8 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2"
+                  style={{ '--tw-ring-color': theme.navy }} min="50" />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Minimum $50 per investment</p>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Frequency</label>
+              <div className="grid grid-cols-2 gap-2">
+                {frequencies.map(freq => (
+                  <button key={freq.id} onClick={() => setFrequency(freq.id)}
+                    className={`p-3 rounded-xl text-left transition-all ${
+                      frequency === freq.id ? 'text-white' : 'bg-gray-50 hover:bg-gray-100'
+                    }`}
+                    style={frequency === freq.id ? { background: theme.navy } : {}}>
+                    <p className="font-medium text-sm">{freq.label}</p>
+                    <p className={`text-xs ${frequency === freq.id ? 'text-white/70' : 'text-gray-500'}`}>{freq.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            {/* Summary */}
+            {selectedInvestment && (
+              <div className="p-4 rounded-xl" style={{ background: `${theme.green}10` }}>
+                <p className="text-sm text-gray-600 mb-1">You'll invest</p>
+                <p className="text-2xl font-bold" style={{ color: theme.navy }}>${amount} / {frequency}</p>
+                <p className="text-sm text-gray-500">into {selectedInvestment.name}</p>
+              </div>
+            )}
+            
+            <motion.button onClick={handleCreatePlan} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+              disabled={!selectedInvestment}
+              className="w-full py-4 rounded-xl text-white font-semibold disabled:opacity-50"
+              style={{ background: `linear-gradient(135deg, ${theme.navy} 0%, ${theme.navyLight} 100%)` }}>
+              <Zap className="w-5 h-5 inline mr-2" />
+              Create Auto-Invest Plan
+            </motion.button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// ============ 2FA VERIFICATION MODAL ============
+function TwoFactorModal({ user, onVerify, onClose, onResend }) {
+  const [code, setCode] = useState(['', '', '', '', '', '']);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const inputRefs = useRef([]);
+  
+  useEffect(() => {
+    inputRefs.current[0]?.focus();
+  }, []);
+  
+  useEffect(() => {
+    if (resendCooldown > 0) {
+      const timer = setTimeout(() => setResendCooldown(c => c - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendCooldown]);
+  
+  const handleChange = (index, value) => {
+    if (!/^\d*$/.test(value)) return;
+    
+    const newCode = [...code];
+    newCode[index] = value.slice(-1);
+    setCode(newCode);
+    
+    if (value && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+    
+    // Auto-submit when complete
+    if (newCode.every(c => c) && newCode.join('').length === 6) {
+      handleVerify(newCode.join(''));
+    }
+  };
+  
+  const handleKeyDown = (index, e) => {
+    if (e.key === 'Backspace' && !code[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+  
+  const handleVerify = async (fullCode) => {
+    setLoading(true);
+    setError('');
+    
+    const result = TwoFactorAuth.verify2FACode(user?.uid, fullCode);
+    
+    if (result.valid) {
+      onVerify();
+    } else {
+      setError(result.message);
+      setCode(['', '', '', '', '', '']);
+      inputRefs.current[0]?.focus();
+    }
+    setLoading(false);
+  };
+  
+  const handleResend = () => {
+    if (resendCooldown > 0) return;
+    TwoFactorAuth.send2FACode(user?.uid, user?.email);
+    setResendCooldown(60);
+    setCode(['', '', '', '', '', '']);
+  };
+  
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }}
+        className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl text-center">
+        
+        <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
+          style={{ background: `${theme.navy}10` }}>
+          <Smartphone className="w-8 h-8" style={{ color: theme.navy }} />
+        </div>
+        
+        <h2 className="font-serif text-xl mb-2" style={{ color: theme.navy }}>Two-Factor Authentication</h2>
+        <p className="text-sm text-gray-500 mb-6">Enter the 6-digit code sent to<br/><strong>{user?.email}</strong></p>
+        
+        <div className="flex justify-center gap-2 mb-6">
+          {code.map((digit, i) => (
+            <input key={i} ref={el => inputRefs.current[i] = el}
+              type="text" inputMode="numeric" maxLength="1" value={digit}
+              onChange={e => handleChange(i, e.target.value)}
+              onKeyDown={e => handleKeyDown(i, e)}
+              className="w-12 h-14 text-center text-2xl font-bold border-2 rounded-xl focus:outline-none transition-all"
+              style={{ borderColor: error ? '#ef4444' : digit ? theme.navy : '#e5e7eb' }} />
+          ))}
+        </div>
+        
+        {error && (
+          <p className="text-red-500 text-sm mb-4 flex items-center justify-center gap-1">
+            <AlertCircle className="w-4 h-4" /> {error}
+          </p>
+        )}
+        
+        <button onClick={handleResend} disabled={resendCooldown > 0}
+          className="text-sm text-gray-500 hover:text-gray-700 disabled:opacity-50 mb-4">
+          {resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : 'Resend code'}
+        </button>
+        
+        <div className="flex gap-3">
+          <motion.button onClick={onClose} whileHover={{ scale: 1.02 }}
+            className="flex-1 py-3 rounded-xl border border-gray-200">Cancel</motion.button>
+          <motion.button onClick={() => handleVerify(code.join(''))} whileHover={{ scale: 1.02 }}
+            disabled={loading || code.some(c => !c)}
+            className="flex-1 py-3 rounded-xl text-white font-medium disabled:opacity-50"
+            style={{ background: theme.navy }}>
+            {loading ? 'Verifying...' : 'Verify'}
+          </motion.button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
 
 // ============ ADMIN LOGIN PAGE ============
 function AdminLoginPage({ onLogin }) {
@@ -4166,6 +5411,41 @@ function AdminDashboard({ onLogout }) {
             <div>
               <h2 className="font-serif text-xl lg:text-2xl mb-6" style={{ color: theme.navy }}>Dashboard Overview</h2>
               
+              {/* Admin Action Required Notifications */}
+              {(() => {
+                const adminNotifs = Storage.getAdminNotifications().filter(n => n.actionRequired && !n.read);
+                if (adminNotifs.length === 0) return null;
+                return (
+                  <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-xl p-4 mb-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                        <Bell className="w-5 h-5 text-red-600 animate-pulse" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-red-800">Action Required</p>
+                        <p className="text-sm text-red-600">{adminNotifs.length} notification(s) need your attention</p>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      {adminNotifs.slice(0, 5).map((notif, i) => (
+                        <div key={i} className="flex items-center justify-between bg-white rounded-lg p-3">
+                          <div>
+                            <p className="font-medium text-sm" style={{ color: theme.navy }}>{notif.title}</p>
+                            <p className="text-xs text-gray-500">{notif.message}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-400">{new Date(notif.createdAt).toLocaleTimeString()}</span>
+                            <button onClick={() => Storage.markAdminNotifRead(notif.id)} className="p-1 hover:bg-gray-100 rounded">
+                              <Check className="w-4 h-4 text-green-600" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
                 {[
                   { label: 'Total Users', value: totalUsers, icon: Users, color: theme.navy },
@@ -4992,11 +6272,44 @@ export default function App() {
         Storage.setUsers(users);
         
         // Notify admin of new user
-        Storage.addNotification({
+        Storage.notifyAdmin({
           type: 'new_user',
-          message: `New user registered: ${userData.email}`,
-          urgent: true
+          title: '👤 New User Registration',
+          message: `${userData.name || 'New user'} (${userData.email}) just registered`,
+          urgent: true,
+          actionRequired: false
         });
+        
+        // Handle referral - notify the referrer
+        if (userData.referralCode) {
+          const referrer = users.find(u => u.referralCode === userData.referralCode || u.uid === userData.referralCode);
+          if (referrer) {
+            // Send email to referrer
+            EmailService.sendReferralNotification(referrer.email, userData.name || userData.email);
+            
+            // Add in-app notification
+            const userNotifs = JSON.parse(localStorage.getItem('saxovault_user_notifications') || '{}');
+            if (!userNotifs[referrer.uid]) userNotifs[referrer.uid] = [];
+            userNotifs[referrer.uid].unshift({
+              id: Date.now(),
+              type: 'referral',
+              title: '🎉 New Referral!',
+              message: `${userData.name || 'Someone'} signed up using your referral link!`,
+              read: false,
+              createdAt: new Date().toISOString()
+            });
+            localStorage.setItem('saxovault_user_notifications', JSON.stringify(userNotifs));
+            
+            // Notify admin about the referral
+            Storage.notifyAdmin({
+              type: 'referral',
+              title: '👥 New Referral Signup',
+              message: `${userData.email} signed up via ${referrer.email}'s referral`,
+              urgent: false,
+              actionRequired: false
+            });
+          }
+        }
       }
 
       // Store current user for reference
