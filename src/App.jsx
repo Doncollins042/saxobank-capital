@@ -604,15 +604,15 @@ function AuthPage({ onLogin }) {
   const [mode, setMode] = useState('login');
   const [showPass, setShowPass] = useState(false);
   const [step, setStep] = useState(1);
-  const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', confirmPassword: '', referralCode: '', country: '', countryCode: '+234' });
+  const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', confirmPassword: '', referralCode: '', country: '', countryCode: '+1' });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState({ type: '', text: '' });
   
-  // Country codes list
+  // Country codes list (USA first as default)
   const countryCodes = [
-    { code: '+234', country: 'Nigeria', flag: '🇳🇬' },
     { code: '+1', country: 'USA/Canada', flag: '🇺🇸' },
+    { code: '+234', country: 'Nigeria', flag: '🇳🇬' },
     { code: '+44', country: 'UK', flag: '🇬🇧' },
     { code: '+91', country: 'India', flag: '🇮🇳' },
     { code: '+86', country: 'China', flag: '🇨🇳' },
@@ -1065,7 +1065,7 @@ function AuthPage({ onLogin }) {
                         <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                         <input type="tel" value={form.phone} onChange={(e) => setForm({...form, phone: e.target.value.replace(/\D/g, '')})}
                           className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none"
-                          placeholder="8142266776" maxLength="15" />
+                          placeholder="123456789" maxLength="15" />
                       </div>
                     </div>
                     <p className="text-xs text-gray-400 mt-1">Full number: {form.countryCode} {form.phone || '...'}</p>
@@ -2992,38 +2992,50 @@ function DepositModal({ onClose }) {
     }
   };
 
-  const handleSubmitPayment = () => {
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmitPayment = async () => {
     if (!txHash && !proofImage) {
       alert('Please provide either a transaction hash or proof of payment screenshot.');
       return;
     }
 
-    const user = JSON.parse(localStorage.getItem('saxovault_current_user') || '{}');
+    setSubmitting(true);
     
-    // Create transaction with proof
-    Storage.addTransaction({
-      type: 'deposit',
-      amount: parseFloat(amount),
-      crypto: selectedCrypto.symbol,
-      network: selectedCrypto.network,
-      walletAddress: selectedCrypto.address,
-      txHash: txHash || null,
-      proofImage: proofImage || null,
-      userEmail: user.email,
-      userId: user.uid
-    });
+    try {
+      const user = JSON.parse(localStorage.getItem('saxovault_current_user') || '{}');
+      
+      // Create transaction with proof
+      Storage.addTransaction({
+        type: 'deposit',
+        amount: parseFloat(amount),
+        crypto: selectedCrypto.symbol,
+        network: selectedCrypto.network,
+        walletAddress: selectedCrypto.address,
+        txHash: txHash || null,
+        proofImage: proofImage || null,
+        userEmail: user.email,
+        userId: user.uid
+      });
 
-    Storage.logActivity(user.uid, 'deposit_request', { 
-      amount, 
-      crypto: selectedCrypto.symbol,
-      hasTxHash: !!txHash,
-      hasProof: !!proofImage
-    });
+      Storage.logActivity(user.uid, 'deposit_request', { 
+        amount, 
+        crypto: selectedCrypto.symbol,
+        hasTxHash: !!txHash,
+        hasProof: !!proofImage
+      });
 
-    // Send email notification
-    EmailService.sendDepositNotification(user.email, parseFloat(amount), selectedCrypto.symbol);
+      // Send email notification
+      await EmailService.sendDepositNotification(user.email, parseFloat(amount), selectedCrypto.symbol);
 
-    setStep(4); // Go to confirmation
+      // Go to confirmation step
+      setStep(4);
+    } catch (error) {
+      console.error('Error submitting deposit:', error);
+      alert('There was an error submitting your deposit. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleOpenWallet = () => {
@@ -3282,11 +3294,18 @@ function DepositModal({ onClose }) {
               </div>
 
               <motion.button onClick={handleSubmitPayment}
-                disabled={!txHash && !proofImage}
+                disabled={(!txHash && !proofImage) || submitting}
                 whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                className="w-full py-3.5 rounded-xl text-white font-semibold disabled:opacity-50"
+                className="w-full py-3.5 rounded-xl text-white font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
                 style={{ background: `linear-gradient(135deg, ${theme.green} 0%, ${theme.greenDark} 100%)` }}>
-                Submit for Verification
+                {submitting ? (
+                  <>
+                    <RefreshCw className="w-5 h-5 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  'Submit for Verification'
+                )}
               </motion.button>
             </div>
           )}
