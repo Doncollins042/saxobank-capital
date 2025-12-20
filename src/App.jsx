@@ -609,58 +609,59 @@ function AuthPage({ onLogin }) {
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState({ type: '', text: '' });
   
-  // Country codes list (USA first as default)
+  // Country codes list (alphabetical - international standard)
   const countryCodes = [
-    { code: '+1', country: 'USA/Canada', flag: '🇺🇸' },
-    { code: '+234', country: 'Nigeria', flag: '🇳🇬' },
-    { code: '+44', country: 'UK', flag: '🇬🇧' },
-    { code: '+91', country: 'India', flag: '🇮🇳' },
-    { code: '+86', country: 'China', flag: '🇨🇳' },
-    { code: '+81', country: 'Japan', flag: '🇯🇵' },
-    { code: '+49', country: 'Germany', flag: '🇩🇪' },
-    { code: '+33', country: 'France', flag: '🇫🇷' },
-    { code: '+39', country: 'Italy', flag: '🇮🇹' },
-    { code: '+34', country: 'Spain', flag: '🇪🇸' },
-    { code: '+55', country: 'Brazil', flag: '🇧🇷' },
-    { code: '+52', country: 'Mexico', flag: '🇲🇽' },
-    { code: '+61', country: 'Australia', flag: '🇦🇺' },
-    { code: '+82', country: 'South Korea', flag: '🇰🇷' },
-    { code: '+7', country: 'Russia', flag: '🇷🇺' },
-    { code: '+27', country: 'South Africa', flag: '🇿🇦' },
-    { code: '+254', country: 'Kenya', flag: '🇰🇪' },
-    { code: '+233', country: 'Ghana', flag: '🇬🇭' },
-    { code: '+20', country: 'Egypt', flag: '🇪🇬' },
-    { code: '+971', country: 'UAE', flag: '🇦🇪' },
-    { code: '+966', country: 'Saudi Arabia', flag: '🇸🇦' },
-    { code: '+62', country: 'Indonesia', flag: '🇮🇩' },
-    { code: '+60', country: 'Malaysia', flag: '🇲🇾' },
-    { code: '+65', country: 'Singapore', flag: '🇸🇬' },
-    { code: '+63', country: 'Philippines', flag: '🇵🇭' },
-    { code: '+84', country: 'Vietnam', flag: '🇻🇳' },
-    { code: '+66', country: 'Thailand', flag: '🇹🇭' },
-    { code: '+31', country: 'Netherlands', flag: '🇳🇱' },
-    { code: '+32', country: 'Belgium', flag: '🇧🇪' },
-    { code: '+41', country: 'Switzerland', flag: '🇨🇭' },
     { code: '+43', country: 'Austria', flag: '🇦🇹' },
-    { code: '+46', country: 'Sweden', flag: '🇸🇪' },
-    { code: '+47', country: 'Norway', flag: '🇳🇴' },
-    { code: '+45', country: 'Denmark', flag: '🇩🇰' },
-    { code: '+358', country: 'Finland', flag: '🇫🇮' },
-    { code: '+48', country: 'Poland', flag: '🇵🇱' },
-    { code: '+380', country: 'Ukraine', flag: '🇺🇦' },
-    { code: '+90', country: 'Turkey', flag: '🇹🇷' },
-    { code: '+972', country: 'Israel', flag: '🇮🇱' },
-    { code: '+92', country: 'Pakistan', flag: '🇵🇰' },
+    { code: '+61', country: 'Australia', flag: '🇦🇺' },
     { code: '+880', country: 'Bangladesh', flag: '🇧🇩' },
-    { code: '+94', country: 'Sri Lanka', flag: '🇱🇰' },
-    { code: '+977', country: 'Nepal', flag: '🇳🇵' },
-    { code: '+64', country: 'New Zealand', flag: '🇳🇿' },
-    { code: '+353', country: 'Ireland', flag: '🇮🇪' },
-    { code: '+351', country: 'Portugal', flag: '🇵🇹' },
+    { code: '+32', country: 'Belgium', flag: '🇧🇪' },
+    { code: '+55', country: 'Brazil', flag: '🇧🇷' },
+    { code: '+1', country: 'Canada', flag: '🇨🇦' },
+    { code: '+86', country: 'China', flag: '🇨🇳' },
+    { code: '+420', country: 'Czech Republic', flag: '🇨🇿' },
+    { code: '+45', country: 'Denmark', flag: '🇩🇰' },
+    { code: '+20', country: 'Egypt', flag: '🇪🇬' },
+    { code: '+358', country: 'Finland', flag: '🇫🇮' },
+    { code: '+33', country: 'France', flag: '🇫🇷' },
+    { code: '+49', country: 'Germany', flag: '🇩🇪' },
+    { code: '+233', country: 'Ghana', flag: '🇬🇭' },
     { code: '+30', country: 'Greece', flag: '🇬🇷' },
     { code: '+36', country: 'Hungary', flag: '🇭🇺' },
+    { code: '+91', country: 'India', flag: '🇮🇳' },
+    { code: '+62', country: 'Indonesia', flag: '🇮🇩' },
+    { code: '+353', country: 'Ireland', flag: '🇮🇪' },
+    { code: '+972', country: 'Israel', flag: '🇮🇱' },
+    { code: '+39', country: 'Italy', flag: '🇮🇹' },
+    { code: '+81', country: 'Japan', flag: '🇯🇵' },
+    { code: '+254', country: 'Kenya', flag: '🇰🇪' },
+    { code: '+60', country: 'Malaysia', flag: '🇲🇾' },
+    { code: '+52', country: 'Mexico', flag: '🇲🇽' },
+    { code: '+977', country: 'Nepal', flag: '🇳🇵' },
+    { code: '+31', country: 'Netherlands', flag: '🇳🇱' },
+    { code: '+64', country: 'New Zealand', flag: '🇳🇿' },
+    { code: '+234', country: 'Nigeria', flag: '🇳🇬' },
+    { code: '+47', country: 'Norway', flag: '🇳🇴' },
+    { code: '+92', country: 'Pakistan', flag: '🇵🇰' },
+    { code: '+63', country: 'Philippines', flag: '🇵🇭' },
+    { code: '+48', country: 'Poland', flag: '🇵🇱' },
+    { code: '+351', country: 'Portugal', flag: '🇵🇹' },
     { code: '+40', country: 'Romania', flag: '🇷🇴' },
-    { code: '+420', country: 'Czech Republic', flag: '🇨🇿' }
+    { code: '+7', country: 'Russia', flag: '🇷🇺' },
+    { code: '+966', country: 'Saudi Arabia', flag: '🇸🇦' },
+    { code: '+65', country: 'Singapore', flag: '🇸🇬' },
+    { code: '+27', country: 'South Africa', flag: '🇿🇦' },
+    { code: '+82', country: 'South Korea', flag: '🇰🇷' },
+    { code: '+34', country: 'Spain', flag: '🇪🇸' },
+    { code: '+94', country: 'Sri Lanka', flag: '🇱🇰' },
+    { code: '+46', country: 'Sweden', flag: '🇸🇪' },
+    { code: '+41', country: 'Switzerland', flag: '🇨🇭' },
+    { code: '+66', country: 'Thailand', flag: '🇹🇭' },
+    { code: '+90', country: 'Turkey', flag: '🇹🇷' },
+    { code: '+971', country: 'UAE', flag: '🇦🇪' },
+    { code: '+380', country: 'Ukraine', flag: '🇺🇦' },
+    { code: '+44', country: 'United Kingdom', flag: '🇬🇧' },
+    { code: '+1', country: 'United States', flag: '🇺🇸' },
+    { code: '+84', country: 'Vietnam', flag: '🇻🇳' }
   ];
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
@@ -2934,28 +2935,27 @@ function ActivityLogsPage({ user }) {
   );
 }
 
-// ============ DEPOSIT MODAL ============
+// ============ DEPOSIT MODAL - PROFESSIONAL DESIGN ============
 function DepositModal({ onClose }) {
   const [step, setStep] = useState(1);
   const [amount, setAmount] = useState('');
   const [selectedCrypto, setSelectedCrypto] = useState(null);
   const [copied, setCopied] = useState(false);
-  const [countdown, setCountdown] = useState(1800); // 30 minutes
+  const [countdown, setCountdown] = useState(1800);
   const [txHash, setTxHash] = useState('');
   const [proofImage, setProofImage] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef(null);
 
   const cryptoOptions = [
-    { id: 'btc', name: 'Bitcoin', symbol: 'BTC', icon: '₿', color: '#f7931a', address: 'bc1qzmgg6hw0fttfpczh2whp8f44k497d6pucghk58', network: 'Bitcoin Network' },
+    { id: 'btc', name: 'Bitcoin', symbol: 'BTC', icon: '₿', color: '#f7931a', address: 'bc1qzmgg6hw0fttfpczh2whp8f44k497d6pucghk58', network: 'Bitcoin' },
     { id: 'eth', name: 'Ethereum', symbol: 'ETH', icon: 'Ξ', color: '#627eea', address: '0x83057882eC7B7EE0cBe63C2fE2b8957e7ab69655', network: 'ERC-20' },
     { id: 'usdt', name: 'Tether', symbol: 'USDT', icon: '₮', color: '#26a17b', address: 'TLGH9FucAuPNUoQw2XUFEDtCg4FFdJ2jKG', network: 'TRC-20' },
     { id: 'usdc', name: 'USD Coin', symbol: 'USDC', icon: '$', color: '#2775ca', address: '0x83057882eC7B7EE0cBe63C2fE2b8957e7ab69655', network: 'ERC-20' },
-    { id: 'bnb', name: 'BNB', symbol: 'BNB', icon: 'B', color: '#f3ba2f', address: '0x83057882eC7B7EE0cBe63C2fE2b8957e7ab69655', network: 'BEP-20' },
-    { id: 'ltc', name: 'Litecoin', symbol: 'LTC', icon: 'Ł', color: '#bfbbbb', address: 'bc1qzmgg6hw0fttfpczh2whp8f44k497d6pucghk58', network: 'Litecoin Network' }
+    { id: 'bnb', name: 'BNB', symbol: 'BNB', icon: 'B', color: '#f3ba2f', address: '0x83057882eC7B7EE0cBe63C2fE2b8957e7ab69655', network: 'BEP-20' }
   ];
 
-  // Countdown timer
   useEffect(() => {
     if (step === 2 && countdown > 0) {
       const timer = setInterval(() => setCountdown(c => c - 1), 1000);
@@ -2963,11 +2963,7 @@ function DepositModal({ onClose }) {
     }
   }, [step, countdown]);
 
-  const formatTime = (seconds) => {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-  };
+  const formatTime = (s) => `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;
 
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
@@ -2978,369 +2974,249 @@ function DepositModal({ onClose }) {
   const handleProofUpload = (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        alert('File too large. Maximum 5MB allowed.');
-        return;
-      }
+      if (file.size > 5 * 1024 * 1024) { alert('File too large. Max 5MB.'); return; }
       setUploading(true);
       const reader = new FileReader();
-      reader.onload = () => {
-        setProofImage(reader.result);
-        setUploading(false);
-      };
+      reader.onload = () => { setProofImage(reader.result); setUploading(false); };
       reader.readAsDataURL(file);
     }
   };
 
-  const [submitting, setSubmitting] = useState(false);
-
-  const handleSubmitPayment = async () => {
+  const handleSubmit = () => {
     if (!txHash && !proofImage) {
-      alert('Please provide either a transaction hash or proof of payment screenshot.');
+      alert('Please provide transaction hash or payment proof.');
       return;
     }
-
     setSubmitting(true);
     
-    try {
-      const user = JSON.parse(localStorage.getItem('saxovault_current_user') || '{}');
-      
-      // Create transaction with proof
-      Storage.addTransaction({
-        type: 'deposit',
-        amount: parseFloat(amount),
-        crypto: selectedCrypto.symbol,
-        network: selectedCrypto.network,
-        walletAddress: selectedCrypto.address,
-        txHash: txHash || null,
-        proofImage: proofImage || null,
-        userEmail: user.email,
-        userId: user.uid
-      });
+    const user = JSON.parse(localStorage.getItem('saxovault_current_user') || '{}');
+    
+    // Add transaction
+    Storage.addTransaction({
+      type: 'deposit',
+      amount: parseFloat(amount),
+      crypto: selectedCrypto.symbol,
+      network: selectedCrypto.network,
+      txHash: txHash || null,
+      proofImage: proofImage ? 'uploaded' : null,
+      userEmail: user.email || 'unknown',
+      userId: user.uid || 'unknown'
+    });
 
-      Storage.logActivity(user.uid, 'deposit_request', { 
-        amount, 
-        crypto: selectedCrypto.symbol,
-        hasTxHash: !!txHash,
-        hasProof: !!proofImage
-      });
-
-      // Send email notification
-      await EmailService.sendDepositNotification(user.email, parseFloat(amount), selectedCrypto.symbol);
-
-      // Go to confirmation step
-      setStep(4);
-    } catch (error) {
-      console.error('Error submitting deposit:', error);
-      alert('There was an error submitting your deposit. Please try again.');
-    } finally {
-      setSubmitting(false);
+    // Send email (non-blocking)
+    if (user.email) {
+      EmailService.sendDepositNotification(user.email, parseFloat(amount), selectedCrypto.symbol).catch(console.error);
     }
-  };
 
-  const handleOpenWallet = () => {
-    const walletUrl = selectedCrypto.id === 'btc' 
-      ? `bitcoin:${selectedCrypto.address}`
-      : selectedCrypto.id === 'eth' || selectedCrypto.id === 'usdc'
-        ? `ethereum:${selectedCrypto.address}`
-        : null;
-    if (walletUrl) window.location.href = walletUrl;
+    setTimeout(() => {
+      setSubmitting(false);
+      setStep(4);
+    }, 500);
   };
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end lg:items-center justify-center" onClick={onClose}>
-      <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'tween' }}
-        className="bg-white rounded-t-3xl lg:rounded-3xl w-full lg:max-w-lg max-h-[90vh] overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+        className="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden" onClick={e => e.stopPropagation()}>
         
         {/* Header */}
-        <div className="p-5 lg:p-6" style={{ background: `linear-gradient(135deg, ${theme.green} 0%, ${theme.greenDark} 100%)` }}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-white/20">
-                <Download className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h2 className="text-xl font-serif text-white">
-                  {step === 1 ? 'Deposit Funds' : step === 2 ? 'Make Payment' : step === 3 ? 'Verify Payment' : 'Complete'}
-                </h2>
-                <p className="text-white/70 text-sm">
-                  {step === 1 ? 'Select amount & crypto' : step === 2 ? 'Send payment within time' : step === 3 ? 'Submit proof of payment' : 'Pending approval'}
-                </p>
-              </div>
-            </div>
-            <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-full transition-colors">
-              <X className="w-6 h-6 text-white" />
-            </button>
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between" style={{ background: theme.navy }}>
+          <div className="flex items-center gap-3">
+            <Download className="w-5 h-5 text-white" />
+            <span className="text-white font-medium">Deposit Funds</span>
           </div>
-          
-          {/* Progress Steps */}
-          <div className="flex items-center gap-2 mt-4">
-            {[1, 2, 3, 4].map((s) => (
-              <div key={s} className={`h-1 flex-1 rounded-full ${step >= s ? 'bg-white' : 'bg-white/30'}`} />
-            ))}
-          </div>
+          <button onClick={onClose} className="text-white/70 hover:text-white">
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
-        <div className="p-5 lg:p-6 overflow-y-auto max-h-[70vh]">
-          
-          {/* STEP 1: Select Crypto & Amount */}
-          {step === 1 && (
-            <div>
-              <h3 className="font-semibold mb-4" style={{ color: theme.navy }}>Select Cryptocurrency</h3>
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                {cryptoOptions.map((crypto) => (
-                  <motion.button key={crypto.id} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                    onClick={() => setSelectedCrypto(crypto)}
-                    className={`p-4 rounded-xl border-2 transition-all text-left ${selectedCrypto?.id === crypto.id ? 'shadow-lg' : 'border-gray-200'}`}
-                    style={selectedCrypto?.id === crypto.id ? { borderColor: crypto.color, background: `${crypto.color}10` } : {}}>
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg"
-                        style={{ background: crypto.color }}>
-                        {crypto.icon}
-                      </div>
-                      <div>
-                        <p className="font-semibold text-sm" style={{ color: theme.navy }}>{crypto.symbol}</p>
-                        <p className="text-xs text-gray-500">{crypto.name}</p>
-                      </div>
-                    </div>
-                  </motion.button>
-                ))}
-              </div>
+        {/* Progress */}
+        <div className="px-6 py-3 bg-gray-50 border-b border-gray-100">
+          <div className="flex gap-2">
+            {[1,2,3,4].map(s => (
+              <div key={s} className={`h-1 flex-1 rounded-full ${step >= s ? 'bg-blue-500' : 'bg-gray-200'}`} />
+            ))}
+          </div>
+          <p className="text-xs text-gray-500 mt-2">
+            Step {step} of 4: {step === 1 ? 'Select Amount' : step === 2 ? 'Send Payment' : step === 3 ? 'Confirm Payment' : 'Complete'}
+          </p>
+        </div>
 
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Amount (USD)</label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-bold text-gray-400">$</span>
-                  <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 text-xl font-bold border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
-                    placeholder="0.00" min="10" />
+        <div className="p-6 max-h-[60vh] overflow-y-auto">
+          
+          {/* Step 1: Amount & Crypto */}
+          {step === 1 && (
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Payment Method</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {cryptoOptions.map(c => (
+                    <button key={c.id} onClick={() => setSelectedCrypto(c)}
+                      className={`p-3 rounded-lg border-2 text-center transition-all ${selectedCrypto?.id === c.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                      <span className="text-lg">{c.icon}</span>
+                      <p className="text-xs font-medium mt-1">{c.symbol}</p>
+                    </button>
+                  ))}
                 </div>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Amount (USD)</label>
+                <input type="number" value={amount} onChange={e => setAmount(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
+                  placeholder="Enter amount" min="10" />
                 <div className="flex gap-2 mt-2">
-                  {[100, 500, 1000, 5000].map((v) => (
+                  {[100, 500, 1000, 5000].map(v => (
                     <button key={v} onClick={() => setAmount(v.toString())}
-                      className="flex-1 py-2 rounded-lg text-xs font-medium border border-gray-200 hover:bg-gray-50">
+                      className="flex-1 py-1.5 text-xs border border-gray-200 rounded hover:bg-gray-50">
                       ${v.toLocaleString()}
                     </button>
                   ))}
                 </div>
               </div>
 
-              <motion.button onClick={() => selectedCrypto && amount && parseFloat(amount) >= 10 && setStep(2)}
+              <button onClick={() => selectedCrypto && amount >= 10 && setStep(2)}
                 disabled={!selectedCrypto || !amount || parseFloat(amount) < 10}
-                whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                className="w-full py-3.5 rounded-xl text-white font-semibold disabled:opacity-50"
-                style={{ background: `linear-gradient(135deg, ${theme.green} 0%, ${theme.greenDark} 100%)` }}>
+                className="w-full py-3 rounded-lg text-white font-medium disabled:opacity-50 transition-all"
+                style={{ background: theme.navy }}>
                 Continue
-              </motion.button>
-              {parseFloat(amount) < 10 && amount && (
-                <p className="text-red-500 text-xs text-center mt-2">Minimum deposit is $10</p>
-              )}
+              </button>
             </div>
           )}
 
-          {/* STEP 2: Payment with Countdown */}
+          {/* Step 2: Payment */}
           {step === 2 && selectedCrypto && (
-            <div>
-              {/* Countdown Timer */}
-              <div className={`text-center mb-6 p-4 rounded-2xl ${countdown < 300 ? 'bg-red-50 border border-red-200' : 'bg-yellow-50 border border-yellow-200'}`}>
-                <p className="text-sm text-gray-600 mb-1">⏱️ Complete payment within</p>
-                <p className={`text-4xl font-mono font-bold ${countdown < 300 ? 'text-red-600' : ''}`} 
-                  style={{ color: countdown >= 300 ? theme.navy : undefined }}>
-                  {formatTime(countdown)}
-                </p>
-                {countdown < 300 && <p className="text-red-500 text-xs mt-1">Hurry! Time is running out</p>}
+            <div className="space-y-4">
+              <div className="text-center p-3 bg-amber-50 rounded-lg border border-amber-200">
+                <p className="text-sm text-amber-700">Complete payment within</p>
+                <p className="text-2xl font-mono font-bold text-amber-800">{formatTime(countdown)}</p>
               </div>
 
-              {/* Amount to Send */}
-              <div className="bg-gray-50 rounded-2xl p-4 mb-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="text-sm text-gray-500">Amount to deposit</p>
-                    <p className="text-2xl font-bold" style={{ color: theme.navy }}>${parseFloat(amount).toLocaleString()}</p>
-                  </div>
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold"
-                    style={{ background: selectedCrypto.color }}>
-                    {selectedCrypto.icon}
-                  </div>
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <div className="flex justify-between mb-2">
+                  <span className="text-sm text-gray-500">Amount</span>
+                  <span className="font-semibold">${parseFloat(amount).toLocaleString()}</span>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">Send equivalent in {selectedCrypto.symbol} ({selectedCrypto.network})</p>
-              </div>
-
-              {/* Wallet Address */}
-              <div className="mb-4">
-                <p className="text-sm font-medium text-gray-700 mb-2">Send {selectedCrypto.symbol} to this address:</p>
-                <div className="bg-gray-900 rounded-xl p-4">
-                  <p className="text-xs text-gray-400 mb-2 text-center">{selectedCrypto.network} Address</p>
-                  <p className="font-mono text-sm text-white break-all text-center mb-3">{selectedCrypto.address}</p>
-                  <div className="flex gap-2">
-                    <motion.button onClick={() => handleCopy(selectedCrypto.address)} 
-                      whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                      className="flex-1 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2"
-                      style={{ background: copied ? theme.green : theme.gold, color: 'white' }}>
-                      {copied ? <><CheckCircle className="w-4 h-4" /> Copied!</> : <><Copy className="w-4 h-4" /> Copy Address</>}
-                    </motion.button>
-                    <motion.button onClick={handleOpenWallet} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                      className="flex-1 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2 bg-blue-500 text-white">
-                      <ExternalLink className="w-4 h-4" /> Open Wallet
-                    </motion.button>
-                  </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-500">Network</span>
+                  <span className="text-sm font-medium">{selectedCrypto.network}</span>
                 </div>
               </div>
 
-              {/* Warning */}
-              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-4">
-                <div className="flex gap-3">
-                  <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0" />
-                  <div>
-                    <p className="font-medium text-yellow-800 text-sm">Important</p>
-                    <p className="text-yellow-700 text-xs mt-1">
-                      Only send {selectedCrypto.symbol} via {selectedCrypto.network}. Sending wrong crypto or using wrong network will result in permanent loss.
-                    </p>
-                  </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Send {selectedCrypto.symbol} to:</label>
+                <div className="p-3 bg-gray-900 rounded-lg">
+                  <p className="font-mono text-xs text-gray-300 break-all text-center">{selectedCrypto.address}</p>
                 </div>
+                <button onClick={() => handleCopy(selectedCrypto.address)}
+                  className="w-full mt-2 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center justify-center gap-2">
+                  {copied ? <><CheckCircle className="w-4 h-4 text-green-500" /> Copied!</> : <><Copy className="w-4 h-4" /> Copy Address</>}
+                </button>
               </div>
 
-              <motion.button onClick={() => setStep(3)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                className="w-full py-3.5 rounded-xl text-white font-semibold"
-                style={{ background: `linear-gradient(135deg, ${theme.green} 0%, ${theme.greenDark} 100%)` }}>
-                I've Sent the Payment →
-              </motion.button>
+              <p className="text-xs text-gray-500 text-center">
+                ⚠️ Only send {selectedCrypto.symbol} via {selectedCrypto.network}. Wrong network = lost funds.
+              </p>
+
+              <button onClick={() => setStep(3)}
+                className="w-full py-3 rounded-lg text-white font-medium"
+                style={{ background: theme.navy }}>
+                I've Sent Payment
+              </button>
             </div>
           )}
 
-          {/* STEP 3: Proof of Payment */}
-          {step === 3 && selectedCrypto && (
-            <div>
-              <button onClick={() => setStep(2)} className="flex items-center gap-2 text-gray-500 hover:text-gray-700 mb-4">
+          {/* Step 3: Verification */}
+          {step === 3 && (
+            <div className="space-y-4">
+              <button onClick={() => setStep(2)} className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1">
                 <ArrowLeft className="w-4 h-4" /> Back
               </button>
 
-              <div className="text-center mb-6">
-                <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3"
-                  style={{ background: `${theme.navy}10` }}>
-                  <FileText className="w-8 h-8" style={{ color: theme.navy }} />
-                </div>
-                <h3 className="font-semibold text-lg" style={{ color: theme.navy }}>Verify Your Payment</h3>
-                <p className="text-gray-500 text-sm">Provide transaction details for faster verification</p>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Transaction Hash (Recommended)</label>
+                <input type="text" value={txHash} onChange={e => setTxHash(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 font-mono text-sm"
+                  placeholder="0x... or txid..." />
               </div>
 
-              {/* Transaction Hash Input */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Transaction Hash (TX ID) <span className="text-gray-400 font-normal">- Recommended</span>
-                </label>
-                <input type="text" value={txHash} onChange={(e) => setTxHash(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 font-mono text-sm"
-                  placeholder="e.g., 0x1234...abcd or txid..." />
-                <p className="text-xs text-gray-400 mt-1">Find this in your wallet's transaction history</p>
-              </div>
-
-              {/* OR Divider */}
-              <div className="flex items-center gap-4 my-4">
+              <div className="flex items-center gap-3">
                 <div className="flex-1 h-px bg-gray-200" />
-                <span className="text-gray-400 text-sm">OR</span>
+                <span className="text-xs text-gray-400">OR</span>
                 <div className="flex-1 h-px bg-gray-200" />
               </div>
 
-              {/* Proof of Payment Upload */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Upload Proof of Payment <span className="text-gray-400 font-normal">- Screenshot</span>
-                </label>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Upload Proof of Payment</label>
                 <input ref={fileInputRef} type="file" accept="image/*" onChange={handleProofUpload} className="hidden" />
-                
                 {!proofImage ? (
-                  <motion.button onClick={() => fileInputRef.current?.click()}
-                    whileHover={{ scale: 1.01 }}
-                    className="w-full border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-gray-400 transition-colors">
-                    {uploading ? (
-                      <RefreshCw className="w-8 h-8 text-gray-400 mx-auto animate-spin" />
-                    ) : (
+                  <button onClick={() => fileInputRef.current?.click()}
+                    className="w-full p-6 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 text-center">
+                    {uploading ? <RefreshCw className="w-6 h-6 mx-auto animate-spin text-gray-400" /> : (
                       <>
-                        <Camera className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                        <p className="text-sm text-gray-600">Click to upload screenshot</p>
-                        <p className="text-xs text-gray-400 mt-1">PNG, JPG up to 5MB</p>
+                        <Camera className="w-6 h-6 mx-auto text-gray-400 mb-2" />
+                        <p className="text-sm text-gray-500">Click to upload screenshot</p>
                       </>
                     )}
-                  </motion.button>
+                  </button>
                 ) : (
                   <div className="relative">
-                    <img src={proofImage} alt="Proof" className="w-full h-40 object-cover rounded-xl" />
+                    <img src={proofImage} alt="Proof" className="w-full h-32 object-cover rounded-lg" />
                     <button onClick={() => setProofImage(null)}
-                      className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center">
-                      <X className="w-4 h-4" />
+                      className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center">
+                      <X className="w-3 h-3" />
                     </button>
                   </div>
                 )}
               </div>
 
-              {/* Summary */}
-              <div className="bg-gray-50 rounded-xl p-4 mb-4">
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-500">Amount</span>
-                  <span className="font-bold">${parseFloat(amount).toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-500">Crypto</span>
-                  <span className="font-bold">{selectedCrypto.symbol}</span>
-                </div>
-                <div className="flex justify-between text-sm">
+              <div className="p-3 bg-gray-50 rounded-lg text-sm">
+                <div className="flex justify-between">
                   <span className="text-gray-500">Verification</span>
-                  <span className="font-medium text-green-600">
-                    {txHash && proofImage ? '✓ Hash + Proof' : txHash ? '✓ TX Hash' : proofImage ? '✓ Screenshot' : '⚠️ Required'}
+                  <span className={txHash || proofImage ? 'text-green-600' : 'text-amber-600'}>
+                    {txHash && proofImage ? '✓ Both provided' : txHash ? '✓ Hash provided' : proofImage ? '✓ Proof uploaded' : '⚠️ Required'}
                   </span>
                 </div>
               </div>
 
-              <motion.button onClick={handleSubmitPayment}
+              <button onClick={handleSubmit}
                 disabled={(!txHash && !proofImage) || submitting}
-                whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                className="w-full py-3.5 rounded-xl text-white font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
-                style={{ background: `linear-gradient(135deg, ${theme.green} 0%, ${theme.greenDark} 100%)` }}>
-                {submitting ? (
-                  <>
-                    <RefreshCw className="w-5 h-5 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  'Submit for Verification'
-                )}
-              </motion.button>
+                className="w-full py-3 rounded-lg text-white font-medium disabled:opacity-50 flex items-center justify-center gap-2"
+                style={{ background: theme.navy }}>
+                {submitting ? <><RefreshCw className="w-4 h-4 animate-spin" /> Processing...</> : 'Submit for Verification'}
+              </button>
             </div>
           )}
 
-          {/* STEP 4: Confirmation */}
+          {/* Step 4: Complete */}
           {step === 4 && (
-            <div className="text-center py-8">
-              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring' }}
-                className="w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4" style={{ background: `${theme.green}20` }}>
-                <CheckCircle className="w-10 h-10" style={{ color: theme.green }} />
-              </motion.div>
-              <h3 className="font-serif text-xl mb-2" style={{ color: theme.navy }}>Deposit Submitted!</h3>
-              <p className="text-gray-500 text-sm mb-6">
-                Your deposit is being verified by our team. You'll receive a confirmation once approved.
-              </p>
-              <div className="bg-gray-50 rounded-xl p-4 text-left mb-6">
-                <div className="flex justify-between text-sm mb-2">
+            <div className="text-center py-6">
+              <div className="w-16 h-16 mx-auto rounded-full bg-green-100 flex items-center justify-center mb-4">
+                <CheckCircle className="w-8 h-8 text-green-500" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2" style={{ color: theme.navy }}>Deposit Submitted</h3>
+              <p className="text-sm text-gray-500 mb-4">Your deposit is pending verification. You'll be notified once approved.</p>
+              
+              <div className="p-4 bg-gray-50 rounded-lg text-sm text-left mb-4">
+                <div className="flex justify-between mb-2">
                   <span className="text-gray-500">Amount</span>
-                  <span className="font-bold">${parseFloat(amount).toLocaleString()}</span>
+                  <span className="font-medium">${parseFloat(amount).toLocaleString()}</span>
                 </div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-500">Cryptocurrency</span>
-                  <span className="font-bold">{selectedCrypto?.symbol}</span>
+                <div className="flex justify-between mb-2">
+                  <span className="text-gray-500">Method</span>
+                  <span className="font-medium">{selectedCrypto?.symbol}</span>
                 </div>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between">
                   <span className="text-gray-500">Status</span>
-                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">⏳ Pending Approval</span>
+                  <span className="text-amber-600 font-medium">Pending Approval</span>
                 </div>
               </div>
-              <p className="text-xs text-gray-400 mb-4">Verification typically takes 10-30 minutes</p>
-              <motion.button onClick={onClose} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                className="w-full py-3.5 rounded-xl font-semibold"
-                style={{ background: `${theme.navy}10`, color: theme.navy }}>
+
+              <button onClick={onClose}
+                className="w-full py-3 rounded-lg font-medium border border-gray-200 hover:bg-gray-50">
                 Done
-              </motion.button>
+              </button>
             </div>
           )}
         </div>
@@ -3349,218 +3225,207 @@ function DepositModal({ onClose }) {
   );
 }
 
-// ============ WITHDRAW MODAL ============
+// ============ WITHDRAW MODAL - PROFESSIONAL DESIGN ============
 function WithdrawModal({ onClose, balance }) {
   const [step, setStep] = useState(1);
   const [amount, setAmount] = useState('');
   const [selectedCrypto, setSelectedCrypto] = useState(null);
   const [walletAddress, setWalletAddress] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const cryptoOptions = [
-    { id: 'btc', name: 'Bitcoin', symbol: 'BTC', icon: '₿', color: '#f7931a', network: 'Bitcoin Network', minWithdraw: 50 },
-    { id: 'eth', name: 'Ethereum', symbol: 'ETH', icon: 'Ξ', color: '#627eea', network: 'ERC-20', minWithdraw: 50 },
-    { id: 'usdt', name: 'Tether', symbol: 'USDT', icon: '₮', color: '#26a17b', network: 'TRC-20', minWithdraw: 20 },
-    { id: 'usdc', name: 'USD Coin', symbol: 'USDC', icon: '$', color: '#2775ca', network: 'ERC-20', minWithdraw: 20 },
-    { id: 'bnb', name: 'BNB', symbol: 'BNB', icon: 'B', color: '#f3ba2f', network: 'BEP-20', minWithdraw: 30 },
-    { id: 'ltc', name: 'Litecoin', symbol: 'LTC', icon: 'Ł', color: '#bfbbbb', network: 'Litecoin Network', minWithdraw: 25 }
+    { id: 'btc', name: 'Bitcoin', symbol: 'BTC', icon: '₿', network: 'Bitcoin', minWithdraw: 50 },
+    { id: 'eth', name: 'Ethereum', symbol: 'ETH', icon: 'Ξ', network: 'ERC-20', minWithdraw: 50 },
+    { id: 'usdt', name: 'Tether', symbol: 'USDT', icon: '₮', network: 'TRC-20', minWithdraw: 20 },
+    { id: 'usdc', name: 'USD Coin', symbol: 'USDC', icon: '$', network: 'ERC-20', minWithdraw: 20 },
+    { id: 'bnb', name: 'BNB', symbol: 'BNB', icon: 'B', network: 'BEP-20', minWithdraw: 30 }
   ];
 
   const isValidAmount = amount && parseFloat(amount) >= (selectedCrypto?.minWithdraw || 0) && parseFloat(amount) <= balance;
+  const isValidAddress = walletAddress.length >= 26;
+
+  const handleSubmit = () => {
+    if (!isValidAmount || !isValidAddress) return;
+    setSubmitting(true);
+
+    const user = JSON.parse(localStorage.getItem('saxovault_current_user') || '{}');
+
+    Storage.addTransaction({
+      type: 'withdrawal',
+      amount: parseFloat(amount),
+      crypto: selectedCrypto.symbol,
+      network: selectedCrypto.network,
+      walletAddress,
+      userEmail: user.email || 'unknown',
+      userId: user.uid || 'unknown'
+    });
+
+    if (user.email) {
+      EmailService.sendWithdrawalNotification(user.email, parseFloat(amount), walletAddress).catch(console.error);
+    }
+
+    setTimeout(() => {
+      setSubmitting(false);
+      setStep(3);
+    }, 500);
+  };
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end lg:items-center justify-center" onClick={onClose}>
-      <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'tween' }}
-        className="bg-white rounded-t-3xl lg:rounded-3xl w-full lg:max-w-lg max-h-[90vh] overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+        className="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden" onClick={e => e.stopPropagation()}>
         
-        <div className="p-5 lg:p-6" style={{ background: `linear-gradient(135deg, ${theme.gold} 0%, ${theme.goldDark} 100%)` }}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-white/20">
-                <Upload className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h2 className="text-xl font-serif text-white">Withdraw Funds</h2>
-                <p className="text-white/70 text-sm">Balance: ${balance.toLocaleString()}</p>
-              </div>
+        {/* Header */}
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between" style={{ background: theme.navy }}>
+          <div className="flex items-center gap-3">
+            <Upload className="w-5 h-5 text-white" />
+            <div>
+              <span className="text-white font-medium">Withdraw Funds</span>
+              <p className="text-white/60 text-xs">Balance: ${balance.toLocaleString()}</p>
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-full transition-colors">
-              <X className="w-6 h-6 text-white" />
-            </button>
           </div>
+          <button onClick={onClose} className="text-white/70 hover:text-white">
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
-        <div className="p-5 lg:p-6 overflow-y-auto max-h-[70vh]">
+        {/* Progress */}
+        <div className="px-6 py-3 bg-gray-50 border-b border-gray-100">
+          <div className="flex gap-2">
+            {[1,2,3].map(s => (
+              <div key={s} className={`h-1 flex-1 rounded-full ${step >= s ? 'bg-blue-500' : 'bg-gray-200'}`} />
+            ))}
+          </div>
+          <p className="text-xs text-gray-500 mt-2">
+            Step {step} of 3: {step === 1 ? 'Enter Details' : step === 2 ? 'Confirm' : 'Complete'}
+          </p>
+        </div>
+
+        <div className="p-6 max-h-[60vh] overflow-y-auto">
+          
+          {/* Step 1: Details */}
           {step === 1 && (
-            <div>
-              <h3 className="font-semibold mb-4" style={{ color: theme.navy }}>Select Cryptocurrency</h3>
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                {cryptoOptions.map((crypto) => (
-                  <motion.button key={crypto.id} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                    onClick={() => setSelectedCrypto(crypto)}
-                    className={`p-4 rounded-xl border-2 transition-all text-left ${selectedCrypto?.id === crypto.id ? 'shadow-lg' : 'border-gray-200'}`}
-                    style={selectedCrypto?.id === crypto.id ? { borderColor: crypto.color, background: `${crypto.color}10` } : {}}>
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg"
-                        style={{ background: crypto.color }}>
-                        {crypto.icon}
-                      </div>
-                      <div>
-                        <p className="font-semibold text-sm" style={{ color: theme.navy }}>{crypto.symbol}</p>
-                        <p className="text-xs text-gray-500">Min: ${crypto.minWithdraw}</p>
-                      </div>
-                    </div>
-                  </motion.button>
-                ))}
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Amount (USD)</label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-bold text-gray-400">$</span>
-                  <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 text-xl font-bold border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                    placeholder="0.00" max={balance} />
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Withdrawal Method</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {cryptoOptions.map(c => (
+                    <button key={c.id} onClick={() => setSelectedCrypto(c)}
+                      className={`p-3 rounded-lg border-2 text-center transition-all ${selectedCrypto?.id === c.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                      <span className="text-lg">{c.icon}</span>
+                      <p className="text-xs font-medium mt-1">{c.symbol}</p>
+                    </button>
+                  ))}
                 </div>
-                <div className="flex justify-between mt-2">
-                  <p className="text-xs text-gray-500">
-                    {selectedCrypto && `Min withdrawal: $${selectedCrypto.minWithdraw}`}
-                  </p>
-                  <button onClick={() => setAmount(balance.toString())} className="text-xs font-medium" style={{ color: theme.gold }}>
-                    Max: ${balance.toLocaleString()}
-                  </button>
-                </div>
-              </div>
-
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Your Wallet Address</label>
-                <input type="text" value={walletAddress} onChange={(e) => setWalletAddress(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500 font-mono text-sm"
-                  placeholder={selectedCrypto ? `Enter your ${selectedCrypto.symbol} address` : "Select cryptocurrency first"} />
                 {selectedCrypto && (
-                  <p className="text-xs text-gray-500 mt-1">Network: {selectedCrypto.network}</p>
+                  <p className="text-xs text-gray-500 mt-2">Min: ${selectedCrypto.minWithdraw} • Network: {selectedCrypto.network}</p>
+                )}
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Amount (USD)</label>
+                <input type="number" value={amount} onChange={e => setAmount(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
+                  placeholder="Enter amount" max={balance} />
+                <div className="flex gap-2 mt-2">
+                  {[25, 50, 75, 100].map(p => (
+                    <button key={p} onClick={() => setAmount(Math.floor(balance * p / 100).toString())}
+                      className="flex-1 py-1.5 text-xs border border-gray-200 rounded hover:bg-gray-50">
+                      {p}%
+                    </button>
+                  ))}
+                </div>
+                {amount && parseFloat(amount) > balance && (
+                  <p className="text-xs text-red-500 mt-1">Insufficient balance</p>
                 )}
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
-                <div className="flex gap-3">
-                  <MessageCircle className="w-5 h-5 text-blue-600 flex-shrink-0" />
-                  <p className="text-blue-700 text-xs">
-                    For other withdrawal methods not listed here, please <span className="font-semibold">contact Customer Support</span> via WhatsApp or Live Chat.
-                  </p>
-                </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Wallet Address</label>
+                <input type="text" value={walletAddress} onChange={e => setWalletAddress(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 font-mono text-sm"
+                  placeholder="Enter your wallet address" />
               </div>
 
-              <motion.button onClick={() => isValidAmount && walletAddress && setStep(2)}
-                disabled={!isValidAmount || !walletAddress || !selectedCrypto}
-                whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                className="w-full py-3.5 rounded-xl text-white font-semibold disabled:opacity-50"
-                style={{ background: `linear-gradient(135deg, ${theme.gold} 0%, ${theme.goldDark} 100%)` }}>
+              <button onClick={() => setStep(2)}
+                disabled={!isValidAmount || !isValidAddress || !selectedCrypto}
+                className="w-full py-3 rounded-lg text-white font-medium disabled:opacity-50"
+                style={{ background: theme.navy }}>
                 Continue
-              </motion.button>
+              </button>
             </div>
           )}
 
-          {step === 2 && selectedCrypto && (
-            <div>
-              <button onClick={() => setStep(1)} className="flex items-center gap-2 text-gray-500 hover:text-gray-700 mb-4">
+          {/* Step 2: Confirm */}
+          {step === 2 && (
+            <div className="space-y-4">
+              <button onClick={() => setStep(1)} className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1">
                 <ArrowLeft className="w-4 h-4" /> Back
               </button>
 
-              <h3 className="font-semibold text-lg mb-4" style={{ color: theme.navy }}>Confirm Withdrawal</h3>
-
-              <div className="bg-gray-50 rounded-2xl p-5 mb-6 space-y-4">
+              <div className="p-4 bg-gray-50 rounded-lg space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Amount</span>
-                  <span className="font-bold text-lg" style={{ color: theme.navy }}>${parseFloat(amount).toLocaleString()}</span>
+                  <span className="text-sm text-gray-500">Amount</span>
+                  <span className="font-semibold">${parseFloat(amount).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Cryptocurrency</span>
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                      style={{ background: selectedCrypto.color }}>{selectedCrypto.icon}</div>
-                    <span className="font-medium">{selectedCrypto.symbol}</span>
-                  </div>
+                  <span className="text-sm text-gray-500">Method</span>
+                  <span className="font-medium">{selectedCrypto?.symbol} ({selectedCrypto?.network})</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Network</span>
-                  <span className="font-medium">{selectedCrypto.network}</span>
+                  <span className="text-sm text-gray-500">Fee</span>
+                  <span className="text-sm">Network fee applies</span>
                 </div>
                 <div className="pt-3 border-t border-gray-200">
-                  <span className="text-gray-500 text-sm">Wallet Address</span>
-                  <p className="font-mono text-xs mt-1 break-all" style={{ color: theme.navy }}>{walletAddress}</p>
+                  <p className="text-xs text-gray-500 mb-1">Destination</p>
+                  <p className="font-mono text-xs break-all">{walletAddress}</p>
                 </div>
               </div>
 
-              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
-                <div className="flex gap-3">
-                  <Bell className="w-5 h-5 text-yellow-600 flex-shrink-0" />
-                  <p className="text-yellow-700 text-xs">
-                    Please verify the wallet address is correct. Withdrawals to incorrect addresses cannot be reversed.
-                  </p>
-                </div>
+              <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
+                <p className="text-xs text-amber-700">
+                  ⚠️ Please verify the address is correct. Withdrawals to wrong addresses cannot be recovered.
+                </p>
               </div>
 
-              <motion.button onClick={() => setStep(3)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                className="w-full py-3.5 rounded-xl text-white font-semibold"
-                style={{ background: `linear-gradient(135deg, ${theme.gold} 0%, ${theme.goldDark} 100%)` }}>
-                Confirm Withdrawal
-              </motion.button>
+              <button onClick={handleSubmit}
+                disabled={submitting}
+                className="w-full py-3 rounded-lg text-white font-medium disabled:opacity-50 flex items-center justify-center gap-2"
+                style={{ background: theme.navy }}>
+                {submitting ? <><RefreshCw className="w-4 h-4 animate-spin" /> Processing...</> : 'Confirm Withdrawal'}
+              </button>
             </div>
           )}
 
+          {/* Step 3: Complete */}
           {step === 3 && (
-            <div className="text-center py-8">
-              {/* Create transaction and notify admin on mount */}
-              {(() => {
-                if (!window._withdrawNotified) {
-                  window._withdrawNotified = true;
-                  const user = JSON.parse(localStorage.getItem('saxovault_current_user') || '{}');
-                  Storage.addTransaction({
-                    type: 'withdrawal',
-                    amount: parseFloat(amount),
-                    crypto: selectedCrypto?.symbol,
-                    network: selectedCrypto?.network,
-                    walletAddress,
-                    userEmail: user.email,
-                    userId: user.uid
-                  });
-                  Storage.logActivity(user.uid, 'withdrawal_request', { amount, crypto: selectedCrypto?.symbol, walletAddress });
-                  
-                  // Send email notification
-                  EmailService.sendWithdrawalNotification(user.email, parseFloat(amount), walletAddress);
-                  
-                  setTimeout(() => { window._withdrawNotified = false; }, 1000);
-                }
-                return null;
-              })()}
-              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring' }}
-                className="w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4" style={{ background: `${theme.green}20` }}>
-                <Clock className="w-10 h-10" style={{ color: theme.gold }} />
-              </motion.div>
-              <h3 className="font-serif text-xl mb-2" style={{ color: theme.navy }}>Withdrawal Pending</h3>
-              <p className="text-gray-500 text-sm mb-6">
-                Your withdrawal request has been submitted and is awaiting admin approval. You will receive your {selectedCrypto?.symbol} within 24-48 hours.
-              </p>
-              <div className="bg-gray-50 rounded-xl p-4 text-left mb-6">
-                <div className="flex justify-between text-sm mb-2">
+            <div className="text-center py-6">
+              <div className="w-16 h-16 mx-auto rounded-full bg-blue-100 flex items-center justify-center mb-4">
+                <Clock className="w-8 h-8 text-blue-500" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2" style={{ color: theme.navy }}>Withdrawal Submitted</h3>
+              <p className="text-sm text-gray-500 mb-4">Your withdrawal is under review. Processing time: 24-48 hours.</p>
+              
+              <div className="p-4 bg-gray-50 rounded-lg text-sm text-left mb-4">
+                <div className="flex justify-between mb-2">
                   <span className="text-gray-500">Amount</span>
-                  <span className="font-bold">${parseFloat(amount).toLocaleString()}</span>
+                  <span className="font-medium">${parseFloat(amount).toLocaleString()}</span>
                 </div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-500">Cryptocurrency</span>
-                  <span className="font-bold">{selectedCrypto?.symbol}</span>
+                <div className="flex justify-between mb-2">
+                  <span className="text-gray-500">Method</span>
+                  <span className="font-medium">{selectedCrypto?.symbol}</span>
                 </div>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between">
                   <span className="text-gray-500">Status</span>
-                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">Pending Approval</span>
+                  <span className="text-amber-600 font-medium">Under Review</span>
                 </div>
               </div>
-              <motion.button onClick={onClose} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                className="w-full py-3.5 rounded-xl font-semibold"
-                style={{ background: `${theme.navy}10`, color: theme.navy }}>
+
+              <button onClick={onClose}
+                className="w-full py-3 rounded-lg font-medium border border-gray-200 hover:bg-gray-50">
                 Done
-              </motion.button>
+              </button>
             </div>
           )}
         </div>
@@ -3568,7 +3433,6 @@ function WithdrawModal({ onClose, balance }) {
     </motion.div>
   );
 }
-
 // ============ DOCUMENT VIEWER MODAL ============
 function DocumentViewerModal({ document, onClose }) {
   const documents = {
