@@ -5677,8 +5677,53 @@ SaxoVault Capital`;
 };
 
 // Make EmailService available globally for testing
+// Usage in browser console: window.testEmail('your@email.com')
 if (typeof window !== 'undefined') {
   window.EmailService = EmailService;
+  window.testEmail = async (email) => {
+    console.log('🧪 ========== EMAIL TEST START ==========');
+    console.log('🧪 Testing EmailJS with:', email);
+    console.log('🧪 Service ID:', EMAILJS_CONFIG.serviceId);
+    console.log('🧪 Template ID:', EMAILJS_CONFIG.templateId);
+    console.log('🧪 Public Key:', EMAILJS_CONFIG.publicKey);
+    console.log('🧪 EmailJS Ready:', emailjsInitialized);
+    
+    if (!emailjsInitialized) {
+      console.error('❌ EmailJS not initialized!');
+      alert('EmailJS not initialized. Check console for errors.');
+      return { success: false, error: 'Not initialized' };
+    }
+    
+    try {
+      const result = await emailjs.send(
+        EMAILJS_CONFIG.serviceId,
+        EMAILJS_CONFIG.templateId,
+        {
+          to_email: email,
+          subject: 'SaxoVault Test Email - ' + new Date().toLocaleTimeString(),
+          message: 'This is a test email from SaxoVault.\n\nIf you received this, EmailJS is working correctly!\n\nTime: ' + new Date().toLocaleString(),
+          from_name: 'SaxoVault Capital',
+          reply_to: 'support@saxovault.com'
+        }
+      );
+      console.log('✅ Test email sent successfully!', result);
+      console.log('🧪 ========== EMAIL TEST SUCCESS ==========');
+      alert('✅ Test email sent to ' + email + '!\n\nCheck your inbox (and spam folder).');
+      return { success: true, result };
+    } catch (error) {
+      console.error('❌ Test email failed:', error);
+      console.error('❌ Error details:', {
+        text: error?.text,
+        message: error?.message,
+        status: error?.status,
+        name: error?.name
+      });
+      console.log('🧪 ========== EMAIL TEST FAILED ==========');
+      alert('❌ Test email failed!\n\nError: ' + (error?.text || error?.message || 'Unknown error') + '\n\nCheck console for details.');
+      return { success: false, error };
+    }
+  };
+  console.log('📧 Email test ready! Run: window.testEmail("your@email.com")');
 }
 
 // ============ TWO-FACTOR AUTHENTICATION ============
@@ -7266,14 +7311,6 @@ function AdminDashboard({ onLogout }) {
 }
 
 // ============ MAIN APP ============
-
-// Expose EmailService for testing from browser console
-// Usage: window.testEmail('your@email.com')
-if (typeof window !== 'undefined') {
-  window.testEmail = EmailService.testEmail;
-  window.EmailService = EmailService;
-  console.log('📧 Email test available. Run: window.testEmail("your@email.com")');
-}
 
 export default function App() {
   const [isAuth, setIsAuth] = useState(false);
