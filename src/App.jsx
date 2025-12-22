@@ -560,55 +560,57 @@ const images = {
 
 // ============ INVESTMENT DATA ============
 const investments = [
-  { id: 1, name: 'Greenwich Towers', category: 'Real Estate', type: 'real-estate', min: 25000, returns: '12-15%', term: '24-36 months', desc: 'Premium commercial development in Manhattan financial district with returns generated through pre-sales and project monetization.', progress: 78, goal: 5000000, img: images.realEstate1, features: ['Development Funding', 'Pre-Sale Revenue', 'Tax Benefits', 'Quarterly Reports'], investors: 234, rating: 4.9, status: 'Funding' },
-  { id: 2, name: 'Liberty Suites Hotel', category: 'Real Estate', type: 'real-estate', min: 15000, returns: '7-9%', term: '12 months', desc: 'Income-generating boutique hotel chain. Acquire a stake in operational assets and receive quarterly net operating income.', progress: 92, goal: 3500000, img: images.realEstate2, features: ['Quarterly Income', 'Operational Asset', 'NOI Distribution', 'Hotel Revenue'], investors: 189, rating: 4.8, status: 'Active' },
-  { id: 3, name: 'Urban Renaissance Fund', category: 'Real Estate', type: 'real-estate', min: 10000, returns: '18-22%', term: '12-18 months', desc: 'Crowdfunding model to acquire, enhance, and sell premium properties with profits distributed upon sale.', progress: 65, goal: 8000000, img: images.realEstate3, features: ['Value-Add Strategy', 'Profit on Exit', 'Pooled Capital', 'Professional Management'], investors: 456, rating: 4.7, status: 'Funding' },
-  { id: 4, name: 'Marina Bay Residences', category: 'Real Estate', type: 'real-estate', min: 50000, returns: '14-18%', term: '36 months', desc: 'Exclusive waterfront luxury development with private marina access and capital appreciation potential.', progress: 45, goal: 12000000, img: images.realEstate4, features: ['Waterfront Premium', 'Capital Growth', 'Luxury Market', 'Pre-Construction'], investors: 78, rating: 4.6, status: 'Funding' },
-  { id: 5, name: 'Blue-Chip Crypto Fund', category: 'Cryptocurrency', type: 'crypto', min: 5000, returns: '15-25%', term: '12 months', desc: 'Managed portfolio focusing on Blue-Chip cryptocurrencies with expert trading strategies.', progress: 85, goal: 2000000, img: images.crypto1, features: ['BTC & ETH Focus', 'Expert Trading', 'Risk Managed', 'Monthly Reports'], investors: 567, rating: 4.5, status: 'Active' },
-  { id: 6, name: 'DeFi Yield Strategy', category: 'Cryptocurrency', type: 'crypto', min: 10000, returns: '20-35%', term: '6 months', desc: 'Advanced yield farming across multiple DeFi protocols with automated compounding.', progress: 67, goal: 1500000, img: images.crypto2, features: ['Yield Farming', 'Auto-Compound', 'Profit Share', 'Multi-Protocol'], investors: 312, rating: 4.4, status: 'Active' },
-  { id: 7, name: 'Altcoin Growth Portfolio', category: 'Cryptocurrency', type: 'crypto', min: 2500, returns: '25-40%', term: '12 months', desc: 'Selective altcoin portfolio targeting high-growth opportunities with professional management.', progress: 78, goal: 3000000, img: images.crypto3, features: ['High Growth', 'Diversified Alts', 'Controls', 'Quarterly Rebalance'], investors: 423, rating: 4.3, status: 'Funding' },
-  { id: 8, name: 'Dividend Aristocrats Bundle', category: 'Stocks & Bonds', type: 'stocks', min: 5000, returns: '6-10%', term: '12 months', desc: 'Portfolio of dividend-paying stocks with 25+ years of consecutive dividend increases.', img: images.stocks1, features: ['Dividend Income', '25+ Year Track', 'Quarterly Payouts', 'Blue Chip Stocks'], investors: 892, rating: 4.8, status: 'Open' },
-  { id: 9, name: 'Tech Growth ETF Portfolio', category: 'Stocks & Bonds', type: 'stocks', min: 3000, returns: '12-20%', term: '12 months', desc: 'Thematic ETF portfolio focused on technology sector leaders including AI and cloud computing.', img: images.stocks2, features: ['Tech Focused', 'ETF Structure', 'AI & Cloud', 'Growth Oriented'], investors: 1234, rating: 4.6, status: 'Open' },
-  { id: 10, name: 'Corporate Bond Ladder', category: 'Stocks & Bonds', type: 'stocks', min: 10000, returns: '5-7%', term: '24 months', desc: 'Investment-grade corporate bond portfolio with staggered maturities for predictable income.', img: images.stocks3, features: ['Investment Grade', 'Laddered Maturities', 'Predictable Income', 'Capital Preservation'], investors: 456, rating: 4.9, status: 'Open' },
-  { id: 11, name: 'Gold Liquidity Strategy', category: 'Precious Metals', type: 'metals', min: 5000, returns: '8-12%', term: '12 months', desc: 'Algorithm-driven gold trading strategy buying at optimized lows and selling at strategic highs.', progress: 89, goal: 10000000, img: images.gold1, features: ['Algorithmic Trading', 'No Physical Delivery', 'Market Timing', 'Managed'], investors: 678, rating: 4.7, status: 'Active' },
-  { id: 12, name: 'Silver Industrial Fund', category: 'Precious Metals', type: 'metals', min: 2500, returns: '10-15%', term: '18 months', desc: 'Silver investment benefiting from industrial demand in solar panels and EV industries.', progress: 65, goal: 3000000, img: images.gold2, features: ['Industrial Demand', 'Solar & EV Growth', 'Physical Backed', 'Quarterly Reports'], investors: 345, rating: 4.5, status: 'Funding' },
-  { id: 13, name: 'Platinum & Palladium Fund', category: 'Precious Metals', type: 'metals', min: 15000, returns: '12-18%', term: '24 months', desc: 'Rare metals portfolio with automotive catalyst and hydrogen economy demand drivers.', progress: 42, goal: 5000000, img: images.gold3, features: ['Rare Metals', 'Auto Industry', 'Hydrogen Economy', 'Supply Limited'], investors: 123, rating: 4.4, status: 'Funding' },
-  { id: 14, name: 'Conservative Growth Plan', category: 'Investment Plans', type: 'plans', min: 10000, returns: '8-10%', term: '12 months', desc: 'Balanced portfolio combining stable bonds, dividend stocks, and gold for conservative investors.', img: images.plans1, features: ['Capital Protected', 'Quarterly Dividends', 'Low Volatility', 'Professional Management'], investors: 2345, rating: 4.9, status: 'Open' },
-  { id: 15, name: 'Balanced Wealth Builder', category: 'Investment Plans', type: 'plans', min: 25000, returns: '12-16%', term: '24 months', desc: 'Diversified portfolio across real estate, stocks, and alternative assets for steady growth.', img: images.plans2, features: ['Diversified Assets', 'Compound Growth', 'Tax Efficient', 'Flexible Withdrawals'], investors: 1567, rating: 4.8, status: 'Open' },
-  { id: 16, name: 'Aggressive Growth Fund', category: 'Investment Plans', type: 'plans', min: 15000, returns: '20-30%', term: '18 months', desc: 'High-growth portfolio targeting maximum returns through tech stocks, crypto, and emerging markets.', img: images.plans3, features: ['High Returns', 'Tech & Crypto', 'Active Management', 'Monthly Rebalancing'], investors: 987, rating: 4.5, status: 'Open' }
+  // ========== TEST PLAN (Special - $500 fixed, One per user, 1% daily for 5 days) ==========
+  { id: 100, name: 'Test Plan', category: 'Cryptocurrency', type: 'crypto', min: 500, max: 500, returns: '5%', term: '5 days', desc: 'Starter test plan to experience our platform. Earn 1% daily profit for 5 days. Limited to one investment per account. Perfect for first-time investors to test our system.', progress: 99, goal: 100000, img: images.crypto1, features: ['1% Daily Returns', '5-Day Duration', 'One Per Account', 'Quick Payout'], investors: 12847, rating: 5.0, status: 'Active', payoutSchedule: 'End of Term', dailyRate: 1, totalDays: 5, isTestPlan: true, onePerUser: true },
+  
+  // ========== REAL ESTATE ==========
+  { id: 1, name: 'Greenwich Towers', category: 'Real Estate', type: 'real-estate', min: 5000, returns: '12-15%', term: '12 months', desc: 'Premium commercial development in Manhattan financial district with returns generated through pre-sales and project monetization.', progress: 78, goal: 5000000, img: images.realEstate1, features: ['Monthly Income', 'Pre-Sale Revenue', 'Tax Benefits', 'Quarterly Reports'], investors: 234, rating: 4.9, status: 'Active', dailyRate: 0.04, totalDays: 365 },
+  { id: 2, name: 'Liberty Suites Hotel', category: 'Real Estate', type: 'real-estate', min: 2500, returns: '8-10%', term: '6 months', desc: 'Income-generating boutique hotel chain. Acquire a stake in operational assets and receive monthly net operating income distributions.', progress: 92, goal: 3500000, img: images.realEstate2, features: ['Monthly Income', 'Operational Asset', 'NOI Distribution', 'Hotel Revenue'], investors: 189, rating: 4.8, status: 'Active', dailyRate: 0.05, totalDays: 180 },
+  { id: 3, name: 'Urban Renaissance Fund', category: 'Real Estate', type: 'real-estate', min: 1000, returns: '15-18%', term: '12 months', desc: 'Crowdfunding model to acquire, enhance, and sell premium properties with profits distributed upon sale.', progress: 65, goal: 8000000, img: images.realEstate3, features: ['Value-Add Strategy', 'Profit on Exit', 'Pooled Capital', 'Monthly Updates'], investors: 456, rating: 4.7, status: 'Funding', dailyRate: 0.045, totalDays: 365 },
+  { id: 4, name: 'Marina Bay Residences', category: 'Real Estate', type: 'real-estate', min: 10000, returns: '14-18%', term: '18 months', desc: 'Exclusive waterfront luxury development with private marina access and capital appreciation potential.', progress: 45, goal: 12000000, img: images.realEstate4, features: ['Waterfront Premium', 'Capital Growth', 'Luxury Market', 'Quarterly Payouts'], investors: 78, rating: 4.6, status: 'Funding', dailyRate: 0.03, totalDays: 540 },
+  
+  // ========== CRYPTOCURRENCY (Tiered - Higher investment = Higher returns) ==========
+  // Tier 1: $2,500 - Entry Crypto
+  { id: 5, name: 'Crypto Foundation', category: 'Cryptocurrency', type: 'crypto', min: 2500, returns: '12-15%', term: '30 days', desc: 'Entry-level crypto fund focusing on Bitcoin and Ethereum. Professional management with weekly profit distributions. Perfect starting point for crypto investing.', progress: 95, goal: 2000000, img: images.crypto1, features: ['Weekly Payouts', 'BTC & ETH Focus', 'Low Risk', 'Capital Protected'], investors: 3247, rating: 4.8, status: 'Active', payoutSchedule: 'Weekly', dailyRate: 0.45, totalDays: 30 },
+  
+  // Tier 2: $5,000 - Intermediate
+  { id: 6, name: 'DeFi Yield Pro', category: 'Cryptocurrency', type: 'crypto', min: 5000, returns: '20-28%', term: '45 days', desc: 'Advanced DeFi staking across premium protocols. Higher capital unlocks access to exclusive yield farming pools with enhanced returns and bi-weekly distributions.', progress: 92, goal: 3000000, img: images.crypto2, features: ['Bi-Weekly Payouts', 'Multi-Protocol', 'Auto-Compound', 'Priority Support'], investors: 2156, rating: 4.8, status: 'Active', payoutSchedule: 'Bi-Weekly', dailyRate: 0.55, totalDays: 45 },
+  
+  // Tier 3: $10,000 - Advanced
+  { id: 7, name: 'Altcoin Alpha Fund', category: 'Cryptocurrency', type: 'crypto', min: 10000, returns: '30-42%', term: '60 days', desc: 'Premium altcoin portfolio with AI-powered selection. Access emerging tokens before major listings. Weekly payouts with institutional-grade risk management.', progress: 88, goal: 5000000, img: images.crypto3, features: ['Weekly Payouts', 'AI Selection', 'Early Access', 'VIP Support'], investors: 1876, rating: 4.7, status: 'Active', payoutSchedule: 'Weekly', dailyRate: 0.6, totalDays: 60 },
+  
+  // Tier 4: $25,000 - Professional
+  { id: 17, name: 'Whale Insider Fund', category: 'Cryptocurrency', type: 'crypto', min: 25000, returns: '45-60%', term: '90 days', desc: 'Follow institutional whale movements with our proprietary algorithm. Track large wallet activities and capitalize on major market moves before they happen.', progress: 85, goal: 10000000, img: images.crypto1, features: ['Weekly Payouts', 'Whale Tracking', 'Real-Time Alerts', 'Dedicated Manager'], investors: 567, rating: 4.9, status: 'Active', payoutSchedule: 'Weekly', dailyRate: 0.6, totalDays: 90 },
+  
+  // Tier 5: $50,000 - Elite
+  { id: 18, name: 'Crypto Elite Vault', category: 'Cryptocurrency', type: 'crypto', min: 50000, returns: '60-85%', term: '120 days', desc: 'Our flagship crypto fund for serious investors. Maximum returns through exclusive arbitrage opportunities, OTC deals, and pre-ICO access. Personal account manager included.', progress: 75, goal: 25000000, img: images.crypto2, features: ['Weekly Payouts', 'Arbitrage Access', 'Pre-ICO Deals', 'Personal Manager'], investors: 234, rating: 5.0, status: 'Active', payoutSchedule: 'Weekly', dailyRate: 0.65, totalDays: 120 },
+  
+  // Tier 6: $100,000 - Institutional
+  { id: 19, name: 'Institutional Crypto Fund', category: 'Cryptocurrency', type: 'crypto', min: 100000, returns: '80-120%', term: '180 days', desc: 'Institutional-grade crypto investment with maximum security and returns. Direct access to our top traders, custom strategies, and guaranteed principal protection.', progress: 60, goal: 50000000, img: images.crypto3, features: ['Daily Payouts', 'Principal Protected', 'Custom Strategy', 'White Glove Service'], investors: 89, rating: 5.0, status: 'Active', payoutSchedule: 'Daily', dailyRate: 0.55, totalDays: 180 },
+  
+  // ========== STOCKS & BONDS ==========
+  { id: 8, name: 'Dividend Aristocrats', category: 'Stocks & Bonds', type: 'stocks', min: 1000, returns: '8-12%', term: '6 months', desc: 'Portfolio of dividend-paying stocks with 25+ years of consecutive dividend increases. Reliable quarterly income from blue-chip companies.', img: images.stocks1, features: ['Dividend Income', '25+ Year Track', 'Quarterly Payouts', 'Blue Chip Stocks'], investors: 1892, rating: 4.8, status: 'Open', dailyRate: 0.055, totalDays: 180 },
+  { id: 9, name: 'Tech Growth ETF', category: 'Stocks & Bonds', type: 'stocks', min: 500, returns: '15-25%', term: '6 months', desc: 'Thematic ETF portfolio focused on technology sector leaders including AI, cloud computing, and semiconductors.', img: images.stocks2, features: ['Tech Focused', 'ETF Structure', 'AI & Cloud', 'Monthly Updates'], investors: 2234, rating: 4.7, status: 'Open', dailyRate: 0.11, totalDays: 180 },
+  { id: 10, name: 'Corporate Bond Fund', category: 'Stocks & Bonds', type: 'stocks', min: 2000, returns: '6-8%', term: '12 months', desc: 'Investment-grade corporate bond portfolio with staggered maturities for predictable income and capital preservation.', img: images.stocks3, features: ['Investment Grade', 'Laddered Maturities', 'Monthly Income', 'Capital Safe'], investors: 756, rating: 4.9, status: 'Open', dailyRate: 0.02, totalDays: 365 },
+  
+  // ========== PRECIOUS METALS ==========
+  { id: 11, name: 'Gold Trading Strategy', category: 'Precious Metals', type: 'metals', min: 1000, returns: '10-15%', term: '3 months', desc: 'Algorithm-driven gold trading strategy buying at optimized lows and selling at strategic highs. Monthly profit distributions.', progress: 89, goal: 10000000, img: images.gold1, features: ['Algorithmic Trading', 'No Physical Delivery', 'Monthly Payouts', 'Professional Managed'], investors: 1678, rating: 4.7, status: 'Active', dailyRate: 0.14, totalDays: 90 },
+  { id: 12, name: 'Silver Industrial Fund', category: 'Precious Metals', type: 'metals', min: 500, returns: '12-18%', term: '6 months', desc: 'Silver investment benefiting from industrial demand in solar panels and EV industries. Bi-monthly profit distributions.', progress: 65, goal: 3000000, img: images.gold2, features: ['Industrial Demand', 'Solar & EV Growth', 'Bi-Monthly Payouts', 'High Growth'], investors: 945, rating: 4.6, status: 'Funding', dailyRate: 0.08, totalDays: 180 },
+  { id: 13, name: 'Platinum Portfolio', category: 'Precious Metals', type: 'metals', min: 2500, returns: '15-22%', term: '12 months', desc: 'Rare metals portfolio with automotive catalyst and hydrogen economy demand drivers. Quarterly distributions.', progress: 42, goal: 5000000, img: images.gold3, features: ['Rare Metals', 'Auto Industry', 'Hydrogen Economy', 'Quarterly Payouts'], investors: 423, rating: 4.5, status: 'Funding', dailyRate: 0.05, totalDays: 365 },
+  
+  // ========== INVESTMENT PLANS ==========
+  { id: 14, name: 'Starter Growth Plan', category: 'Investment Plans', type: 'plans', min: 500, returns: '10-12%', term: '3 months', desc: 'Perfect entry-level plan combining stable assets for new investors. Low risk with consistent monthly returns and full capital protection.', img: images.plans1, features: ['Capital Protected', 'Monthly Payouts', 'Low Risk', 'Beginner Friendly'], investors: 4345, rating: 4.9, status: 'Open', dailyRate: 0.12, totalDays: 90 },
+  { id: 15, name: 'Balanced Wealth Builder', category: 'Investment Plans', type: 'plans', min: 2500, returns: '15-20%', term: '6 months', desc: 'Diversified portfolio across real estate, stocks, and crypto for steady growth. Bi-weekly distributions with compound option.', img: images.plans2, features: ['Diversified Assets', 'Bi-Weekly Payouts', 'Compound Option', 'Flexible'], investors: 2567, rating: 4.8, status: 'Open', dailyRate: 0.1, totalDays: 180 },
+  { id: 16, name: 'Premium Growth Fund', category: 'Investment Plans', type: 'plans', min: 5000, returns: '25-35%', term: '12 months', desc: 'High-growth portfolio targeting maximum returns through tech stocks, crypto, and emerging markets. Weekly profit distributions.', img: images.plans3, features: ['High Returns', 'Weekly Payouts', 'Active Management', 'VIP Support'], investors: 1287, rating: 4.7, status: 'Open', dailyRate: 0.08, totalDays: 365 }
 ];
 
 const categories = [
   { id: 'all', name: 'All', icon: Globe, count: investments.length },
   { id: 'real-estate', name: 'Real Estate', icon: Building2, count: 4 },
-  { id: 'crypto', name: 'Crypto', icon: Bitcoin, count: 3 },
+  { id: 'crypto', name: 'Crypto', icon: Bitcoin, count: 7 },
   { id: 'stocks', name: 'Stocks', icon: BarChart3, count: 3 },
   { id: 'metals', name: 'Metals', icon: Gem, count: 3 },
   { id: 'plans', name: 'Plans', icon: Briefcase, count: 3 }
-];
-
-// ============ ALL COUNTRIES LIST ============
-const countries = [
-  "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria",
-  "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan",
-  "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria", "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia",
-  "Cameroon", "Canada", "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo (Brazzaville)", "Congo (Kinshasa)",
-  "Costa Rica", "Croatia", "Cuba", "Cyprus", "Czech Republic", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador",
-  "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Eswatini", "Ethiopia", "Fiji", "Finland", "France",
-  "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Greece", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau",
-  "Guyana", "Haiti", "Honduras", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland",
-  "Israel", "Italy", "Ivory Coast", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Kosovo",
-  "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania",
-  "Luxembourg", "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius",
-  "Mexico", "Micronesia", "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique", "Myanmar", "Namibia",
-  "Nauru", "Nepal", "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea", "North Macedonia", "Norway",
-  "Oman", "Pakistan", "Palau", "Palestine", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland",
-  "Portugal", "Qatar", "Romania", "Russia", "Rwanda", "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Samoa", "San Marino",
-  "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands",
-  "Somalia", "South Africa", "South Korea", "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland",
-  "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Timor-Leste", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia",
-  "Turkey", "Turkmenistan", "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan",
-  "Vanuatu", "Vatican City", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe"
 ];
 
 // ============ AUTH PAGE WITH REAL FIREBASE AUTHENTICATION ============
@@ -675,65 +677,83 @@ function AuthPage({ onLogin }) {
   const [mode, setMode] = useState('login');
   const [showPass, setShowPass] = useState(false);
   const [step, setStep] = useState(1);
-  const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', confirmPassword: '', referralCode: '', country: '', countryCode: '+1' });
+  const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', confirmPassword: '', referralCode: '', country: '' });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState({ type: '', text: '' });
   
-  // Country codes list (alphabetical - international standard)
-  const countryCodes = [
-    { code: '+43', country: 'Austria', flag: '🇦🇹' },
-    { code: '+61', country: 'Australia', flag: '🇦🇺' },
-    { code: '+880', country: 'Bangladesh', flag: '🇧🇩' },
-    { code: '+32', country: 'Belgium', flag: '🇧🇪' },
-    { code: '+55', country: 'Brazil', flag: '🇧🇷' },
-    { code: '+1', country: 'Canada', flag: '🇨🇦' },
-    { code: '+86', country: 'China', flag: '🇨🇳' },
-    { code: '+420', country: 'Czech Republic', flag: '🇨🇿' },
-    { code: '+45', country: 'Denmark', flag: '🇩🇰' },
-    { code: '+20', country: 'Egypt', flag: '🇪🇬' },
-    { code: '+358', country: 'Finland', flag: '🇫🇮' },
-    { code: '+33', country: 'France', flag: '🇫🇷' },
-    { code: '+49', country: 'Germany', flag: '🇩🇪' },
-    { code: '+233', country: 'Ghana', flag: '🇬🇭' },
-    { code: '+30', country: 'Greece', flag: '🇬🇷' },
-    { code: '+36', country: 'Hungary', flag: '🇭🇺' },
-    { code: '+91', country: 'India', flag: '🇮🇳' },
-    { code: '+62', country: 'Indonesia', flag: '🇮🇩' },
-    { code: '+353', country: 'Ireland', flag: '🇮🇪' },
-    { code: '+972', country: 'Israel', flag: '🇮🇱' },
-    { code: '+39', country: 'Italy', flag: '🇮🇹' },
-    { code: '+81', country: 'Japan', flag: '🇯🇵' },
-    { code: '+254', country: 'Kenya', flag: '🇰🇪' },
-    { code: '+60', country: 'Malaysia', flag: '🇲🇾' },
-    { code: '+52', country: 'Mexico', flag: '🇲🇽' },
-    { code: '+977', country: 'Nepal', flag: '🇳🇵' },
-    { code: '+31', country: 'Netherlands', flag: '🇳🇱' },
-    { code: '+64', country: 'New Zealand', flag: '🇳🇿' },
-    { code: '+234', country: 'Nigeria', flag: '🇳🇬' },
-    { code: '+47', country: 'Norway', flag: '🇳🇴' },
-    { code: '+92', country: 'Pakistan', flag: '🇵🇰' },
-    { code: '+63', country: 'Philippines', flag: '🇵🇭' },
-    { code: '+48', country: 'Poland', flag: '🇵🇱' },
-    { code: '+351', country: 'Portugal', flag: '🇵🇹' },
-    { code: '+40', country: 'Romania', flag: '🇷🇴' },
-    { code: '+7', country: 'Russia', flag: '🇷🇺' },
-    { code: '+966', country: 'Saudi Arabia', flag: '🇸🇦' },
-    { code: '+65', country: 'Singapore', flag: '🇸🇬' },
-    { code: '+27', country: 'South Africa', flag: '🇿🇦' },
-    { code: '+82', country: 'South Korea', flag: '🇰🇷' },
-    { code: '+34', country: 'Spain', flag: '🇪🇸' },
-    { code: '+94', country: 'Sri Lanka', flag: '🇱🇰' },
-    { code: '+46', country: 'Sweden', flag: '🇸🇪' },
-    { code: '+41', country: 'Switzerland', flag: '🇨🇭' },
-    { code: '+66', country: 'Thailand', flag: '🇹🇭' },
-    { code: '+90', country: 'Turkey', flag: '🇹🇷' },
-    { code: '+971', country: 'UAE', flag: '🇦🇪' },
-    { code: '+380', country: 'Ukraine', flag: '🇺🇦' },
-    { code: '+44', country: 'United Kingdom', flag: '🇬🇧' },
-    { code: '+1', country: 'United States', flag: '🇺🇸' },
-    { code: '+84', country: 'Vietnam', flag: '🇻🇳' }
+  // Countries with phone codes (alphabetical - single dropdown)
+  const countries = [
+    { name: 'Afghanistan', code: '+93', flag: '🇦🇫' },
+    { name: 'Albania', code: '+355', flag: '🇦🇱' },
+    { name: 'Algeria', code: '+213', flag: '🇩🇿' },
+    { name: 'Argentina', code: '+54', flag: '🇦🇷' },
+    { name: 'Australia', code: '+61', flag: '🇦🇺' },
+    { name: 'Austria', code: '+43', flag: '🇦🇹' },
+    { name: 'Bangladesh', code: '+880', flag: '🇧🇩' },
+    { name: 'Belgium', code: '+32', flag: '🇧🇪' },
+    { name: 'Brazil', code: '+55', flag: '🇧🇷' },
+    { name: 'Canada', code: '+1', flag: '🇨🇦' },
+    { name: 'Chile', code: '+56', flag: '🇨🇱' },
+    { name: 'China', code: '+86', flag: '🇨🇳' },
+    { name: 'Colombia', code: '+57', flag: '🇨🇴' },
+    { name: 'Czech Republic', code: '+420', flag: '🇨🇿' },
+    { name: 'Denmark', code: '+45', flag: '🇩🇰' },
+    { name: 'Egypt', code: '+20', flag: '🇪🇬' },
+    { name: 'Ethiopia', code: '+251', flag: '🇪🇹' },
+    { name: 'Finland', code: '+358', flag: '🇫🇮' },
+    { name: 'France', code: '+33', flag: '🇫🇷' },
+    { name: 'Germany', code: '+49', flag: '🇩🇪' },
+    { name: 'Ghana', code: '+233', flag: '🇬🇭' },
+    { name: 'Greece', code: '+30', flag: '🇬🇷' },
+    { name: 'Hong Kong', code: '+852', flag: '🇭🇰' },
+    { name: 'Hungary', code: '+36', flag: '🇭🇺' },
+    { name: 'India', code: '+91', flag: '🇮🇳' },
+    { name: 'Indonesia', code: '+62', flag: '🇮🇩' },
+    { name: 'Ireland', code: '+353', flag: '🇮🇪' },
+    { name: 'Israel', code: '+972', flag: '🇮🇱' },
+    { name: 'Italy', code: '+39', flag: '🇮🇹' },
+    { name: 'Japan', code: '+81', flag: '🇯🇵' },
+    { name: 'Kenya', code: '+254', flag: '🇰🇪' },
+    { name: 'Malaysia', code: '+60', flag: '🇲🇾' },
+    { name: 'Mexico', code: '+52', flag: '🇲🇽' },
+    { name: 'Morocco', code: '+212', flag: '🇲🇦' },
+    { name: 'Nepal', code: '+977', flag: '🇳🇵' },
+    { name: 'Netherlands', code: '+31', flag: '🇳🇱' },
+    { name: 'New Zealand', code: '+64', flag: '🇳🇿' },
+    { name: 'Nigeria', code: '+234', flag: '🇳🇬' },
+    { name: 'Norway', code: '+47', flag: '🇳🇴' },
+    { name: 'Pakistan', code: '+92', flag: '🇵🇰' },
+    { name: 'Peru', code: '+51', flag: '🇵🇪' },
+    { name: 'Philippines', code: '+63', flag: '🇵🇭' },
+    { name: 'Poland', code: '+48', flag: '🇵🇱' },
+    { name: 'Portugal', code: '+351', flag: '🇵🇹' },
+    { name: 'Romania', code: '+40', flag: '🇷🇴' },
+    { name: 'Russia', code: '+7', flag: '🇷🇺' },
+    { name: 'Saudi Arabia', code: '+966', flag: '🇸🇦' },
+    { name: 'Singapore', code: '+65', flag: '🇸🇬' },
+    { name: 'South Africa', code: '+27', flag: '🇿🇦' },
+    { name: 'South Korea', code: '+82', flag: '🇰🇷' },
+    { name: 'Spain', code: '+34', flag: '🇪🇸' },
+    { name: 'Sri Lanka', code: '+94', flag: '🇱🇰' },
+    { name: 'Sweden', code: '+46', flag: '🇸🇪' },
+    { name: 'Switzerland', code: '+41', flag: '🇨🇭' },
+    { name: 'Taiwan', code: '+886', flag: '🇹🇼' },
+    { name: 'Tanzania', code: '+255', flag: '🇹🇿' },
+    { name: 'Thailand', code: '+66', flag: '🇹🇭' },
+    { name: 'Turkey', code: '+90', flag: '🇹🇷' },
+    { name: 'UAE', code: '+971', flag: '🇦🇪' },
+    { name: 'Uganda', code: '+256', flag: '🇺🇬' },
+    { name: 'Ukraine', code: '+380', flag: '🇺🇦' },
+    { name: 'United Kingdom', code: '+44', flag: '🇬🇧' },
+    { name: 'United States', code: '+1', flag: '🇺🇸' },
+    { name: 'Vietnam', code: '+84', flag: '🇻🇳' },
+    { name: 'Zimbabwe', code: '+263', flag: '🇿🇼' }
   ];
+  
+  // Get selected country object
+  const selectedCountry = countries.find(c => c.name === form.country) || null;
+  
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
 
@@ -762,7 +782,7 @@ function AuthPage({ onLogin }) {
       // Register new user
       const result = await registerUser(form.email, form.password, {
         name: form.name,
-        phone: `${form.countryCode} ${form.phone}`,
+        phone: selectedCountry ? `${selectedCountry.code} ${form.phone}` : form.phone,
         country: form.country,
         referralCode: form.referralCode
       });
@@ -1118,45 +1138,57 @@ function AuthPage({ onLogin }) {
             <AnimatePresence mode="wait">
               {mode === 'register' && (
                 <>
-                  <motion.div key="phone" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone Number</label>
-                    <div className="flex gap-2">
-                      {/* Country Code Dropdown */}
-                      <div className="relative w-32 flex-shrink-0">
-                        <select 
-                          value={form.countryCode} 
-                          onChange={(e) => setForm({...form, countryCode: e.target.value})}
-                          className="w-full px-3 py-3 border border-gray-200 rounded-xl focus:outline-none appearance-none bg-white text-sm font-medium"
-                          style={{ color: theme.navy }}>
-                          {countryCodes.map((c) => (
-                            <option key={c.code} value={c.code}>{c.flag} {c.code}</option>
-                          ))}
-                        </select>
-                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                      </div>
-                      {/* Phone Number Input */}
-                      <div className="relative flex-1">
-                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                        <input type="tel" value={form.phone} onChange={(e) => setForm({...form, phone: e.target.value.replace(/\D/g, '')})}
-                          className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none"
-                          placeholder="123456789" maxLength="15" />
-                      </div>
-                    </div>
-                    <p className="text-xs text-gray-400 mt-1">Full number: {form.countryCode} {form.phone || '...'}</p>
-                  </motion.div>
-
+                  {/* Country Selection (sets phone code automatically) */}
                   <motion.div key="country" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">Country</label>
                     <div className="relative">
                       <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <select value={form.country} onChange={(e) => setForm({...form, country: e.target.value})}
+                      <select 
+                        value={form.country} 
+                        onChange={(e) => setForm({...form, country: e.target.value})}
                         className={`w-full pl-12 pr-4 py-3 border rounded-xl focus:outline-none appearance-none bg-white ${errors.country ? 'border-red-500' : 'border-gray-200'}`}>
                         <option value="">Select your country</option>
-                        {countries.map((c) => <option key={c} value={c}>{c}</option>)}
+                        {countries.map((c) => (
+                          <option key={c.name} value={c.name}>{c.flag} {c.name} ({c.code})</option>
+                        ))}
                       </select>
                       <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
                     </div>
                     {errors.country && <p className="text-red-500 text-xs mt-1">{errors.country}</p>}
+                  </motion.div>
+
+                  {/* Phone Number (country code auto-filled) */}
+                  <motion.div key="phone" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone Number</label>
+                    <div className="flex gap-2">
+                      {/* Country Code Display (read-only, auto-set from country) */}
+                      <div className="relative w-24 flex-shrink-0">
+                        <div 
+                          className="w-full px-3 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm font-medium flex items-center justify-center gap-1"
+                          style={{ color: theme.navy }}>
+                          {selectedCountry ? (
+                            <>{selectedCountry.flag} {selectedCountry.code}</>
+                          ) : (
+                            <span className="text-gray-400">Code</span>
+                          )}
+                        </div>
+                      </div>
+                      {/* Phone Number Input */}
+                      <div className="relative flex-1">
+                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input 
+                          type="tel" 
+                          value={form.phone} 
+                          onChange={(e) => setForm({...form, phone: e.target.value.replace(/\D/g, '')})}
+                          className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none"
+                          placeholder="Phone number" 
+                          maxLength="15" 
+                        />
+                      </div>
+                    </div>
+                    {selectedCountry && form.phone && (
+                      <p className="text-xs text-gray-500 mt-1">Full number: {selectedCountry.code} {form.phone}</p>
+                    )}
                   </motion.div>
                 </>
               )}
@@ -2184,12 +2216,14 @@ function InvestmentModal({ investment, onClose, onInvest }) {
             <p className="text-xs text-gray-500">Returns</p>
           </div>
           <div className="bg-gray-50 rounded-xl p-3 text-center">
-            <p className="text-xl lg:text-2xl font-bold" style={{ color: theme.navy }}>${(investment.min / 1000)}K</p>
+            <p className="text-xl lg:text-2xl font-bold" style={{ color: theme.navy }}>
+              {investment.min >= 1000 ? `$${(investment.min / 1000)}K` : `$${investment.min}`}
+            </p>
             <p className="text-xs text-gray-500">Min</p>
           </div>
           <div className="bg-gray-50 rounded-xl p-3 text-center">
             <p className="text-xl lg:text-2xl font-bold" style={{ color: theme.gold }}>{investment.term?.split(' ')[0] || '12'}</p>
-            <p className="text-xs text-gray-500">Months</p>
+            <p className="text-xs text-gray-500">{investment.term?.includes('month') ? 'Months' : 'Term'}</p>
           </div>
           <div className="bg-gray-50 rounded-xl p-3 text-center">
             <p className="text-xl lg:text-2xl font-bold text-gray-700">{investment.investors || '50+'}</p>
@@ -2264,6 +2298,20 @@ function InvestFlowModal({ investment, onClose, balance }) {
   const [selectedCrypto, setSelectedCrypto] = useState('BTC');
   const [countdown, setCountdown] = useState(1800); // 30 minutes
   const [copied, setCopied] = useState(false);
+  const [hasTestPlan, setHasTestPlan] = useState(false);
+
+  const currentUser = JSON.parse(localStorage.getItem('saxovault_current_user') || '{}');
+  
+  // Check if user already has Test Plan
+  useEffect(() => {
+    if (investment.isTestPlan && investment.onePerUser) {
+      const userInvestments = JSON.parse(localStorage.getItem(`investments_${currentUser.uid}`) || '[]');
+      const transactions = Storage.getTransactions().filter(t => t.userId === currentUser.uid);
+      const hasExisting = userInvestments.some(inv => inv.investmentId === 100 || inv.investmentName === 'Test Plan') ||
+                          transactions.some(t => t.investmentId === 100 || t.investmentName === 'Test Plan');
+      setHasTestPlan(hasExisting);
+    }
+  }, [investment, currentUser.uid]);
 
   const settings = JSON.parse(localStorage.getItem('saxovault_settings') || '{}');
   const walletAddresses = settings.wallets || {
@@ -2278,7 +2326,22 @@ function InvestFlowModal({ investment, onClose, balance }) {
     { id: 'USDT', name: 'USDT (TRC-20)', icon: '₮', color: '#26a17b' }
   ];
 
-  const expectedReturn = amount * (parseFloat(investment.returns) / 100 || 0.12);
+  // Calculate expected return based on dailyRate and totalDays
+  const getReturnRate = () => {
+    if (investment.dailyRate && investment.totalDays) {
+      // Calculate total return from daily rate
+      return (investment.dailyRate / 100) * investment.totalDays;
+    }
+    // Fallback to parsing returns string
+    const returnsStr = investment.returns || '12%';
+    const match = returnsStr.match(/(\d+)/);
+    return match ? parseFloat(match[1]) / 100 : 0.12;
+  };
+  
+  const returnRate = getReturnRate();
+  const dailyProfit = investment.dailyRate ? (amount * investment.dailyRate / 100) : (amount * returnRate / (investment.totalDays || 30));
+  const expectedReturn = amount * returnRate;
+  const totalReturn = amount + expectedReturn;
 
   // Countdown timer
   useEffect(() => {
@@ -2309,46 +2372,84 @@ function InvestFlowModal({ investment, onClose, balance }) {
     if (walletUrl) window.location.href = walletUrl;
   };
 
-  const handleConfirmPayment = () => {
+  const handleConfirmPayment = async () => {
     const currentUser = JSON.parse(localStorage.getItem('saxovault_current_user') || '{}');
     
-    // Create pending investment
-    const pendingInvestment = {
-      id: Date.now(),
+    // Parse term to get days
+    const termMatch = investment.term?.match(/(\d+)/);
+    let termDays = investment.totalDays || 30;
+    if (termMatch) {
+      const num = parseInt(termMatch[1]);
+      if (investment.term.includes('month')) {
+        termDays = num * 30;
+      } else if (investment.term.includes('day')) {
+        termDays = num;
+      } else if (investment.term.includes('year')) {
+        termDays = num * 365;
+      }
+    }
+    
+    // Maturity date will be calculated from approval date (set when admin approves)
+    const maturityDate = new Date();
+    maturityDate.setDate(maturityDate.getDate() + termDays);
+    
+    // Create investment transaction with all details
+    const investmentTransaction = {
+      type: 'investment',
       investmentId: investment.id,
       investmentName: investment.name,
-      amount,
+      category: investment.category,
+      amount: parseFloat(amount),
       crypto: selectedCrypto,
       walletAddress: walletAddresses[selectedCrypto],
-      status: 'pending',
-      expectedReturn,
+      returnRate: (returnRate * 100).toFixed(1) + '%',
+      dailyRate: investment.dailyRate || (returnRate * 100 / termDays),
+      dailyProfit: parseFloat(dailyProfit.toFixed(2)),
+      expectedReturn: parseFloat(expectedReturn.toFixed(2)),
+      totalReturn: parseFloat(totalReturn.toFixed(2)),
       term: investment.term,
-      createdAt: new Date().toISOString(),
-      userEmail: currentUser.email,
-      userName: currentUser.name
+      totalDays: termDays,
+      maturityDate: maturityDate.toISOString(),
+      userEmail: currentUser.email || 'unknown',
+      userId: currentUser.uid || 'unknown',
+      userName: currentUser.name || 'User',
+      isTestPlan: investment.isTestPlan || false,
+      payoutSchedule: investment.payoutSchedule || 'End of Term',
+      // Countdown starts after approval
+      approvalDate: null,
+      countdownStarted: false
     };
 
-    // Save to pending investments
-    const pending = JSON.parse(localStorage.getItem('saxovault_pending_investments') || '[]');
-    pending.push(pendingInvestment);
-    localStorage.setItem('saxovault_pending_investments', JSON.stringify(pending));
+    // Save to Firestore via Storage.addTransaction
+    await Storage.addTransaction(investmentTransaction);
 
-    // Notify admin (in-app)
-    Storage.addNotification({
-      type: 'investment_request',
-      message: `New investment request: $${amount.toLocaleString()} in ${investment.name}`,
-      investmentId: pendingInvestment.id,
-      urgent: true
+    // Also save to user's active investments (localStorage for quick access)
+    const userInvestments = JSON.parse(localStorage.getItem(`investments_${currentUser.uid}`) || '[]');
+    userInvestments.push({
+      ...investmentTransaction,
+      id: Date.now(),
+      status: 'pending',
+      createdAt: new Date().toISOString()
     });
+    localStorage.setItem(`investments_${currentUser.uid}`, JSON.stringify(userInvestments));
 
     // Send email notifications
-    EmailService.sendInvestmentNotification(currentUser.email, investment.name, amount, investment.term).catch(console.error);
+    if (currentUser.email) {
+      EmailService.sendInvestmentNotification(
+        currentUser.email, 
+        investment.name, 
+        amount, 
+        investment.term
+      ).catch(console.error);
+    }
 
     // Log activity
     Storage.logActivity(currentUser.uid, 'investment_request', {
       investment: investment.name,
       amount,
-      crypto: selectedCrypto
+      crypto: selectedCrypto,
+      expectedReturn,
+      dailyProfit
     });
 
     setStep(3);
@@ -2377,24 +2478,59 @@ function InvestFlowModal({ investment, onClose, balance }) {
           {/* Step 1: Amount & Crypto Selection */}
           {step === 1 && (
             <div>
+              {/* Test Plan Warning */}
+              {investment.isTestPlan && hasTestPlan && (
+                <div className="mb-4 p-4 rounded-xl bg-red-50 border border-red-200">
+                  <div className="flex items-center gap-2 text-red-600">
+                    <AlertCircle className="w-5 h-5" />
+                    <span className="font-medium">One Per Account</span>
+                  </div>
+                  <p className="text-red-600 text-sm mt-1">You have already invested in the Test Plan. This plan is limited to one investment per account.</p>
+                </div>
+              )}
+
+              {/* Test Plan Badge */}
+              {investment.isTestPlan && !hasTestPlan && (
+                <div className="mb-4 p-4 rounded-xl bg-green-50 border border-green-200">
+                  <div className="flex items-center gap-2 text-green-700">
+                    <CheckCircle className="w-5 h-5" />
+                    <span className="font-medium">Test Plan - Perfect for Beginners!</span>
+                  </div>
+                  <p className="text-green-600 text-sm mt-1">Earn 1% daily for 5 days. Fixed $500 investment. One per account.</p>
+                </div>
+              )}
+
               <label className="block font-medium text-gray-700 mb-2 text-sm">Investment Amount (USD)</label>
               <div className="relative mb-4">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-gray-400">$</span>
-                <input type="number" value={amount} onChange={(e) => setAmount(Math.max(investment.min, +e.target.value))}
+                <input 
+                  type="number" 
+                  value={investment.isTestPlan ? investment.min : amount} 
+                  onChange={(e) => !investment.isTestPlan && setAmount(Math.max(investment.min, Math.min(investment.max || 1000000, +e.target.value)))}
                   className="w-full pl-12 pr-4 py-4 text-2xl font-bold border-2 rounded-xl text-center focus:outline-none"
-                  style={{ borderColor: theme.gold }} />
+                  style={{ borderColor: theme.gold }}
+                  readOnly={investment.isTestPlan}
+                />
               </div>
-              <p className="text-xs text-gray-500 mb-4">Minimum: ${investment.min.toLocaleString()}</p>
+              <p className="text-xs text-gray-500 mb-4">
+                {investment.isTestPlan ? 'Fixed amount: $500' : `Minimum: $${investment.min.toLocaleString()}`}
+              </p>
               
-              <div className="flex gap-2 mb-6">
-                {[1, 2, 5, 10].map((m) => (
-                  <button key={m} onClick={() => setAmount(investment.min * m)}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-medium border-2 transition-all ${amount === investment.min * m ? 'text-white' : 'border-gray-200'}`}
-                    style={amount === investment.min * m ? { background: theme.navy, borderColor: theme.navy } : {}}>
-                    ${(investment.min * m / 1000)}K
-                  </button>
-                ))}
-              </div>
+              {!investment.isTestPlan && (
+                <div className="flex gap-2 mb-6">
+                  {[1, 2, 5, 10].map((m) => {
+                    const btnAmount = investment.min * m;
+                    const displayAmount = btnAmount >= 1000 ? `$${(btnAmount / 1000)}K` : `$${btnAmount}`;
+                    return (
+                      <button key={m} onClick={() => setAmount(btnAmount)}
+                        className={`flex-1 py-2.5 rounded-xl text-sm font-medium border-2 transition-all ${amount === btnAmount ? 'text-white' : 'border-gray-200'}`}
+                        style={amount === btnAmount ? { background: theme.navy, borderColor: theme.navy } : {}}>
+                        {displayAmount}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
 
               <label className="block font-medium text-gray-700 mb-2 text-sm">Select Cryptocurrency</label>
               <div className="space-y-2 mb-6">
@@ -2415,22 +2551,38 @@ function InvestFlowModal({ investment, onClose, balance }) {
               </div>
 
               <div className="p-4 rounded-2xl mb-4" style={{ background: `${theme.green}10` }}>
+                {investment.dailyRate && (
+                  <div className="flex justify-between mb-2">
+                    <span className="text-gray-600 text-sm">Daily Profit</span>
+                    <span className="font-bold" style={{ color: theme.green }}>
+                      {investment.dailyRate}% (${dailyProfit.toLocaleString(undefined, { maximumFractionDigits: 2 })}/day)
+                    </span>
+                  </div>
+                )}
                 <div className="flex justify-between mb-2">
-                  <span className="text-gray-600 text-sm">Projected Return</span>
-                  <span className="font-bold" style={{ color: theme.green }}>+${expectedReturn.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                  <span className="text-gray-600 text-sm">Duration</span>
+                  <span className="font-bold" style={{ color: theme.navy }}>{investment.term}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600 text-sm">Total at Maturity</span>
-                  <span className="font-bold" style={{ color: theme.navy }}>${(amount + expectedReturn).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                <div className="flex justify-between mb-2">
+                  <span className="text-gray-600 text-sm">Total Profit</span>
+                  <span className="font-bold" style={{ color: theme.green }}>+${expectedReturn.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                </div>
+                <div className="flex justify-between border-t border-green-200 pt-2 mt-2">
+                  <span className="text-gray-600 text-sm">Total Payout</span>
+                  <span className="font-bold text-lg" style={{ color: theme.navy }}>${(amount + expectedReturn).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                 </div>
               </div>
 
               <TrustBadges />
 
-              <motion.button onClick={() => setStep(2)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                className="w-full py-4 rounded-xl text-white font-semibold mt-4"
+              <motion.button 
+                onClick={() => setStep(2)} 
+                whileHover={{ scale: 1.02 }} 
+                whileTap={{ scale: 0.98 }}
+                disabled={investment.isTestPlan && hasTestPlan}
+                className="w-full py-4 rounded-xl text-white font-semibold mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ background: `linear-gradient(135deg, ${theme.navy} 0%, ${theme.navyLight} 100%)` }}>
-                Continue to Payment
+                {investment.isTestPlan && hasTestPlan ? 'Already Invested in Test Plan' : 'Continue to Payment'}
               </motion.button>
             </div>
           )}
@@ -2553,36 +2705,116 @@ function DashboardPage({ user, onNavigate }) {
   const [showDeposit, setShowDeposit] = useState(false);
   const [showWithdraw, setShowWithdraw] = useState(false);
   const [showAutoInvest, setShowAutoInvest] = useState(false);
+  const [transactions, setTransactions] = useState([]);
+  const [userData, setUserData] = useState(user);
+
+  // Fetch fresh data from Firestore on mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch transactions from Firestore
+        const txsData = await Storage.fetchTransactionsFromCloud();
+        setTransactions(txsData);
+        
+        // Fetch user data from Firestore
+        const usersData = await Storage.fetchUsersFromCloud();
+        const currentUser = usersData.find(u => u.uid === user.uid);
+        if (currentUser) {
+          setUserData(currentUser);
+          localStorage.setItem(`user_${user.uid}`, JSON.stringify(currentUser));
+          localStorage.setItem('saxovault_current_user', JSON.stringify(currentUser));
+        }
+      } catch (error) {
+        console.log('Using cached data');
+        setTransactions(Storage.getTransactions());
+      }
+    };
+    
+    fetchData();
+    
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchData, 30000);
+    return () => clearInterval(interval);
+  }, [user.uid]);
 
   // Get investments from localStorage (admin controlled)
   const storedInvestments = JSON.parse(localStorage.getItem('saxovault_investments') || 'null');
   const currentInvestments = storedInvestments || investments;
 
   // Get user's actual investments from transactions
-  const allTransactions = Storage.getTransactions();
-  const userInvestments = allTransactions.filter(t => 
+  const userInvestments = transactions.filter(t => 
     t.userId === user.uid && 
     t.type === 'investment' && 
-    t.status === 'approved'
+    (t.status === 'approved' || t.status === 'completed')
   );
 
   // Calculate actual portfolio from user's approved investments
-  const portfolio = userInvestments.length > 0 ? userInvestments.map(inv => ({
-    name: inv.investmentName || 'Investment',
-    type: inv.investmentType || 'Mixed',
-    invested: inv.amount || 0,
-    current: inv.amount * (1 + (inv.returnRate || 0.1)),
-    returns: ((inv.returnRate || 0.1) * 100),
-    color: '#3b82f6'
-  })) : [];
+  const portfolio = userInvestments.length > 0 ? userInvestments.map(inv => {
+    // Parse returnRate - could be "12.0%" string or 0.12 number
+    let rateDecimal = 0.1;
+    if (inv.returnRate) {
+      if (typeof inv.returnRate === 'string') {
+        rateDecimal = parseFloat(inv.returnRate) / 100;
+      } else if (inv.returnRate < 1) {
+        rateDecimal = inv.returnRate;
+      } else {
+        rateDecimal = inv.returnRate / 100;
+      }
+    }
+    
+    // Calculate countdown timer
+    let daysRemaining = 0;
+    let hoursRemaining = 0;
+    let countdownActive = false;
+    let progressPercent = 0;
+    
+    if (inv.countdownStarted && inv.maturityDate) {
+      const now = new Date();
+      const maturity = new Date(inv.maturityDate);
+      const approval = inv.approvalDate ? new Date(inv.approvalDate) : now;
+      const totalMs = maturity - approval;
+      const remainingMs = maturity - now;
+      
+      if (remainingMs > 0) {
+        countdownActive = true;
+        daysRemaining = Math.floor(remainingMs / (1000 * 60 * 60 * 24));
+        hoursRemaining = Math.floor((remainingMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        progressPercent = Math.round(((totalMs - remainingMs) / totalMs) * 100);
+      } else {
+        progressPercent = 100;
+      }
+    }
+    
+    return {
+      id: inv.id,
+      name: inv.investmentName || 'Investment',
+      type: inv.category || inv.investmentType || 'Mixed',
+      invested: inv.amount || 0,
+      current: (inv.amount || 0) + (inv.expectedReturn || inv.amount * rateDecimal),
+      returns: rateDecimal * 100,
+      expectedReturn: inv.expectedReturn || inv.amount * rateDecimal,
+      dailyProfit: inv.dailyProfit || (inv.amount * (inv.dailyRate || 1) / 100),
+      dailyRate: inv.dailyRate || 0,
+      term: inv.term,
+      totalDays: inv.totalDays,
+      maturityDate: inv.maturityDate,
+      approvalDate: inv.approvalDate,
+      countdownActive,
+      daysRemaining,
+      hoursRemaining,
+      progressPercent,
+      status: inv.status,
+      color: '#3b82f6'
+    };
+  }) : [];
 
   // Calculate totals - show zero if no investments
   const totalInvested = portfolio.reduce((sum, p) => sum + p.invested, 0);
   const totalCurrent = portfolio.reduce((sum, p) => sum + p.current, 0);
   const totalReturns = totalCurrent - totalInvested;
 
-  // Get actual user balance (default to 0)
-  const userBalance = user.balance || 0;
+  // Get actual user balance (default to 0) - use fresh data from Firestore
+  const userBalance = userData.balance || 0;
 
   return (
     <div className="min-h-screen pt-20 lg:pt-24 pb-24 lg:pb-12" style={{ background: theme.cream }}>
@@ -2592,7 +2824,7 @@ function DashboardPage({ user, onNavigate }) {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="font-serif text-xl lg:text-2xl" style={{ color: theme.navy }}>Dashboard</h1>
-            <p className="text-gray-500 text-sm">Welcome back, {user.name || 'Investor'}</p>
+            <p className="text-gray-500 text-sm">Welcome back, {userData.name || 'Investor'}</p>
           </div>
         </div>
 
@@ -2635,7 +2867,7 @@ function DashboardPage({ user, onNavigate }) {
           </div>
         </div>
 
-        {/* My Investments */}
+        {/* My Investments with Countdown */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
           <div className="p-4 border-b border-gray-100 flex items-center justify-between">
             <h2 className="font-medium" style={{ color: theme.navy }}>My Investments</h2>
@@ -2644,23 +2876,65 @@ function DashboardPage({ user, onNavigate }) {
           {portfolio.length > 0 ? (
             <div className="divide-y divide-gray-50">
               {portfolio.map((item, i) => (
-                <div key={i} className="p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: `${item.color}15` }}>
-                      <TrendingUp className="w-5 h-5" style={{ color: item.color }} />
+                <div key={i} className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: `${item.color}15` }}>
+                        <TrendingUp className="w-5 h-5" style={{ color: item.color }} />
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm" style={{ color: theme.navy }}>{item.name}</p>
+                        <p className="text-xs text-gray-400">{item.type} • {item.term}</p>
+                      </div>
                     </div>
-                  <div>
-                    <p className="font-medium text-sm" style={{ color: theme.navy }}>{item.name}</p>
-                    <p className="text-xs text-gray-400">{item.type}</p>
+                    <div className="text-right">
+                      <p className="font-bold text-sm" style={{ color: theme.navy }}>${item.current.toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
+                      <p className="text-xs text-green-600">+${item.expectedReturn?.toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
+                    </div>
                   </div>
+                  
+                  {/* Countdown Timer */}
+                  {item.countdownActive ? (
+                    <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <Timer className="w-4 h-4 text-blue-600" />
+                          <span className="text-xs font-medium text-blue-600">Time Remaining</span>
+                        </div>
+                        <span className="text-sm font-bold" style={{ color: theme.navy }}>
+                          {item.daysRemaining}d {item.hoursRemaining}h
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="h-2 rounded-full transition-all duration-500"
+                          style={{ 
+                            width: `${item.progressPercent}%`, 
+                            background: `linear-gradient(90deg, ${theme.green} 0%, ${theme.gold} 100%)`
+                          }} 
+                        />
+                      </div>
+                      <div className="flex justify-between mt-1">
+                        <span className="text-xs text-gray-500">{item.progressPercent}% complete</span>
+                        {item.dailyRate > 0 && (
+                          <span className="text-xs text-green-600">+${item.dailyProfit?.toFixed(2)}/day</span>
+                        )}
+                      </div>
+                    </div>
+                  ) : item.status === 'pending' ? (
+                    <div className="bg-yellow-50 rounded-lg p-3 flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-yellow-600" />
+                      <span className="text-xs text-yellow-700">Awaiting approval - countdown starts after approval</span>
+                    </div>
+                  ) : item.progressPercent >= 100 ? (
+                    <div className="bg-green-50 rounded-lg p-3 flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span className="text-xs text-green-700">Completed! Payout ready</span>
+                    </div>
+                  ) : null}
                 </div>
-                <div className="text-right">
-                  <p className="font-bold text-sm">${item.current.toLocaleString()}</p>
-                  <p className="text-xs text-green-600">+{item.returns}%</p>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
           ) : (
             <div className="p-8 text-center">
               <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
@@ -3754,7 +4028,7 @@ function ReferralPage({ user }) {
     .map(u => {
       // Get this user's approved deposits
       const userTransactions = Storage.getTransactions().filter(t => 
-        t.userId === u.uid && t.type === 'deposit' && t.status === 'approved'
+        t.userId === u.uid && t.type === 'deposit' && (t.status === 'approved' || t.status === 'completed')
       );
       const totalDeposits = userTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
       const bonus = totalDeposits * 0.01; // 1% referral bonus
@@ -5666,13 +5940,79 @@ function AdminDashboard({ onLogout }) {
   };
 
   const handleUpdateTransaction = async (txId, status) => {
+    // Find the transaction
+    const transaction = transactions.find(t => t.id === txId || t.firestoreId === txId);
+    
+    // Prepare update data
+    const updateData = { 
+      status, 
+      updatedAt: new Date().toISOString() 
+    };
+    
+    // If investment is being approved, set approval date and calculate maturity
+    if (transaction && status === 'completed' && transaction.type === 'investment') {
+      const approvalDate = new Date();
+      const totalDays = transaction.totalDays || 30;
+      const maturityDate = new Date(approvalDate);
+      maturityDate.setDate(maturityDate.getDate() + totalDays);
+      
+      updateData.approvalDate = approvalDate.toISOString();
+      updateData.maturityDate = maturityDate.toISOString();
+      updateData.countdownStarted = true;
+      updateData.countdownEndsAt = maturityDate.toISOString();
+      
+      console.log(`✅ Investment ${transaction.investmentName} approved!`);
+      console.log(`   Countdown started: ${approvalDate.toISOString()}`);
+      console.log(`   Maturity date: ${maturityDate.toISOString()} (${totalDays} days)`);
+    }
+    
     const updatedTxs = transactions.map(t => 
       (t.id === txId || t.firestoreId === txId) 
-        ? { ...t, status, updatedAt: new Date().toISOString() } 
+        ? { ...t, ...updateData } 
         : t
     );
     setTransactions(updatedTxs);
-    await Storage.updateTransaction(txId, { status, updatedAt: new Date().toISOString() });
+    await Storage.updateTransaction(txId, updateData);
+    
+    // If deposit is approved, update user balance
+    if (transaction && status === 'completed' && transaction.type === 'deposit') {
+      const user = users.find(u => u.uid === transaction.userId || u.email === transaction.userEmail);
+      if (user) {
+        const newBalance = (parseFloat(user.balance) || 0) + parseFloat(transaction.amount);
+        await Storage.updateUser(user.uid, { balance: newBalance });
+        // Update local state
+        setUsers(users.map(u => 
+          u.uid === user.uid ? { ...u, balance: newBalance } : u
+        ));
+        console.log(`✅ User ${user.email} balance updated to $${newBalance}`);
+      }
+    }
+    
+    // If withdrawal is approved, deduct from user balance
+    if (transaction && status === 'completed' && transaction.type === 'withdrawal') {
+      const user = users.find(u => u.uid === transaction.userId || u.email === transaction.userEmail);
+      if (user) {
+        const newBalance = Math.max(0, (parseFloat(user.balance) || 0) - parseFloat(transaction.amount));
+        await Storage.updateUser(user.uid, { balance: newBalance });
+        setUsers(users.map(u => 
+          u.uid === user.uid ? { ...u, balance: newBalance } : u
+        ));
+        console.log(`✅ User ${user.email} balance updated to $${newBalance} after withdrawal`);
+      }
+    }
+    
+    // If investment is approved/completed, also update user's local investments
+    if (transaction && status === 'completed' && transaction.type === 'investment') {
+      const userInvestments = JSON.parse(localStorage.getItem(`investments_${transaction.userId}`) || '[]');
+      const updatedUserInvestments = userInvestments.map(inv => 
+        inv.investmentId === transaction.investmentId 
+          ? { ...inv, ...updateData } 
+          : inv
+      );
+      localStorage.setItem(`investments_${transaction.userId}`, JSON.stringify(updatedUserInvestments));
+      console.log(`✅ Investment countdown started for ${transaction.userEmail}`);
+    }
+    
     Storage.addNotification({ type: 'tx_update', message: `Transaction ${status}` });
   };
 
