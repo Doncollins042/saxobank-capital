@@ -45,9 +45,11 @@ export const signInWithGoogle = async () => {
     
     // Check if user data exists in localStorage
     let userData = localStorage.getItem(`user_${user.uid}`);
+    let isNewUser = false;
     
     if (!userData) {
       // First time Google sign-in - create user data
+      isNewUser = true;
       userData = {
         uid: user.uid,
         email: user.email,
@@ -77,7 +79,7 @@ export const signInWithGoogle = async () => {
       }
     }
     
-    return { success: true, user, userData };
+    return { success: true, user, userData, isNewUser };
   } catch (error) {
     let message = 'Google sign-in failed. Please try again.';
     

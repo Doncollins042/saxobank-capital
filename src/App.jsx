@@ -613,6 +613,14 @@ function GoogleSignInButton({ onLogin, setMessage, setLoading, loading }) {
       const result = await signInWithGoogle();
       
       if (result.success) {
+        // Send admin notification for new Google users
+        if (result.isNewUser) {
+          EmailService.sendNewUserNotification(
+            result.userData.email, 
+            result.userData.name, 
+            'Google'
+          ).catch(console.error);
+        }
         // Successfully signed in with Google
         onLogin(result.userData);
       } else {
@@ -751,6 +759,8 @@ function AuthPage({ onLogin }) {
       if (result.success) {
         setStep(2); // Show verification message
         setMessage({ type: 'success', text: result.message });
+        // Notify admin of new user registration
+        EmailService.sendNewUserNotification(form.email, form.name, 'Email').catch(console.error);
       } else {
         setMessage({ type: 'error', text: result.error });
       }
@@ -2321,7 +2331,7 @@ function InvestFlowModal({ investment, onClose, balance }) {
     });
 
     // Send email notifications
-    EmailService.sendInvestmentNotification(currentUser.email, investment.name, amount);
+    EmailService.sendInvestmentNotification(currentUser.email, investment.name, amount, investment.term).catch(console.error);
 
     // Log activity
     Storage.logActivity(currentUser.uid, 'investment_request', {
@@ -4152,6 +4162,8 @@ function ProfilePage({ user, setUser, onLogout }) {
 
   const handleKycSubmit = () => {
     setKycStatus('submitted');
+    // Send KYC notification to admin
+    EmailService.sendKYCNotification(user.email, user.name, 'ID Document').catch(console.error);
     setTimeout(() => setKycStatus('verified'), 3000);
   };
 
@@ -4700,7 +4712,8 @@ const EMAILJS_CONFIG = {
   publicKey: 'trmaHaGeZzBpjKtaj',
   serviceId: 'service_ibr21lg',
   templateId: 'template_kskirgx',
-  adminEmail: 'saxovaultadmin@saxovault.com' // Change this to your real admin email
+  // Admin email for receiving all notifications
+  adminEmail: 'saxovault6@gmail.com'
 };
 
 // Initialize EmailJS on load
@@ -4712,6 +4725,9 @@ try {
 }
 
 const EmailService = {
+  // Get admin email
+  getAdminEmail: () => EMAILJS_CONFIG.adminEmail,
+  
   // Test function - call from browser console: EmailService.testEmail('your@email.com')
   testEmail: async (testEmailAddress) => {
     console.log('🧪 Testing EmailJS with:', testEmailAddress);
@@ -4794,6 +4810,12 @@ const EmailService = {
     }
   },
 
+  // Send admin notification helper
+  sendAdminNotification: async (subject, message) => {
+    console.log('📧 Sending ADMIN notification:', subject);
+    return await EmailService.sendEmail(EMAILJS_CONFIG.adminEmail, subject, message, 'admin');
+  },
+
   // Deposit notification - sends to user AND admin
   sendDepositNotification: async (userEmail, amount, crypto) => {
     const subject = `Deposit Request - $${amount.toLocaleString()} ${crypto}`;
@@ -4814,17 +4836,21 @@ SaxoVault Capital`;
     const userResult = await EmailService.sendEmail(userEmail, subject, message, 'deposit');
     
     // Send to admin
-    const adminSubject = `[ADMIN] New Deposit: $${amount.toLocaleString()} from ${userEmail}`;
-    const adminMessage = `New Deposit Request
+    const adminSubject = `🔔 [DEPOSIT] $${amount.toLocaleString()} from ${userEmail}`;
+    const adminMessage = `═══════════════════════════════════
+       NEW DEPOSIT REQUEST
+═══════════════════════════════════
 
-User: ${userEmail}
-Amount: $${amount.toLocaleString()}
-Method: ${crypto}
-Time: ${new Date().toLocaleString()}
+👤 User: ${userEmail}
+💰 Amount: $${amount.toLocaleString()}
+💳 Method: ${crypto}
+🕐 Time: ${new Date().toLocaleString()}
 
-Please review in admin panel.`;
+Action Required: Review in admin panel
+
+═══════════════════════════════════`;
     
-    await EmailService.sendEmail(EMAILJS_CONFIG.adminEmail, adminSubject, adminMessage, 'admin');
+    await EmailService.sendAdminNotification(adminSubject, adminMessage);
     
     return userResult;
   },
@@ -4849,32 +4875,38 @@ SaxoVault Capital`;
     const userResult = await EmailService.sendEmail(userEmail, subject, message, 'withdrawal');
     
     // Send to admin
-    const adminSubject = `[ADMIN] New Withdrawal: $${amount.toLocaleString()} from ${userEmail}`;
-    const adminMessage = `New Withdrawal Request
+    const adminSubject = `🔔 [WITHDRAWAL] $${amount.toLocaleString()} from ${userEmail}`;
+    const adminMessage = `═══════════════════════════════════
+      NEW WITHDRAWAL REQUEST
+═══════════════════════════════════
 
-User: ${userEmail}
-Amount: $${amount.toLocaleString()}
-Wallet: ${address}
-Time: ${new Date().toLocaleString()}
+👤 User: ${userEmail}
+💰 Amount: $${amount.toLocaleString()}
+📍 Wallet: ${address}
+🕐 Time: ${new Date().toLocaleString()}
 
-Please review in admin panel.`;
+Action Required: Approve/Reject in admin panel
+
+═══════════════════════════════════`;
     
-    await EmailService.sendEmail(EMAILJS_CONFIG.adminEmail, adminSubject, adminMessage, 'admin');
+    await EmailService.sendAdminNotification(adminSubject, adminMessage);
     
     return userResult;
   },
 
-  sendInvestmentNotification: async (userEmail, investmentName, amount) => {
-    const subject = `Investment Request - ${investmentName}`;
+  // Investment activation notification
+  sendInvestmentNotification: async (userEmail, investmentName, amount, duration) => {
+    const subject = `Investment Activated - ${investmentName}`;
     const message = `Hello,
 
-Your investment request is pending approval.
+Your investment has been activated!
 
 Investment: ${investmentName}
 Amount: $${amount.toLocaleString()}
-Status: Pending Approval
+Duration: ${duration || 'As specified'}
+Status: Active
 
-You'll be notified once approved.
+You can track your investment in the dashboard.
 
 Thank you,
 SaxoVault Capital`;
@@ -4882,14 +4914,91 @@ SaxoVault Capital`;
     const userResult = await EmailService.sendEmail(userEmail, subject, message, 'investment');
     
     // Admin notification
-    await EmailService.sendEmail(
-      EMAILJS_CONFIG.adminEmail,
-      `[ADMIN] New Investment: $${amount.toLocaleString()} - ${investmentName}`,
-      `User: ${userEmail}\nInvestment: ${investmentName}\nAmount: $${amount.toLocaleString()}\nTime: ${new Date().toLocaleString()}`,
-      'admin'
-    );
+    const adminSubject = `🔔 [INVESTMENT] $${amount.toLocaleString()} - ${investmentName}`;
+    const adminMessage = `═══════════════════════════════════
+      NEW INVESTMENT ACTIVATION
+═══════════════════════════════════
+
+👤 User: ${userEmail}
+📊 Plan: ${investmentName}
+💰 Amount: $${amount.toLocaleString()}
+⏱️ Duration: ${duration || 'N/A'}
+🕐 Time: ${new Date().toLocaleString()}
+
+═══════════════════════════════════`;
+    
+    await EmailService.sendAdminNotification(adminSubject, adminMessage);
     
     return userResult;
+  },
+
+  // KYC Submission notification
+  sendKYCNotification: async (userEmail, userName, kycType) => {
+    const subject = `KYC Verification Submitted`;
+    const message = `Hello ${userName || ''},
+
+Your KYC verification documents have been submitted successfully.
+
+Document Type: ${kycType || 'ID Document'}
+Status: Under Review
+
+Our team will verify your documents within 24-48 hours.
+
+Thank you,
+SaxoVault Capital`;
+    
+    const userResult = await EmailService.sendEmail(userEmail, subject, message, 'kyc');
+    
+    // Admin notification
+    const adminSubject = `🔔 [KYC] New Submission from ${userEmail}`;
+    const adminMessage = `═══════════════════════════════════
+        NEW KYC SUBMISSION
+═══════════════════════════════════
+
+👤 User: ${userName || 'N/A'}
+📧 Email: ${userEmail}
+📄 Document Type: ${kycType || 'ID Document'}
+🕐 Submitted: ${new Date().toLocaleString()}
+
+Action Required: Verify documents in admin panel
+
+═══════════════════════════════════`;
+    
+    await EmailService.sendAdminNotification(adminSubject, adminMessage);
+    
+    return userResult;
+  },
+
+  // New User Registration notification
+  sendNewUserNotification: async (userEmail, userName, signUpMethod) => {
+    // Admin notification only
+    const adminSubject = `🔔 [NEW USER] ${userName || userEmail} just registered`;
+    const adminMessage = `═══════════════════════════════════
+         NEW USER REGISTRATION
+═══════════════════════════════════
+
+👤 Name: ${userName || 'N/A'}
+📧 Email: ${userEmail}
+🔐 Method: ${signUpMethod || 'Email'}
+🕐 Time: ${new Date().toLocaleString()}
+
+═══════════════════════════════════`;
+    
+    return await EmailService.sendAdminNotification(adminSubject, adminMessage);
+  },
+
+  // Login Activity notification (optional - for security)
+  sendLoginNotification: async (userEmail, userName, loginMethod) => {
+    // Admin notification only
+    const adminSubject = `🔔 [LOGIN] ${userEmail} logged in`;
+    const adminMessage = `User Login Activity
+
+👤 User: ${userName || userEmail}
+📧 Email: ${userEmail}
+🔐 Method: ${loginMethod || 'Email'}
+🕐 Time: ${new Date().toLocaleString()}`;
+    
+    return await EmailService.sendAdminNotification(adminSubject, adminMessage);
   },
 
   sendReferralNotification: async (referrerEmail, newUserName) => {
@@ -5588,7 +5697,10 @@ function AdminDashboard({ onLogout }) {
     { id: 'pending', name: 'Pending', icon: Clock, badge: pendingInvCount },
     { id: 'investments', name: 'Investments', icon: TrendingUp },
     { id: 'tickets', name: 'Tickets', icon: Ticket, badge: openTickets },
-    { id: 'settings', name: 'Settings', icon: Settings }
+    { id: 'website', name: 'Website Editor', icon: Globe },
+    { id: 'branding', name: 'Branding', icon: Image },
+    { id: 'payments', name: 'Payment Methods', icon: Wallet },
+    { id: 'platform', name: 'Platform Config', icon: Settings }
   ];
 
   return (
