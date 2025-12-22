@@ -68,7 +68,8 @@ import {
   resendVerificationEmail,
   onAuthChange,
   auth,
-  getCurrentUserData
+  getCurrentUserData,
+  signInWithGoogle
 } from './firebase';
 
 // Multi-language support - 30+ Languages
@@ -600,6 +601,57 @@ const countries = [
 ];
 
 // ============ AUTH PAGE WITH REAL FIREBASE AUTHENTICATION ============
+// ============ GOOGLE SIGN-IN BUTTON ============
+function GoogleSignInButton({ onLogin, setMessage, setLoading, loading }) {
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  const handleGoogleSignIn = async () => {
+    setGoogleLoading(true);
+    setMessage({ type: '', text: '' });
+
+    try {
+      const result = await signInWithGoogle();
+      
+      if (result.success) {
+        // Successfully signed in with Google
+        onLogin(result.userData);
+      } else {
+        setMessage({ type: 'error', text: result.error });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Google sign-in failed. Please try again.' });
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
+  return (
+    <motion.button
+      type="button"
+      onClick={handleGoogleSignIn}
+      disabled={loading || googleLoading}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      className="w-full py-3.5 rounded-xl font-semibold flex items-center justify-center gap-3 border-2 border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-70 transition-all"
+    >
+      {googleLoading ? (
+        <RefreshCw className="w-5 h-5 animate-spin text-gray-600" />
+      ) : (
+        <>
+          {/* Google Icon */}
+          <svg className="w-5 h-5" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          <span style={{ color: theme.navy }}>Continue with Google</span>
+        </>
+      )}
+    </motion.button>
+  );
+}
+
 function AuthPage({ onLogin }) {
   const [mode, setMode] = useState('login');
   const [showPass, setShowPass] = useState(false);
@@ -1142,6 +1194,16 @@ function AuthPage({ onLogin }) {
               {loading ? <RefreshCw className="w-5 h-5 animate-spin" /> : <>{mode === 'login' ? 'Sign In' : 'Create Account'} <ArrowRight className="w-5 h-5" /></>}
             </motion.button>
           </form>
+
+          {/* Divider */}
+          <div className="flex items-center gap-4 my-6">
+            <div className="flex-1 h-px bg-gray-200"></div>
+            <span className="text-sm text-gray-400">or continue with</span>
+            <div className="flex-1 h-px bg-gray-200"></div>
+          </div>
+
+          {/* Google Sign-In Button */}
+          <GoogleSignInButton onLogin={onLogin} setMessage={setMessage} setLoading={setLoading} loading={loading} />
 
           <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-gray-500">
             <div className="flex items-center gap-2">
@@ -4637,102 +4699,105 @@ const Storage = {
 const EMAILJS_CONFIG = {
   publicKey: 'trmaHaGeZzBpjKtaj',
   serviceId: 'service_ibr21lg',
-  templates: {
-    notification: 'template_kskirgx',
-    admin: 'template_kskirgx',
-    twofa: 'template_kskirgx'
-  }
+  templateId: 'template_kskirgx',
+  adminEmail: 'saxovaultadmin@saxovault.com' // Change this to your real admin email
 };
 
 // Initialize EmailJS on load
 try {
   emailjs.init(EMAILJS_CONFIG.publicKey);
-  console.log('✅ EmailJS initialized with public key');
+  console.log('✅ EmailJS initialized successfully');
 } catch (err) {
   console.error('❌ EmailJS init failed:', err);
 }
 
 const EmailService = {
-  // Check if EmailJS is configured
-  isConfigured: () => {
-    return EMAILJS_CONFIG.publicKey && EMAILJS_CONFIG.publicKey !== 'YOUR_PUBLIC_KEY';
+  // Test function - call from browser console: EmailService.testEmail('your@email.com')
+  testEmail: async (testEmailAddress) => {
+    console.log('🧪 Testing EmailJS with:', testEmailAddress);
+    try {
+      const result = await emailjs.send(
+        EMAILJS_CONFIG.serviceId,
+        EMAILJS_CONFIG.templateId,
+        {
+          to_email: testEmailAddress,
+          subject: 'SaxoVault Test Email',
+          message: 'This is a test email from SaxoVault. If you received this, EmailJS is working correctly!',
+          from_name: 'SaxoVault Capital',
+          reply_to: 'support@saxovault.com'
+        }
+      );
+      console.log('✅ Test email sent successfully!', result);
+      alert('Test email sent! Check your inbox.');
+      return { success: true, result };
+    } catch (error) {
+      console.error('❌ Test email failed:', error);
+      alert('Test email failed: ' + (error?.text || error?.message || 'Unknown error'));
+      return { success: false, error };
+    }
   },
 
   // Core email sending function
   sendEmail: async (to, subject, messageBody, type = 'notification') => {
-    console.log('📧 Attempting to send email:', { to, subject, type });
+    console.log('📧 Sending email:', { to, subject: subject.substring(0, 50) + '...', type });
     
-    // Create log entry
-    const emailLog = {
-      to,
-      subject,
-      type,
-      status: 'pending',
-      createdAt: new Date().toISOString()
-    };
-    
-    // Check if configured
-    if (!EmailService.isConfigured()) {
-      console.warn('⚠️ EmailJS not configured');
-      emailLog.status = 'failed';
-      emailLog.error = 'Not configured';
-      Storage.queueEmail(emailLog);
-      return { success: false, message: 'EmailJS not configured' };
+    if (!to || !subject) {
+      console.error('❌ Missing email or subject');
+      return { success: false, message: 'Missing email or subject' };
     }
     
     try {
-      // Clean the message - strip HTML tags for plain text
-      const cleanMessage = messageBody
-        .replace(/<[^>]*>/g, '') // Remove HTML tags
-        .replace(/&nbsp;/g, ' ') // Replace HTML spaces
-        .replace(/\s+/g, ' ')    // Collapse whitespace
-        .trim();
-
-      // Template parameters - MUST match your EmailJS template exactly
       const templateParams = {
         to_email: to,
         subject: subject,
-        message: cleanMessage,
+        message: messageBody,
         from_name: 'SaxoVault Capital',
         reply_to: 'support@saxovault.com'
       };
 
-      console.log('📤 Sending with params:', templateParams);
+      console.log('📤 Template params:', { to_email: to, subject, messageLength: messageBody.length });
 
       const response = await emailjs.send(
         EMAILJS_CONFIG.serviceId,
-        EMAILJS_CONFIG.templates.notification,
+        EMAILJS_CONFIG.templateId,
         templateParams
       );
       
-      console.log('✅ Email sent successfully!', response);
-      emailLog.status = 'sent';
-      emailLog.response = response.status;
-      Storage.queueEmail(emailLog);
+      console.log('✅ Email sent!', { to, status: response.status, text: response.text });
       
-      return { success: true, message: 'Email sent!', response };
-      
-    } catch (error) {
-      console.error('❌ EmailJS Error:', error);
-      console.error('Error details:', {
-        message: error?.message,
-        text: error?.text,
-        status: error?.status
+      // Log success
+      Storage.queueEmail({
+        to, subject, type,
+        status: 'sent',
+        createdAt: new Date().toISOString()
       });
       
-      emailLog.status = 'failed';
-      emailLog.error = error?.text || error?.message || 'Unknown error';
-      Storage.queueEmail(emailLog);
+      return { success: true, response };
       
-      return { success: false, message: error?.text || 'Email failed' };
+    } catch (error) {
+      console.error('❌ Email failed:', error);
+      console.error('Details:', { 
+        text: error?.text, 
+        message: error?.message,
+        status: error?.status 
+      });
+      
+      // Log failure
+      Storage.queueEmail({
+        to, subject, type,
+        status: 'failed',
+        error: error?.text || error?.message,
+        createdAt: new Date().toISOString()
+      });
+      
+      return { success: false, error: error?.text || error?.message };
     }
   },
 
-  // Simplified notification emails
+  // Deposit notification - sends to user AND admin
   sendDepositNotification: async (userEmail, amount, crypto) => {
-    const subject = `Deposit Request Received - $${amount.toLocaleString()}`;
-    const message = `
-Hello,
+    const subject = `Deposit Request - $${amount.toLocaleString()} ${crypto}`;
+    const message = `Hello,
 
 Your deposit request has been received!
 
@@ -4740,108 +4805,120 @@ Amount: $${amount.toLocaleString()}
 Payment Method: ${crypto}
 Status: Pending Confirmation
 
-Your funds will be credited once the transaction is confirmed on the blockchain (usually 10-30 minutes).
+Your funds will be credited once confirmed (usually 10-30 minutes).
 
-Thank you for choosing SaxoVault Capital.
+Thank you,
+SaxoVault Capital`;
+    
+    // Send to user
+    const userResult = await EmailService.sendEmail(userEmail, subject, message, 'deposit');
+    
+    // Send to admin
+    const adminSubject = `[ADMIN] New Deposit: $${amount.toLocaleString()} from ${userEmail}`;
+    const adminMessage = `New Deposit Request
 
-Best regards,
-The SaxoVault Team
-support@saxovault.com
-    `.trim();
+User: ${userEmail}
+Amount: $${amount.toLocaleString()}
+Method: ${crypto}
+Time: ${new Date().toLocaleString()}
+
+Please review in admin panel.`;
     
-    const result = await EmailService.sendEmail(userEmail, subject, message, 'deposit');
+    await EmailService.sendEmail(EMAILJS_CONFIG.adminEmail, adminSubject, adminMessage, 'admin');
     
-    // Also notify admin
-    await EmailService.notifyAdmin('deposit', userEmail, amount, crypto);
-    
-    return result;
+    return userResult;
   },
 
+  // Withdrawal notification
   sendWithdrawalNotification: async (userEmail, amount, address) => {
     const subject = `Withdrawal Request - $${amount.toLocaleString()}`;
-    const message = `
-Hello,
+    const message = `Hello,
 
-Your withdrawal request has been submitted for review.
+Your withdrawal request has been submitted.
 
 Amount: $${amount.toLocaleString()}
-Destination: ${address.slice(0,10)}...${address.slice(-6)}
+Destination: ${address}
 Status: Under Review
 
-Withdrawals are typically processed within 24-48 hours after approval.
+Processing time: 24-48 hours after approval.
 
-Thank you for choosing SaxoVault Capital.
-
-Best regards,
-The SaxoVault Team
-    `.trim();
+Thank you,
+SaxoVault Capital`;
     
-    const result = await EmailService.sendEmail(userEmail, subject, message, 'withdrawal');
-    await EmailService.notifyAdmin('withdrawal', userEmail, amount, address);
-    return result;
+    // Send to user
+    const userResult = await EmailService.sendEmail(userEmail, subject, message, 'withdrawal');
+    
+    // Send to admin
+    const adminSubject = `[ADMIN] New Withdrawal: $${amount.toLocaleString()} from ${userEmail}`;
+    const adminMessage = `New Withdrawal Request
+
+User: ${userEmail}
+Amount: $${amount.toLocaleString()}
+Wallet: ${address}
+Time: ${new Date().toLocaleString()}
+
+Please review in admin panel.`;
+    
+    await EmailService.sendEmail(EMAILJS_CONFIG.adminEmail, adminSubject, adminMessage, 'admin');
+    
+    return userResult;
   },
 
   sendInvestmentNotification: async (userEmail, investmentName, amount) => {
     const subject = `Investment Request - ${investmentName}`;
-    const message = `
-Hello,
+    const message = `Hello,
 
-Your investment request has been received and is pending approval.
+Your investment request is pending approval.
 
 Investment: ${investmentName}
 Amount: $${amount.toLocaleString()}
 Status: Pending Approval
 
-You'll receive a confirmation email once your investment is approved.
+You'll be notified once approved.
 
-Thank you for choosing SaxoVault Capital.
-
-Best regards,
-The SaxoVault Team
-    `.trim();
+Thank you,
+SaxoVault Capital`;
     
-    const result = await EmailService.sendEmail(userEmail, subject, message, 'investment');
-    await EmailService.notifyAdmin('investment', userEmail, amount, investmentName);
-    return result;
+    const userResult = await EmailService.sendEmail(userEmail, subject, message, 'investment');
+    
+    // Admin notification
+    await EmailService.sendEmail(
+      EMAILJS_CONFIG.adminEmail,
+      `[ADMIN] New Investment: $${amount.toLocaleString()} - ${investmentName}`,
+      `User: ${userEmail}\nInvestment: ${investmentName}\nAmount: $${amount.toLocaleString()}\nTime: ${new Date().toLocaleString()}`,
+      'admin'
+    );
+    
+    return userResult;
   },
 
   sendReferralNotification: async (referrerEmail, newUserName) => {
-    const subject = `Congratulations! New Referral Signup!`;
-    const message = `
-Hello,
+    const subject = `New Referral Signup!`;
+    const message = `Hello,
 
-Great news! Someone just signed up using your referral link!
+Someone signed up using your referral link!
 
 New User: ${newUserName}
-Your Bonus: Will be credited when they make their first investment (1% of their deposits)
+Your Bonus: 1% of their deposits
 
-Keep sharing your referral link to earn more rewards!
+Keep sharing to earn more!
 
-Thank you for spreading the word about SaxoVault Capital.
-
-Best regards,
-The SaxoVault Team
-    `.trim();
+Thank you,
+SaxoVault Capital`;
     
     return await EmailService.sendEmail(referrerEmail, subject, message, 'referral');
   },
 
   send2FACode: async (userEmail, code) => {
-    const subject = `Your Security Code: ${code}`;
-    const message = `
-Your SaxoVault verification code is:
+    const subject = `Security Code: ${code}`;
+    const message = `Your SaxoVault verification code:
 
 ${code}
 
 This code expires in 5 minutes.
+Never share this code with anyone.
 
-WARNING: Never share this code with anyone. SaxoVault will never ask for your code.
-
-If you didn't request this code, please secure your account immediately.
-
-Best regards,
-The SaxoVault Team
-    `.trim();
+SaxoVault Capital`;
     
     return await EmailService.sendEmail(userEmail, subject, message, '2fa');
   },
@@ -4855,63 +4932,27 @@ The SaxoVault Team
     return results;
   },
 
-  notifyAdmin: async (type, userEmail, amount, details) => {
-    const adminEmail = 'support@saxovault.com';
-    const typeLabels = {
-      deposit: 'New Deposit Request',
-      withdrawal: 'New Withdrawal Request',
-      investment: 'New Investment Request',
-      referral: 'New Referral Signup',
-      new_user: 'New User Registration'
-    };
-    
-    const subject = `ADMIN: ${typeLabels[type] || type}`;
-    const message = `
-ADMIN ALERT
-
-Type: ${typeLabels[type] || type}
-User: ${userEmail}
-Amount: $${amount?.toLocaleString() || 'N/A'}
-Details: ${details || 'None'}
-Time: ${new Date().toLocaleString()}
-
-Please review in admin panel: https://saxovault.com/#admin
-    `.trim();
-    
-    // Send email to admin
-    await EmailService.sendEmail(adminEmail, subject, message, 'admin_alert');
-    
-    // Also add in-app notification
-    Storage.notifyAdmin({
-      type,
-      title: typeLabels[type] || type,
-      message: `${userEmail} - $${amount?.toLocaleString() || 'N/A'}`,
-      details,
-      urgent: true,
-      actionRequired: true
-    });
-  },
-
   sendStatusUpdate: async (userEmail, type, status, amount, details = '') => {
-    const subject = `Your ${type} has been ${status}`;
-    const message = `
-Hello,
+    const subject = `${type} ${status}`;
+    const message = `Hello,
 
-Your ${type} request has been ${status}.
+Your ${type} has been ${status}.
 
 Amount: $${amount?.toLocaleString() || 'N/A'}
 Status: ${status.toUpperCase()}
 ${details ? `Note: ${details}` : ''}
 
-Thank you for choosing SaxoVault Capital.
-
-Best regards,
-The SaxoVault Team
-    `.trim();
+Thank you,
+SaxoVault Capital`;
     
-    return await EmailService.sendEmail(userEmail, subject, message, 'status_update');
+    return await EmailService.sendEmail(userEmail, subject, message, 'status');
   }
 };
+
+// Make EmailService available globally for testing
+if (typeof window !== 'undefined') {
+  window.EmailService = EmailService;
+}
 
 // ============ TWO-FACTOR AUTHENTICATION ============
 const TwoFactorAuth = {

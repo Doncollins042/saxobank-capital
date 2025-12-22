@@ -9,7 +9,9 @@ import {
   signOut,
   onAuthStateChanged,
   sendPasswordResetEmail,
-  updateProfile
+  updateProfile,
+  GoogleAuthProvider,
+  signInWithPopup
 } from "firebase/auth";
 
 // Your web app's Firebase configuration
@@ -27,7 +29,78 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
+// Google Auth Provider
+const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({
+  prompt: 'select_account'
+});
+
 // ============ AUTHENTICATION FUNCTIONS ============
+
+// Sign in with Google
+export const signInWithGoogle = async () => {
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    const user = result.user;
+    
+    // Check if user data exists in localStorage
+    let userData = localStorage.getItem(`user_${user.uid}`);
+    
+    if (!userData) {
+      // First time Google sign-in - create user data
+      userData = {
+        uid: user.uid,
+        email: user.email,
+        name: user.displayName || '',
+        phone: '',
+        country: '',
+        referralCode: '',
+        createdAt: new Date().toISOString(),
+        balance: 0,
+        signInMethod: 'google',
+        photoURL: user.photoURL || ''
+      };
+      localStorage.setItem(`user_${user.uid}`, JSON.stringify(userData));
+      
+      // Also add to users list for admin
+      const allUsers = JSON.parse(localStorage.getItem('saxovault_users') || '[]');
+      if (!allUsers.find(u => u.uid === user.uid)) {
+        allUsers.push(userData);
+        localStorage.setItem('saxovault_users', JSON.stringify(allUsers));
+      }
+    } else {
+      userData = JSON.parse(userData);
+      // Update photo URL if changed
+      if (user.photoURL && user.photoURL !== userData.photoURL) {
+        userData.photoURL = user.photoURL;
+        localStorage.setItem(`user_${user.uid}`, JSON.stringify(userData));
+      }
+    }
+    
+    return { success: true, user, userData };
+  } catch (error) {
+    let message = 'Google sign-in failed. Please try again.';
+    
+    switch (error.code) {
+      case 'auth/popup-closed-by-user':
+        message = 'Sign-in popup was closed. Please try again.';
+        break;
+      case 'auth/popup-blocked':
+        message = 'Popup was blocked. Please allow popups for this site.';
+        break;
+      case 'auth/cancelled-popup-request':
+        message = 'Sign-in was cancelled.';
+        break;
+      case 'auth/account-exists-with-different-credential':
+        message = 'An account already exists with this email using a different sign-in method.';
+        break;
+      default:
+        message = error.message;
+    }
+    
+    return { success: false, error: message };
+  }
+};
 
 // Register new user with email verification
 export const registerUser = async (email, password, userData) => {
@@ -56,9 +129,17 @@ export const registerUser = async (email, password, userData) => {
       country: userData.country || '',
       referralCode: userData.referralCode || '',
       createdAt: new Date().toISOString(),
-      balance: 0
+      balance: 0,
+      signInMethod: 'email'
     };
     localStorage.setItem(`user_${user.uid}`, JSON.stringify(userDataToStore));
+    
+    // Also add to users list for admin
+    const allUsers = JSON.parse(localStorage.getItem('saxovault_users') || '[]');
+    if (!allUsers.find(u => u.uid === user.uid)) {
+      allUsers.push(userDataToStore);
+      localStorage.setItem('saxovault_users', JSON.stringify(allUsers));
+    }
     
     return { success: true, user, message: 'Verification email sent! Please check your inbox.' };
   } catch (error) {
