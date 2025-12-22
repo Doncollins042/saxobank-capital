@@ -1,5 +1,5 @@
 // Firebase Configuration for SaxoVault
-// Using Firebase Authentication ONLY (FREE - No billing required)
+// Using Firebase Authentication + Firestore Database
 import { initializeApp } from "firebase/app";
 import { 
   getAuth, 
@@ -13,6 +13,21 @@ import {
   GoogleAuthProvider,
   signInWithPopup
 } from "firebase/auth";
+import {
+  getFirestore,
+  collection,
+  doc,
+  setDoc,
+  getDoc,
+  getDocs,
+  addDoc,
+  updateDoc,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
+  serverTimestamp
+} from "firebase/firestore";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -28,12 +43,182 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+export const db = getFirestore(app);
 
 // Google Auth Provider
 const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({
   prompt: 'select_account'
 });
+
+// ============ FIRESTORE DATABASE FUNCTIONS ============
+
+// Save user to Firestore
+export const saveUserToFirestore = async (userData) => {
+  try {
+    await setDoc(doc(db, 'users', userData.uid), {
+      ...userData,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+    console.log('✅ User saved to Firestore:', userData.email);
+    return { success: true };
+  } catch (error) {
+    console.error('❌ Error saving user to Firestore:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Get user from Firestore
+export const getUserFromFirestore = async (uid) => {
+  try {
+    const docRef = doc(db, 'users', uid);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return { success: true, data: docSnap.data() };
+    }
+    return { success: false, error: 'User not found' };
+  } catch (error) {
+    console.error('❌ Error getting user from Firestore:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Get all users from Firestore
+export const getAllUsersFromFirestore = async () => {
+  try {
+    const querySnapshot = await getDocs(collection(db, 'users'));
+    const users = [];
+    querySnapshot.forEach((doc) => {
+      users.push({ id: doc.id, ...doc.data() });
+    });
+    console.log('✅ Fetched', users.length, 'users from Firestore');
+    return { success: true, data: users };
+  } catch (error) {
+    console.error('❌ Error getting users from Firestore:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Update user in Firestore
+export const updateUserInFirestore = async (uid, updates) => {
+  try {
+    await updateDoc(doc(db, 'users', uid), {
+      ...updates,
+      updatedAt: serverTimestamp()
+    });
+    console.log('✅ User updated in Firestore');
+    return { success: true };
+  } catch (error) {
+    console.error('❌ Error updating user in Firestore:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Add transaction to Firestore
+export const addTransactionToFirestore = async (transaction) => {
+  try {
+    const docRef = await addDoc(collection(db, 'transactions'), {
+      ...transaction,
+      createdAt: serverTimestamp(),
+      status: transaction.status || 'pending'
+    });
+    console.log('✅ Transaction added to Firestore:', docRef.id);
+    return { success: true, id: docRef.id };
+  } catch (error) {
+    console.error('❌ Error adding transaction to Firestore:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Get all transactions from Firestore
+export const getAllTransactionsFromFirestore = async () => {
+  try {
+    const q = query(collection(db, 'transactions'), orderBy('createdAt', 'desc'));
+    const querySnapshot = await getDocs(q);
+    const transactions = [];
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      transactions.push({ 
+        id: doc.id, 
+        ...data,
+        createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt
+      });
+    });
+    console.log('✅ Fetched', transactions.length, 'transactions from Firestore');
+    return { success: true, data: transactions };
+  } catch (error) {
+    console.error('❌ Error getting transactions from Firestore:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Update transaction in Firestore
+export const updateTransactionInFirestore = async (transactionId, updates) => {
+  try {
+    await updateDoc(doc(db, 'transactions', transactionId), {
+      ...updates,
+      updatedAt: serverTimestamp()
+    });
+    console.log('✅ Transaction updated in Firestore');
+    return { success: true };
+  } catch (error) {
+    console.error('❌ Error updating transaction in Firestore:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Get user transactions from Firestore
+export const getUserTransactionsFromFirestore = async (userEmail) => {
+  try {
+    const q = query(
+      collection(db, 'transactions'), 
+      where('userEmail', '==', userEmail),
+      orderBy('createdAt', 'desc')
+    );
+    const querySnapshot = await getDocs(q);
+    const transactions = [];
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      transactions.push({ 
+        id: doc.id, 
+        ...data,
+        createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt
+      });
+    });
+    return { success: true, data: transactions };
+  } catch (error) {
+    console.error('❌ Error getting user transactions:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Real-time listener for transactions (for admin)
+export const subscribeToTransactions = (callback) => {
+  const q = query(collection(db, 'transactions'), orderBy('createdAt', 'desc'));
+  return onSnapshot(q, (snapshot) => {
+    const transactions = [];
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      transactions.push({ 
+        id: doc.id, 
+        ...data,
+        createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt
+      });
+    });
+    callback(transactions);
+  });
+};
+
+// Real-time listener for users (for admin)
+export const subscribeToUsers = (callback) => {
+  return onSnapshot(collection(db, 'users'), (snapshot) => {
+    const users = [];
+    snapshot.forEach((doc) => {
+      users.push({ id: doc.id, ...doc.data() });
+    });
+    callback(users);
+  });
+};
 
 // ============ AUTHENTICATION FUNCTIONS ============
 
@@ -43,11 +228,12 @@ export const signInWithGoogle = async () => {
     const result = await signInWithPopup(auth, googleProvider);
     const user = result.user;
     
-    // Check if user data exists in localStorage
-    let userData = localStorage.getItem(`user_${user.uid}`);
+    // Check if user exists in Firestore
+    const firestoreResult = await getUserFromFirestore(user.uid);
+    let userData;
     let isNewUser = false;
     
-    if (!userData) {
+    if (!firestoreResult.success || !firestoreResult.data) {
       // First time Google sign-in - create user data
       isNewUser = true;
       userData = {
@@ -62,21 +248,21 @@ export const signInWithGoogle = async () => {
         signInMethod: 'google',
         photoURL: user.photoURL || ''
       };
-      localStorage.setItem(`user_${user.uid}`, JSON.stringify(userData));
       
-      // Also add to users list for admin
-      const allUsers = JSON.parse(localStorage.getItem('saxovault_users') || '[]');
-      if (!allUsers.find(u => u.uid === user.uid)) {
-        allUsers.push(userData);
-        localStorage.setItem('saxovault_users', JSON.stringify(allUsers));
-      }
+      // Save to Firestore (cloud database)
+      await saveUserToFirestore(userData);
+      
+      // Also save to localStorage for quick access
+      localStorage.setItem(`user_${user.uid}`, JSON.stringify(userData));
     } else {
-      userData = JSON.parse(userData);
+      userData = firestoreResult.data;
       // Update photo URL if changed
       if (user.photoURL && user.photoURL !== userData.photoURL) {
         userData.photoURL = user.photoURL;
-        localStorage.setItem(`user_${user.uid}`, JSON.stringify(userData));
+        await updateUserInFirestore(user.uid, { photoURL: user.photoURL });
       }
+      // Update localStorage
+      localStorage.setItem(`user_${user.uid}`, JSON.stringify(userData));
     }
     
     return { success: true, user, userData, isNewUser };
@@ -122,7 +308,7 @@ export const registerUser = async (email, password, userData) => {
       handleCodeInApp: false
     });
     
-    // Store additional user data in localStorage (temporary until they verify)
+    // Prepare user data
     const userDataToStore = {
       uid: user.uid,
       email: email,
@@ -132,16 +318,15 @@ export const registerUser = async (email, password, userData) => {
       referralCode: userData.referralCode || '',
       createdAt: new Date().toISOString(),
       balance: 0,
-      signInMethod: 'email'
+      signInMethod: 'email',
+      emailVerified: false
     };
-    localStorage.setItem(`user_${user.uid}`, JSON.stringify(userDataToStore));
     
-    // Also add to users list for admin
-    const allUsers = JSON.parse(localStorage.getItem('saxovault_users') || '[]');
-    if (!allUsers.find(u => u.uid === user.uid)) {
-      allUsers.push(userDataToStore);
-      localStorage.setItem('saxovault_users', JSON.stringify(allUsers));
-    }
+    // Save to Firestore (cloud database)
+    await saveUserToFirestore(userDataToStore);
+    
+    // Also save to localStorage for quick access
+    localStorage.setItem(`user_${user.uid}`, JSON.stringify(userDataToStore));
     
     return { success: true, user, message: 'Verification email sent! Please check your inbox.' };
   } catch (error) {
@@ -183,20 +368,38 @@ export const loginUser = async (email, password) => {
       };
     }
     
-    // Get user data from localStorage
-    let userData = localStorage.getItem(`user_${user.uid}`);
-    if (userData) {
-      userData = JSON.parse(userData);
+    // Get user data from Firestore first, then localStorage as fallback
+    let userData;
+    const firestoreResult = await getUserFromFirestore(user.uid);
+    
+    if (firestoreResult.success && firestoreResult.data) {
+      userData = firestoreResult.data;
+      // Update emailVerified status
+      if (!userData.emailVerified) {
+        userData.emailVerified = true;
+        await updateUserInFirestore(user.uid, { emailVerified: true });
+      }
     } else {
-      // Create basic user data if not found
-      userData = {
-        uid: user.uid,
-        email: user.email,
-        name: user.displayName || '',
-        balance: 0
-      };
-      localStorage.setItem(`user_${user.uid}`, JSON.stringify(userData));
+      // Fallback to localStorage
+      const localData = localStorage.getItem(`user_${user.uid}`);
+      if (localData) {
+        userData = JSON.parse(localData);
+      } else {
+        // Create basic user data if not found anywhere
+        userData = {
+          uid: user.uid,
+          email: user.email,
+          name: user.displayName || '',
+          balance: 0,
+          emailVerified: true
+        };
+      }
+      // Save to Firestore for future access
+      await saveUserToFirestore(userData);
     }
+    
+    // Update localStorage
+    localStorage.setItem(`user_${user.uid}`, JSON.stringify(userData));
     
     return { success: true, user, userData };
   } catch (error) {

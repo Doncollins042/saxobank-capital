@@ -69,7 +69,18 @@ import {
   onAuthChange,
   auth,
   getCurrentUserData,
-  signInWithGoogle
+  signInWithGoogle,
+  // Firestore functions
+  saveUserToFirestore,
+  getUserFromFirestore,
+  getAllUsersFromFirestore,
+  updateUserInFirestore,
+  addTransactionToFirestore,
+  getAllTransactionsFromFirestore,
+  updateTransactionInFirestore,
+  getUserTransactionsFromFirestore,
+  subscribeToTransactions,
+  subscribeToUsers
 } from './firebase';
 
 // Multi-language support - 30+ Languages
@@ -3054,7 +3065,7 @@ function DepositModal({ onClose }) {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!txHash && !proofImage) {
       alert('Please provide transaction hash or payment proof.');
       return;
@@ -3063,8 +3074,8 @@ function DepositModal({ onClose }) {
     
     const user = JSON.parse(localStorage.getItem('saxovault_current_user') || '{}');
     
-    // Add transaction
-    Storage.addTransaction({
+    // Add transaction (saves to Firestore)
+    await Storage.addTransaction({
       type: 'deposit',
       amount: parseFloat(amount),
       crypto: selectedCrypto.symbol,
@@ -3316,13 +3327,14 @@ function WithdrawModal({ onClose, balance }) {
   const isValidAmount = amount && parseFloat(amount) >= (selectedCrypto?.minWithdraw || 0) && parseFloat(amount) <= balance;
   const isValidAddress = walletAddress.length >= 26;
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!isValidAmount || !isValidAddress) return;
     setSubmitting(true);
 
     const user = JSON.parse(localStorage.getItem('saxovault_current_user') || '{}');
 
-    Storage.addTransaction({
+    // Save to Firestore
+    await Storage.addTransaction({
       type: 'withdrawal',
       amount: parseFloat(amount),
       crypto: selectedCrypto.symbol,
@@ -4579,17 +4591,71 @@ const ADMIN_CREDENTIALS = {
   password: 'SaxoAdmin2024!'
 };
 
-// ============ LOCAL STORAGE HELPERS ============
+// ============ STORAGE HELPERS (with Firestore sync) ============
 const Storage = {
+  // Users - now synced with Firestore
   getUsers: () => JSON.parse(localStorage.getItem('saxovault_users') || '[]'),
   setUsers: (users) => localStorage.setItem('saxovault_users', JSON.stringify(users)),
   
+  // Fetch users from Firestore (async)
+  fetchUsersFromCloud: async () => {
+    try {
+      const result = await getAllUsersFromFirestore();
+      if (result.success) {
+        localStorage.setItem('saxovault_users', JSON.stringify(result.data));
+        return result.data;
+      }
+      return Storage.getUsers();
+    } catch (error) {
+      console.error('Error fetching users from cloud:', error);
+      return Storage.getUsers();
+    }
+  },
+  
+  // Transactions - now synced with Firestore
   getTransactions: () => JSON.parse(localStorage.getItem('saxovault_transactions') || '[]'),
   setTransactions: (txs) => localStorage.setItem('saxovault_transactions', JSON.stringify(txs)),
-  addTransaction: (tx) => {
+  
+  // Fetch transactions from Firestore (async)
+  fetchTransactionsFromCloud: async () => {
+    try {
+      const result = await getAllTransactionsFromFirestore();
+      if (result.success) {
+        localStorage.setItem('saxovault_transactions', JSON.stringify(result.data));
+        return result.data;
+      }
+      return Storage.getTransactions();
+    } catch (error) {
+      console.error('Error fetching transactions from cloud:', error);
+      return Storage.getTransactions();
+    }
+  },
+  
+  // Add transaction - saves to both Firestore and localStorage
+  addTransaction: async (tx) => {
+    const transaction = { 
+      ...tx, 
+      id: Date.now().toString(), 
+      createdAt: new Date().toISOString(), 
+      status: 'pending' 
+    };
+    
+    // Save to Firestore (cloud)
+    try {
+      const result = await addTransactionToFirestore(transaction);
+      if (result.success) {
+        transaction.firestoreId = result.id;
+        console.log('✅ Transaction saved to Firestore');
+      }
+    } catch (error) {
+      console.error('❌ Error saving to Firestore:', error);
+    }
+    
+    // Also save to localStorage for quick access
     const txs = Storage.getTransactions();
-    txs.unshift({ ...tx, id: Date.now(), createdAt: new Date().toISOString(), status: 'pending' });
+    txs.unshift(transaction);
     Storage.setTransactions(txs);
+    
     // Notify admin
     Storage.notifyAdmin({
       type: tx.type,
@@ -4598,7 +4664,46 @@ const Storage = {
       urgent: true,
       actionRequired: true
     });
-    return txs[0];
+    
+    return transaction;
+  },
+  
+  // Update transaction status
+  updateTransaction: async (transactionId, updates) => {
+    // Update in Firestore
+    try {
+      await updateTransactionInFirestore(transactionId, updates);
+      console.log('✅ Transaction updated in Firestore');
+    } catch (error) {
+      console.error('❌ Error updating in Firestore:', error);
+    }
+    
+    // Update in localStorage
+    const txs = Storage.getTransactions();
+    const updated = txs.map(t => 
+      (t.id === transactionId || t.firestoreId === transactionId) 
+        ? { ...t, ...updates } 
+        : t
+    );
+    Storage.setTransactions(updated);
+  },
+  
+  // Update user
+  updateUser: async (uid, updates) => {
+    // Update in Firestore
+    try {
+      await updateUserInFirestore(uid, updates);
+      console.log('✅ User updated in Firestore');
+    } catch (error) {
+      console.error('❌ Error updating user in Firestore:', error);
+    }
+    
+    // Update in localStorage
+    const userData = localStorage.getItem(`user_${uid}`);
+    if (userData) {
+      const user = JSON.parse(userData);
+      localStorage.setItem(`user_${uid}`, JSON.stringify({ ...user, ...updates }));
+    }
   },
   
   getSettings: () => JSON.parse(localStorage.getItem('saxovault_settings') || JSON.stringify({
@@ -5496,40 +5601,78 @@ function AdminLoginPage({ onLogin }) {
 // ============ ADMIN DASHBOARD ============
 function AdminDashboard({ onLogout }) {
   const [activeTab, setActiveTab] = useState('overview');
-  const [users, setUsers] = useState(Storage.getUsers());
-  const [transactions, setTransactions] = useState(Storage.getTransactions());
+  const [users, setUsers] = useState([]);
+  const [transactions, setTransactions] = useState([]);
   const [settings, setSettings] = useState(Storage.getSettings());
   const [notifications, setNotifications] = useState(Storage.getNotifications());
   const [editingUser, setEditingUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Refresh data periodically
+  // Fetch data from Firestore on mount
   useEffect(() => {
-    const interval = setInterval(() => {
-      setUsers(Storage.getUsers());
-      setTransactions(Storage.getTransactions());
-      setNotifications(Storage.getNotifications());
-    }, 5000);
-    return () => clearInterval(interval);
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Fetch users from Firestore
+        const usersData = await Storage.fetchUsersFromCloud();
+        setUsers(usersData);
+        
+        // Fetch transactions from Firestore
+        const txsData = await Storage.fetchTransactionsFromCloud();
+        setTransactions(txsData);
+        
+        console.log('✅ Admin data loaded from Firestore:', usersData.length, 'users,', txsData.length, 'transactions');
+      } catch (error) {
+        console.error('Error loading data:', error);
+        // Fallback to localStorage
+        setUsers(Storage.getUsers());
+        setTransactions(Storage.getTransactions());
+      }
+      setLoading(false);
+    };
+    
+    fetchData();
+    
+    // Set up real-time listeners
+    const unsubUsers = subscribeToUsers((usersData) => {
+      setUsers(usersData);
+      Storage.setUsers(usersData);
+    });
+    
+    const unsubTxs = subscribeToTransactions((txsData) => {
+      setTransactions(txsData);
+      Storage.setTransactions(txsData);
+    });
+    
+    // Cleanup listeners on unmount
+    return () => {
+      if (unsubUsers) unsubUsers();
+      if (unsubTxs) unsubTxs();
+    };
   }, []);
 
   // Stats
   const totalUsers = users.length;
-  const totalDeposits = transactions.filter(t => t.type === 'deposit' && t.status === 'completed').reduce((sum, t) => sum + t.amount, 0);
+  const totalDeposits = transactions.filter(t => t.type === 'deposit' && t.status === 'completed').reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
   const pendingDeposits = transactions.filter(t => t.type === 'deposit' && t.status === 'pending').length;
   const pendingWithdrawals = transactions.filter(t => t.type === 'withdrawal' && t.status === 'pending').length;
 
-  const handleUpdateUser = (userId, updates) => {
+  const handleUpdateUser = async (userId, updates) => {
     const updatedUsers = users.map(u => u.uid === userId ? { ...u, ...updates } : u);
     setUsers(updatedUsers);
-    Storage.setUsers(updatedUsers);
+    await Storage.updateUser(userId, updates);
     Storage.addNotification({ type: 'user_update', message: `User updated successfully` });
     setEditingUser(null);
   };
 
-  const handleUpdateTransaction = (txId, status) => {
-    const updatedTxs = transactions.map(t => t.id === txId ? { ...t, status, updatedAt: new Date().toISOString() } : t);
+  const handleUpdateTransaction = async (txId, status) => {
+    const updatedTxs = transactions.map(t => 
+      (t.id === txId || t.firestoreId === txId) 
+        ? { ...t, status, updatedAt: new Date().toISOString() } 
+        : t
+    );
     setTransactions(updatedTxs);
-    Storage.setTransactions(updatedTxs);
+    await Storage.updateTransaction(txId, { status, updatedAt: new Date().toISOString() });
     Storage.addNotification({ type: 'tx_update', message: `Transaction ${status}` });
   };
 
