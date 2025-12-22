@@ -322,8 +322,14 @@ export const registerUser = async (email, password, userData) => {
       emailVerified: false
     };
     
-    // Save to Firestore (cloud database)
-    await saveUserToFirestore(userDataToStore);
+    // Save to Firestore (cloud database) - with retry
+    try {
+      await saveUserToFirestore(userDataToStore);
+      console.log('✅ User saved to Firestore');
+    } catch (firestoreError) {
+      console.error('⚠️ Firestore save failed, will retry on login:', firestoreError);
+      // Still continue - we'll try to save on login
+    }
     
     // Also save to localStorage for quick access
     localStorage.setItem(`user_${user.uid}`, JSON.stringify(userDataToStore));
@@ -334,10 +340,11 @@ export const registerUser = async (email, password, userData) => {
     
     switch (error.code) {
       case 'auth/email-already-in-use':
-        message = 'This email is already registered. Please login instead.';
+        // Check if user exists in Firestore - if not, they may need to login to sync
+        message = 'This email is already registered. Please login instead. If you cannot login, use "Forgot Password" to reset.';
         break;
       case 'auth/weak-password':
-        message = 'Password is too weak. Please use at least 6 characters.';
+        message = 'Password is too weak. Please use at least 8 characters with uppercase, lowercase, number, and symbol.';
         break;
       case 'auth/invalid-email':
         message = 'Please enter a valid email address.';

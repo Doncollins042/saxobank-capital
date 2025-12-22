@@ -756,16 +756,57 @@ function AuthPage({ onLogin }) {
   
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
+  const [passwordStrength, setPasswordStrength] = useState({ score: 0, checks: {} });
+
+  // Password strength checker
+  const checkPasswordStrength = (password) => {
+    const checks = {
+      minLength: password.length >= 8,
+      hasUppercase: /[A-Z]/.test(password),
+      hasLowercase: /[a-z]/.test(password),
+      hasNumber: /[0-9]/.test(password),
+      hasSymbol: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+    };
+    const score = Object.values(checks).filter(Boolean).length;
+    return { score, checks };
+  };
+
+  // Update password strength when password changes
+  useEffect(() => {
+    if (mode === 'register') {
+      setPasswordStrength(checkPasswordStrength(form.password));
+    }
+  }, [form.password, mode]);
+
+  const getPasswordStrengthLabel = (score) => {
+    if (score === 0) return { label: '', color: '#gray' };
+    if (score <= 2) return { label: 'Weak', color: '#ef4444' };
+    if (score <= 3) return { label: 'Fair', color: '#f59e0b' };
+    if (score <= 4) return { label: 'Good', color: '#3b82f6' };
+    return { label: 'Strong', color: '#10b981' };
+  };
 
   const validateForm = () => {
     const newErrors = {};
     if (mode === 'register') {
-      if (!form.name.trim()) newErrors.name = 'Name is required';
-      if (!form.country) newErrors.country = 'Country is required';
+      if (!form.name.trim()) newErrors.name = 'Full name is required';
+      if (!form.country) newErrors.country = 'Please select your country';
       if (form.password !== form.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
-      if (form.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
+      
+      // Strong password validation
+      if (form.password.length < 8) {
+        newErrors.password = 'Password must be at least 8 characters';
+      } else if (!passwordStrength.checks.hasUppercase) {
+        newErrors.password = 'Password must include an uppercase letter';
+      } else if (!passwordStrength.checks.hasLowercase) {
+        newErrors.password = 'Password must include a lowercase letter';
+      } else if (!passwordStrength.checks.hasNumber) {
+        newErrors.password = 'Password must include a number';
+      } else if (!passwordStrength.checks.hasSymbol) {
+        newErrors.password = 'Password must include a symbol (!@#$%^&*)';
+      }
     }
-    if (!form.email.includes('@')) newErrors.email = 'Valid email is required';
+    if (!form.email.includes('@') || !form.email.includes('.')) newErrors.email = 'Please enter a valid email address';
     if (!form.password) newErrors.password = 'Password is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -1200,12 +1241,64 @@ function AuthPage({ onLogin }) {
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input type={showPass ? 'text' : 'password'} value={form.password} onChange={(e) => setForm({...form, password: e.target.value})}
                   className={`w-full pl-12 pr-14 py-3 border rounded-xl focus:outline-none ${errors.password ? 'border-red-500' : 'border-gray-200'}`}
-                  placeholder="••••••••" />
+                  placeholder="Create a strong password" />
                 <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
                   {showPass ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
               {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+              
+              {/* Password Strength Indicator - Only show in register mode */}
+              {mode === 'register' && form.password && (
+                <div className="mt-2">
+                  {/* Strength Bar */}
+                  <div className="flex gap-1 mb-2">
+                    {[1, 2, 3, 4, 5].map((level) => (
+                      <div 
+                        key={level} 
+                        className="h-1.5 flex-1 rounded-full transition-all duration-300"
+                        style={{ 
+                          background: passwordStrength.score >= level 
+                            ? getPasswordStrengthLabel(passwordStrength.score).color 
+                            : '#e5e7eb' 
+                        }}
+                      />
+                    ))}
+                  </div>
+                  
+                  {/* Strength Label */}
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-medium" style={{ color: getPasswordStrengthLabel(passwordStrength.score).color }}>
+                      {getPasswordStrengthLabel(passwordStrength.score).label}
+                    </span>
+                    <span className="text-xs text-gray-400">{passwordStrength.score}/5 requirements met</span>
+                  </div>
+                  
+                  {/* Requirements Checklist */}
+                  <div className="grid grid-cols-2 gap-1 text-xs">
+                    <div className={`flex items-center gap-1 ${passwordStrength.checks.minLength ? 'text-green-600' : 'text-gray-400'}`}>
+                      {passwordStrength.checks.minLength ? <CheckCircle className="w-3 h-3" /> : <div className="w-3 h-3 rounded-full border border-current" />}
+                      <span>8+ characters</span>
+                    </div>
+                    <div className={`flex items-center gap-1 ${passwordStrength.checks.hasUppercase ? 'text-green-600' : 'text-gray-400'}`}>
+                      {passwordStrength.checks.hasUppercase ? <CheckCircle className="w-3 h-3" /> : <div className="w-3 h-3 rounded-full border border-current" />}
+                      <span>Uppercase (A-Z)</span>
+                    </div>
+                    <div className={`flex items-center gap-1 ${passwordStrength.checks.hasLowercase ? 'text-green-600' : 'text-gray-400'}`}>
+                      {passwordStrength.checks.hasLowercase ? <CheckCircle className="w-3 h-3" /> : <div className="w-3 h-3 rounded-full border border-current" />}
+                      <span>Lowercase (a-z)</span>
+                    </div>
+                    <div className={`flex items-center gap-1 ${passwordStrength.checks.hasNumber ? 'text-green-600' : 'text-gray-400'}`}>
+                      {passwordStrength.checks.hasNumber ? <CheckCircle className="w-3 h-3" /> : <div className="w-3 h-3 rounded-full border border-current" />}
+                      <span>Number (0-9)</span>
+                    </div>
+                    <div className={`flex items-center gap-1 col-span-2 ${passwordStrength.checks.hasSymbol ? 'text-green-600' : 'text-gray-400'}`}>
+                      {passwordStrength.checks.hasSymbol ? <CheckCircle className="w-3 h-3" /> : <div className="w-3 h-3 rounded-full border border-current" />}
+                      <span>Symbol (!@#$%^&*)</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             <AnimatePresence mode="wait">
@@ -2299,6 +2392,7 @@ function InvestFlowModal({ investment, onClose, balance }) {
   const [countdown, setCountdown] = useState(1800); // 30 minutes
   const [copied, setCopied] = useState(false);
   const [hasTestPlan, setHasTestPlan] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const currentUser = JSON.parse(localStorage.getItem('saxovault_current_user') || '{}');
   
@@ -2373,86 +2467,111 @@ function InvestFlowModal({ investment, onClose, balance }) {
   };
 
   const handleConfirmPayment = async () => {
-    const currentUser = JSON.parse(localStorage.getItem('saxovault_current_user') || '{}');
+    console.log('🔄 Starting investment submission...');
+    setSubmitting(true);
     
-    // Parse term to get days
-    const termMatch = investment.term?.match(/(\d+)/);
-    let termDays = investment.totalDays || 30;
-    if (termMatch) {
-      const num = parseInt(termMatch[1]);
-      if (investment.term.includes('month')) {
-        termDays = num * 30;
-      } else if (investment.term.includes('day')) {
-        termDays = num;
-      } else if (investment.term.includes('year')) {
-        termDays = num * 365;
+    try {
+      const currentUser = JSON.parse(localStorage.getItem('saxovault_current_user') || '{}');
+      
+      if (!currentUser.email || !currentUser.uid) {
+        alert('Please login to continue');
+        setSubmitting(false);
+        return;
       }
-    }
-    
-    // Maturity date will be calculated from approval date (set when admin approves)
-    const maturityDate = new Date();
-    maturityDate.setDate(maturityDate.getDate() + termDays);
-    
-    // Create investment transaction with all details
-    const investmentTransaction = {
-      type: 'investment',
-      investmentId: investment.id,
-      investmentName: investment.name,
-      category: investment.category,
-      amount: parseFloat(amount),
-      crypto: selectedCrypto,
-      walletAddress: walletAddresses[selectedCrypto],
-      returnRate: (returnRate * 100).toFixed(1) + '%',
-      dailyRate: investment.dailyRate || (returnRate * 100 / termDays),
-      dailyProfit: parseFloat(dailyProfit.toFixed(2)),
-      expectedReturn: parseFloat(expectedReturn.toFixed(2)),
-      totalReturn: parseFloat(totalReturn.toFixed(2)),
-      term: investment.term,
-      totalDays: termDays,
-      maturityDate: maturityDate.toISOString(),
-      userEmail: currentUser.email || 'unknown',
-      userId: currentUser.uid || 'unknown',
-      userName: currentUser.name || 'User',
-      isTestPlan: investment.isTestPlan || false,
-      payoutSchedule: investment.payoutSchedule || 'End of Term',
-      // Countdown starts after approval
-      approvalDate: null,
-      countdownStarted: false
-    };
+      
+      // Parse term to get days
+      const termMatch = investment.term?.match(/(\d+)/);
+      let termDays = investment.totalDays || 30;
+      if (termMatch) {
+        const num = parseInt(termMatch[1]);
+        if (investment.term.includes('month')) {
+          termDays = num * 30;
+        } else if (investment.term.includes('day')) {
+          termDays = num;
+        } else if (investment.term.includes('year')) {
+          termDays = num * 365;
+        }
+      }
+      
+      // Maturity date will be calculated from approval date (set when admin approves)
+      const maturityDate = new Date();
+      maturityDate.setDate(maturityDate.getDate() + termDays);
+      
+      // Create investment transaction with all details
+      const investmentTransaction = {
+        type: 'investment',
+        investmentId: investment.id,
+        investmentName: investment.name,
+        category: investment.category,
+        amount: parseFloat(amount),
+        crypto: selectedCrypto,
+        walletAddress: walletAddresses[selectedCrypto],
+        returnRate: (returnRate * 100).toFixed(1) + '%',
+        dailyRate: investment.dailyRate || (returnRate * 100 / termDays),
+        dailyProfit: parseFloat(dailyProfit.toFixed(2)),
+        expectedReturn: parseFloat(expectedReturn.toFixed(2)),
+        totalReturn: parseFloat(totalReturn.toFixed(2)),
+        term: investment.term,
+        totalDays: termDays,
+        maturityDate: maturityDate.toISOString(),
+        userEmail: currentUser.email,
+        userId: currentUser.uid,
+        userName: currentUser.name || 'User',
+        isTestPlan: investment.isTestPlan || false,
+        payoutSchedule: investment.payoutSchedule || 'End of Term',
+        // Countdown starts after approval
+        approvalDate: null,
+        countdownStarted: false
+      };
 
-    // Save to Firestore via Storage.addTransaction
-    await Storage.addTransaction(investmentTransaction);
+      console.log('📝 Investment data:', investmentTransaction);
 
-    // Also save to user's active investments (localStorage for quick access)
-    const userInvestments = JSON.parse(localStorage.getItem(`investments_${currentUser.uid}`) || '[]');
-    userInvestments.push({
-      ...investmentTransaction,
-      id: Date.now(),
-      status: 'pending',
-      createdAt: new Date().toISOString()
-    });
-    localStorage.setItem(`investments_${currentUser.uid}`, JSON.stringify(userInvestments));
+      // Save to Firestore via Storage.addTransaction
+      const savedTx = await Storage.addTransaction(investmentTransaction);
+      console.log('✅ Investment saved to storage:', savedTx);
 
-    // Send email notifications
-    if (currentUser.email) {
+      // Also save to user's active investments (localStorage for quick access)
+      const userInvestments = JSON.parse(localStorage.getItem(`investments_${currentUser.uid}`) || '[]');
+      userInvestments.push({
+        ...investmentTransaction,
+        id: savedTx.id,
+        firestoreId: savedTx.firestoreId,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      });
+      localStorage.setItem(`investments_${currentUser.uid}`, JSON.stringify(userInvestments));
+
+      // Send email notifications (non-blocking)
+      console.log('📧 Sending email notifications...');
       EmailService.sendInvestmentNotification(
         currentUser.email, 
         investment.name, 
         amount, 
         investment.term
-      ).catch(console.error);
+      ).then(result => {
+        console.log('✅ Investment email sent:', result);
+      }).catch(err => {
+        console.error('❌ Investment email failed:', err);
+      });
+
+      // Log activity
+      Storage.logActivity(currentUser.uid, 'investment_request', {
+        investment: investment.name,
+        amount,
+        crypto: selectedCrypto,
+        expectedReturn,
+        dailyProfit
+      });
+
+      console.log('✅ Investment submission complete!');
+      setSubmitting(false);
+      setStep(3);
+      
+    } catch (error) {
+      console.error('❌ Investment submission error:', error);
+      alert('Error submitting investment. Please try again. Error: ' + error.message);
+      setSubmitting(false);
     }
-
-    // Log activity
-    Storage.logActivity(currentUser.uid, 'investment_request', {
-      investment: investment.name,
-      amount,
-      crypto: selectedCrypto,
-      expectedReturn,
-      dailyProfit
-    });
-
-    setStep(3);
   };
 
   return (
@@ -2644,10 +2763,21 @@ function InvestFlowModal({ investment, onClose, balance }) {
                 </p>
               </div>
 
-              <motion.button onClick={handleConfirmPayment} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                className="w-full py-4 rounded-xl text-white font-semibold"
+              <motion.button 
+                onClick={handleConfirmPayment} 
+                whileHover={{ scale: submitting ? 1 : 1.02 }} 
+                whileTap={{ scale: submitting ? 1 : 0.98 }}
+                disabled={submitting}
+                className="w-full py-4 rounded-xl text-white font-semibold flex items-center justify-center gap-2 disabled:opacity-70"
                 style={{ background: `linear-gradient(135deg, ${theme.green} 0%, ${theme.greenDark} 100%)` }}>
-                I've Made the Payment
+                {submitting ? (
+                  <>
+                    <RefreshCw className="w-5 h-5 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  "I've Made the Payment"
+                )}
               </motion.button>
             </div>
           )}
@@ -3346,29 +3476,53 @@ function DepositModal({ onClose }) {
     }
     setSubmitting(true);
     
-    const user = JSON.parse(localStorage.getItem('saxovault_current_user') || '{}');
+    console.log('🔄 Starting deposit submission...');
     
-    // Add transaction (saves to Firestore)
-    await Storage.addTransaction({
-      type: 'deposit',
-      amount: parseFloat(amount),
-      crypto: selectedCrypto.symbol,
-      network: selectedCrypto.network,
-      txHash: txHash || null,
-      proofImage: proofImage ? 'uploaded' : null,
-      userEmail: user.email || 'unknown',
-      userId: user.uid || 'unknown'
-    });
+    try {
+      const user = JSON.parse(localStorage.getItem('saxovault_current_user') || '{}');
+      
+      if (!user.email || !user.uid) {
+        alert('Please login to continue');
+        setSubmitting(false);
+        return;
+      }
+      
+      const depositData = {
+        type: 'deposit',
+        amount: parseFloat(amount),
+        crypto: selectedCrypto.symbol,
+        network: selectedCrypto.network,
+        txHash: txHash || null,
+        proofImage: proofImage ? 'uploaded' : null,
+        userEmail: user.email,
+        userId: user.uid,
+        userName: user.name || 'User'
+      };
+      
+      console.log('📝 Deposit data:', depositData);
+      
+      // Add transaction (saves to Firestore)
+      const savedTx = await Storage.addTransaction(depositData);
+      console.log('✅ Deposit saved:', savedTx);
 
-    // Send email (non-blocking)
-    if (user.email) {
-      EmailService.sendDepositNotification(user.email, parseFloat(amount), selectedCrypto.symbol).catch(console.error);
-    }
+      // Send email (with proper error handling)
+      console.log('📧 Sending deposit email notification...');
+      try {
+        const emailResult = await EmailService.sendDepositNotification(user.email, parseFloat(amount), selectedCrypto.symbol);
+        console.log('✅ Deposit email sent:', emailResult);
+      } catch (emailErr) {
+        console.error('❌ Deposit email failed:', emailErr);
+      }
 
-    setTimeout(() => {
       setSubmitting(false);
       setStep(4);
-    }, 500);
+      console.log('✅ Deposit submission complete!');
+      
+    } catch (error) {
+      console.error('❌ Deposit submission error:', error);
+      alert('Error submitting deposit. Please try again.');
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -3605,27 +3759,52 @@ function WithdrawModal({ onClose, balance }) {
     if (!isValidAmount || !isValidAddress) return;
     setSubmitting(true);
 
-    const user = JSON.parse(localStorage.getItem('saxovault_current_user') || '{}');
+    console.log('🔄 Starting withdrawal submission...');
+    
+    try {
+      const user = JSON.parse(localStorage.getItem('saxovault_current_user') || '{}');
 
-    // Save to Firestore
-    await Storage.addTransaction({
-      type: 'withdrawal',
-      amount: parseFloat(amount),
-      crypto: selectedCrypto.symbol,
-      network: selectedCrypto.network,
-      walletAddress,
-      userEmail: user.email || 'unknown',
-      userId: user.uid || 'unknown'
-    });
+      if (!user.email || !user.uid) {
+        alert('Please login to continue');
+        setSubmitting(false);
+        return;
+      }
 
-    if (user.email) {
-      EmailService.sendWithdrawalNotification(user.email, parseFloat(amount), walletAddress).catch(console.error);
-    }
+      const withdrawalData = {
+        type: 'withdrawal',
+        amount: parseFloat(amount),
+        crypto: selectedCrypto.symbol,
+        network: selectedCrypto.network,
+        walletAddress,
+        userEmail: user.email,
+        userId: user.uid,
+        userName: user.name || 'User'
+      };
+      
+      console.log('📝 Withdrawal data:', withdrawalData);
 
-    setTimeout(() => {
+      // Save to Firestore
+      const savedTx = await Storage.addTransaction(withdrawalData);
+      console.log('✅ Withdrawal saved:', savedTx);
+
+      // Send email notification
+      console.log('📧 Sending withdrawal email...');
+      try {
+        const emailResult = await EmailService.sendWithdrawalNotification(user.email, parseFloat(amount), walletAddress);
+        console.log('✅ Withdrawal email sent:', emailResult);
+      } catch (emailErr) {
+        console.error('❌ Withdrawal email failed:', emailErr);
+      }
+
       setSubmitting(false);
       setStep(3);
-    }, 500);
+      console.log('✅ Withdrawal submission complete!');
+      
+    } catch (error) {
+      console.error('❌ Withdrawal submission error:', error);
+      alert('Error submitting withdrawal. Please try again.');
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -4907,22 +5086,27 @@ const Storage = {
   
   // Add transaction - saves to both Firestore and localStorage
   addTransaction: async (tx) => {
-    const transaction = { 
+    const localId = Date.now().toString();
+    let transaction = { 
       ...tx, 
-      id: Date.now().toString(), 
+      id: localId,
+      localId: localId,
       createdAt: new Date().toISOString(), 
       status: 'pending' 
     };
     
-    // Save to Firestore (cloud)
+    // Save to Firestore (cloud) FIRST to get the proper ID
     try {
       const result = await addTransactionToFirestore(transaction);
-      if (result.success) {
+      if (result.success && result.id) {
+        // Use Firestore ID as the main ID
+        transaction.id = result.id;
         transaction.firestoreId = result.id;
-        console.log('✅ Transaction saved to Firestore');
+        console.log('✅ Transaction saved to Firestore with ID:', result.id);
       }
     } catch (error) {
       console.error('❌ Error saving to Firestore:', error);
+      // Keep local ID if Firestore fails
     }
     
     // Also save to localStorage for quick access
@@ -4942,19 +5126,37 @@ const Storage = {
     return transaction;
   },
   
-  // Update transaction status
+  // Update transaction status - FIXED to use correct Firestore ID
   updateTransaction: async (transactionId, updates) => {
+    console.log('📝 Updating transaction:', transactionId, updates);
+    
+    // Find the transaction to get the correct Firestore ID
+    const txs = Storage.getTransactions();
+    const transaction = txs.find(t => t.id === transactionId || t.firestoreId === transactionId);
+    
+    // Determine the correct Firestore document ID
+    const firestoreId = transaction?.firestoreId || transaction?.id || transactionId;
+    
     // Update in Firestore
     try {
-      await updateTransactionInFirestore(transactionId, updates);
-      console.log('✅ Transaction updated in Firestore');
+      await updateTransactionInFirestore(firestoreId, updates);
+      console.log('✅ Transaction updated in Firestore with ID:', firestoreId);
     } catch (error) {
       console.error('❌ Error updating in Firestore:', error);
+      // Try with the other ID if first fails
+      if (transaction?.id && transaction.id !== firestoreId) {
+        try {
+          await updateTransactionInFirestore(transaction.id, updates);
+          console.log('✅ Transaction updated with alternate ID:', transaction.id);
+        } catch (err) {
+          console.error('❌ Alternate update also failed:', err);
+        }
+      }
     }
     
     // Update in localStorage
-    const txs = Storage.getTransactions();
-    const updated = txs.map(t => 
+    const localTxs = Storage.getTransactions();
+    const updated = localTxs.map(t => 
       (t.id === transactionId || t.firestoreId === transactionId) 
         ? { ...t, ...updates } 
         : t
