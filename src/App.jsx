@@ -5298,9 +5298,12 @@ const EMAILJS_CONFIG = {
 };
 
 // Initialize EmailJS on load
+let emailjsInitialized = false;
 try {
   emailjs.init(EMAILJS_CONFIG.publicKey);
+  emailjsInitialized = true;
   console.log('✅ EmailJS initialized successfully');
+  console.log('📧 Admin email:', EMAILJS_CONFIG.adminEmail);
 } catch (err) {
   console.error('❌ EmailJS init failed:', err);
 }
@@ -5309,9 +5312,24 @@ const EmailService = {
   // Get admin email
   getAdminEmail: () => EMAILJS_CONFIG.adminEmail,
   
-  // Test function - call from browser console: EmailService.testEmail('your@email.com')
+  // Check if EmailJS is ready
+  isReady: () => emailjsInitialized,
+  
+  // Test function - call from browser console: window.testEmail('your@email.com')
   testEmail: async (testEmailAddress) => {
+    console.log('🧪 ========== EMAIL TEST START ==========');
     console.log('🧪 Testing EmailJS with:', testEmailAddress);
+    console.log('🧪 Service ID:', EMAILJS_CONFIG.serviceId);
+    console.log('🧪 Template ID:', EMAILJS_CONFIG.templateId);
+    console.log('🧪 Public Key:', EMAILJS_CONFIG.publicKey);
+    console.log('🧪 EmailJS Initialized:', emailjsInitialized);
+    
+    if (!emailjsInitialized) {
+      console.error('❌ EmailJS not initialized!');
+      alert('EmailJS not initialized. Check console for errors.');
+      return { success: false, error: 'Not initialized' };
+    }
+    
     try {
       const result = await emailjs.send(
         EMAILJS_CONFIG.serviceId,
@@ -5319,24 +5337,41 @@ const EmailService = {
         {
           to_email: testEmailAddress,
           subject: 'SaxoVault Test Email',
-          message: 'This is a test email from SaxoVault. If you received this, EmailJS is working correctly!',
+          message: 'This is a test email from SaxoVault. If you received this, EmailJS is working correctly!\n\nTime: ' + new Date().toLocaleString(),
           from_name: 'SaxoVault Capital',
           reply_to: 'support@saxovault.com'
         }
       );
       console.log('✅ Test email sent successfully!', result);
-      alert('Test email sent! Check your inbox.');
+      console.log('🧪 ========== EMAIL TEST SUCCESS ==========');
+      alert('✅ Test email sent! Check your inbox (and spam folder).');
       return { success: true, result };
     } catch (error) {
       console.error('❌ Test email failed:', error);
-      alert('Test email failed: ' + (error?.text || error?.message || 'Unknown error'));
+      console.error('❌ Error details:', {
+        text: error?.text,
+        message: error?.message,
+        status: error?.status,
+        name: error?.name
+      });
+      console.log('🧪 ========== EMAIL TEST FAILED ==========');
+      alert('❌ Test email failed: ' + (error?.text || error?.message || 'Unknown error') + '\n\nCheck console for details.');
       return { success: false, error };
     }
   },
 
   // Core email sending function
   sendEmail: async (to, subject, messageBody, type = 'notification') => {
-    console.log('📧 Sending email:', { to, subject: subject.substring(0, 50) + '...', type });
+    console.log('📧 ========== SENDING EMAIL ==========');
+    console.log('📧 To:', to);
+    console.log('📧 Subject:', subject);
+    console.log('📧 Type:', type);
+    console.log('📧 EmailJS Ready:', emailjsInitialized);
+    
+    if (!emailjsInitialized) {
+      console.error('❌ EmailJS not initialized - cannot send email');
+      return { success: false, message: 'EmailJS not initialized' };
+    }
     
     if (!to || !subject) {
       console.error('❌ Missing email or subject');
@@ -5352,7 +5387,7 @@ const EmailService = {
         reply_to: 'support@saxovault.com'
       };
 
-      console.log('📤 Template params:', { to_email: to, subject, messageLength: messageBody.length });
+      console.log('📤 Calling emailjs.send()...');
 
       const response = await emailjs.send(
         EMAILJS_CONFIG.serviceId,
@@ -5360,7 +5395,8 @@ const EmailService = {
         templateParams
       );
       
-      console.log('✅ Email sent!', { to, status: response.status, text: response.text });
+      console.log('✅ EMAIL SENT SUCCESSFULLY!');
+      console.log('✅ Response:', { status: response.status, text: response.text });
       
       // Log success
       Storage.queueEmail({
@@ -5372,8 +5408,9 @@ const EmailService = {
       return { success: true, response };
       
     } catch (error) {
-      console.error('❌ Email failed:', error);
-      console.error('Details:', { 
+      console.error('❌ EMAIL SEND FAILED!');
+      console.error('❌ Error:', error);
+      console.error('❌ Details:', { 
         text: error?.text, 
         message: error?.message,
         status: error?.status 
@@ -7229,6 +7266,15 @@ function AdminDashboard({ onLogout }) {
 }
 
 // ============ MAIN APP ============
+
+// Expose EmailService for testing from browser console
+// Usage: window.testEmail('your@email.com')
+if (typeof window !== 'undefined') {
+  window.testEmail = EmailService.testEmail;
+  window.EmailService = EmailService;
+  console.log('📧 Email test available. Run: window.testEmail("your@email.com")');
+}
+
 export default function App() {
   const [isAuth, setIsAuth] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
